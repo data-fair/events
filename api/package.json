@@ -1,0 +1,20 @@
+{
+  "name": "api",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development DEBUG=upgrade node --watch index.js"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "config": "^3.3.11",
+    "express": "^4.19.2",
+    "http-errors": "^2.0.0",
+    "http-terminator": "^3.2.0",
+    "jsonwebtoken": "9",
+    "jwks-rsa": "3",
+    "mongodb": "^6.6.0",
+    "nanoid": "^5.0.7",
+    "prom-client": "^15.1.2"
+  }
+}

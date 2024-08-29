@@ -1,0 +1,110 @@
+{
+  "$id": "https://github.com/data-fair/processings/api/config",
+  "x-exports": [
+    "types",
+    "validate"
+  ],
+  "x-ajv": {
+    "coerceTypes": "array"
+  },
+  "type": "object",
+  "title": "Api config",
+  "additionalProperties": false,
+  "required": [
+    "privateDirectoryUrl",
+    "mongoUrl",
+    "origin",
+    "port",
+    "observer",
+    "secretKeys",
+    "gcmAPIKey",
+    "apn"
+  ],
+  "properties": {
+    "mongoUrl": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "port": {
+      "type": "number"
+    },
+    "privateDirectoryUrl": {
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "secretKeys": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identities": {
+          "type": ["string", "null"]
+        },
+        "notifications": {
+          "type": ["string", "null"]
+        },
+        "sendMails": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "gcmAPIKey": {
+      "type": ["string", "null"]
+    },
+    "apn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["token", "production"],
+      "properties": {
+        "token": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["key", "keyId", "teamId"],
+          "properties": {
+            "key": {
+              "type": ["string", "null"]
+            },
+            "keyId": {
+              "type": ["string", "null"]
+            },
+            "teamId": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "production": {
+          "type": "boolean"
+        }
+      }
+    },
+    "defaultPushNotif": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["apn", "webpush"],
+      "properties": {
+        "apn": {
+          "type": "object"
+        },
+        "webpush": {
+          "type": "object"
+        }
+      }
+    },
+    "observer": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "port": {
+          "type": "number"
+        }
+      }
+    },
+    "util": {},
+    "get": {},
+    "has": {}
+  }
+}
