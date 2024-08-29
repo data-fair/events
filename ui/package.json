@@ -18,7 +18,6 @@
     "vite-plugin-vuetify": "^2.0.1"
   },
   "dependencies": {
-    "@data-fair/lib": "^0.27.1",
     "@vueuse/integrations": "^10.7.1",
     "dayjs": "^1.11.10",
     "debug": "^4.3.4",

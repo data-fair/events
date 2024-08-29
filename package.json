@@ -53,7 +53,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@data-fair/lib": "^0.38.1"
+    "@data-fair/lib": "^0.39.0"
   },
   "relativeDependencies": {
     "@data-fair/lib": "../lib"
