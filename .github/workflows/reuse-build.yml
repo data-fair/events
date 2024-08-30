@@ -9,11 +9,6 @@ jobs:
     with:
       workspace: api
 
-  build-daemon:
-    uses: ./.github/workflows/reuse-build-image.yml
-    with:
-      workspace: daemon
-
   build-ui:
     uses: ./.github/workflows/reuse-build-image.yml
     with:
