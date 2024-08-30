@@ -1,6 +1,7 @@
 export default {
   $id: 'https://github.com/data-fair/events/subscription',
   'x-exports': ['types', 'validate'],
+  title: 'Subscription',
   type: 'object',
   additionalProperties: false,
   required: ['_id', 'sender', 'topic', 'recipient', 'outputs', 'created', 'updated'],

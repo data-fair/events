@@ -20,10 +20,6 @@ layout {
         command "${DEV_SHELL}"
         args "-ic" "nvm use > /dev/null 2>&1 && echo 'waiting for deps to start...' && while [ ! -f data/zellij-deps-ready ]; do sleep 1; done && npm -w api run dev"
       }
-      pane name="worker" {
-        command "${DEV_SHELL}"
-        args "-ic" "nvm use > /dev/null 2>&1 && echo 'waiting for deps to start...' && while [ ! -f data/zellij-deps-ready ]; do sleep 1; done && npm -w worker run dev"
-      }
     }
     pane size=2 borderless=true {
         plugin location="zellij:status-bar"

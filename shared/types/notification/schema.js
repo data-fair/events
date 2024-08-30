@@ -1,6 +1,7 @@
 export default {
   $id: 'https://github.com/data-fair/events/notification',
   'x-exports': ['types', 'validate'],
+  title: 'Notification',
   type: 'object',
   additionalProperties: false,
   required: ['_id', 'title', 'topic', 'sender', 'recipient', 'date'],

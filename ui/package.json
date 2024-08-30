@@ -5,7 +5,10 @@
     "dev": "nuxt dev --port 6220",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint-fix": "eslint --fix .",
+    "check-types": "tsc"
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",

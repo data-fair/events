@@ -1,3 +1,4 @@
+import type { ApiConfig } from '../config/type/index.js'
 import { assertValid } from '../config/type/index.js'
 import config from 'config'
 
@@ -8,4 +9,4 @@ assertValid(apiConfig, 'en', 'config', true)
 
 config.util.makeImmutable(apiConfig)
 
-export default /** @type {import('../config/type/index.js').ApiConfig} */(apiConfig)
+export default apiConfig as ApiConfig

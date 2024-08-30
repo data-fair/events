@@ -1,5 +1,6 @@
 export default {
   $id: 'https://github.com/data-fair/events/webhook',
+  title: 'Webhook',
   'x-exports': ['types', 'validate'],
   type: 'object',
   additionalProperties: false,

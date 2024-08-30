@@ -1,6 +1,7 @@
 export default {
   $id: 'https://github.com/data-fair/events/webhook-subscription',
   'x-exports': ['types', 'validate'],
+  title: 'Webhook subscription',
   type: 'object',
   additionalProperties: false,
   required: ['topic', 'owner', 'url'],

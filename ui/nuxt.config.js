@@ -5,14 +5,18 @@ import { defineNuxtConfig } from 'nuxt/config'
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
+
   // https://vuetifyjs.com/en/getting-started/installation/#using-nuxt-3
   build: {
     transpile: ['vuetify']
   },
+
   app: {
     baseURL: '/events/'
   },
+
   modules: [
+    '@nuxt/eslint',
     ['@nuxtjs/i18n', {
       locales: ['fr', 'en'],
       defaultLocale: 'fr',
@@ -35,6 +39,7 @@ export default defineNuxtConfig({
       })
     }
   ],
+
   vite: {
     vue: {
       template: {
@@ -42,5 +47,16 @@ export default defineNuxtConfig({
       }
     }
   },
-  css: ['@/assets/global.scss']
+
+  css: ['@/assets/global.scss'],
+
+  eslint: {
+    config: {
+      stylistic: {
+        commaDangle: 'never'
+      }
+    }
+  },
+
+  compatibilityDate: '2024-08-30'
 })

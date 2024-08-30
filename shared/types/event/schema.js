@@ -10,6 +10,7 @@ const i18nMsg = (title) => ({
 export default {
   $id: 'https://github.com/data-fair/events/event',
   'x-exports': ['types', 'validate'],
+  title: 'Event',
   type: 'object',
   additionalProperties: false,
   required: ['_id', 'title', 'topic', 'sender', 'date'],
