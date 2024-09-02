@@ -3,7 +3,7 @@ import jsdoc from 'eslint-plugin-jsdoc'
 
 export default [
   { ignores: ['ui/*'] },
-  ...neostandard(),
+  ...neostandard({ ts: true }),
   jsdoc.configs['flat/recommended'],
   {
     rules: {

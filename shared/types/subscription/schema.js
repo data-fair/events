@@ -49,8 +49,7 @@ export default {
       type: 'string',
       title: 'Visibilité des notifications à recevoir',
       enum: ['public', 'private'],
-      default: 'private',
-      readOnly: true
+      default: 'private'
     },
     icon: {
       type: 'string',

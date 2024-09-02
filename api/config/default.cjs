@@ -26,4 +26,7 @@ module.exports = {
     apn: {},
     webpush: {}
   },
+  worker: {
+    loopInterval: 4000
+  }
 }

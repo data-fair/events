@@ -2,10 +2,11 @@ import http from 'http'
 import { session } from '@data-fair/lib/express/index.js'
 import { startObserver, stopObserver } from '@data-fair/lib/node/observer.js'
 import * as locks from '@data-fair/lib/node/locks.js'
-import mongo from '@data-fair/lib/node/mongo.js'
+import mongo from './mongo.ts'
 import { createHttpTerminator } from 'http-terminator'
 import { app } from './app.ts'
 import config from './config.ts'
+import * as webhooksWorker from './webhooks-worker.ts'
 
 const server = http.createServer(app)
 const httpTerminator = createHttpTerminator({ server })
@@ -19,14 +20,9 @@ server.headersTimeout = (60 * 1000) + 2000
 export const start = async () => {
   if (config.observer.active) await startObserver(config.observer.port)
   session.init(config.privateDirectoryUrl)
-  await mongo.connect(config.mongoUrl)
-  await mongo.configure({
-    events: {},
-    notifications: {},
-    subscriptions: {},
-    'webhook-subscriptions': {}
-  })
+  await mongo.init()
   await locks.init(mongo.db)
+  await webhooksWorker.start(mongo.db)
 
   server.listen(config.port)
   await new Promise(resolve => server.once('listening', resolve))
@@ -39,6 +35,7 @@ UI available at ${config.origin}/events/`)
 
 export const stop = async () => {
   await httpTerminator.terminate()
+  await webhooksWorker.stop()
   if (config.observer.active) await stopObserver()
   await mongo.client.close()
 }

@@ -18,7 +18,8 @@
     "observer",
     "secretKeys",
     "gcmAPIKey",
-    "apn"
+    "apn",
+    "worker"
   ],
   "properties": {
     "mongoUrl": {
@@ -89,6 +90,16 @@
         },
         "webpush": {
           "type": "object"
+        }
+      }
+    },
+    "worker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["loopInterval"],
+      "properties": {
+        "loopInterval": {
+          "type": "number"
         }
       }
     },
