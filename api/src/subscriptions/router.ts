@@ -10,6 +10,7 @@ import * as postReq from './post-req/index.js'
 import * as subscriptionType from '../../../shared/types/subscription/index.js'
 
 const router = Router()
+export default router
 
 // Get the list of subscriptions
 router.get('', asyncHandler(async (req, res, next) => {
@@ -130,5 +131,3 @@ router.delete('/:id', asyncHandler(async (req, res, next) => {
   await mongo.subscriptions.deleteOne({ _id: subscription._id })
   res.status(204).send()
 }))
-
-module.exports = router

@@ -13,12 +13,12 @@ module.exports = {
     events: null,
     sendMails: null
   },
-  gcmAPIKey: null,
+  gcmAPIKey: undefined,
   apn: {
     token: {
-      key: null,
-      keyId: null,
-      teamId: null
+      key: undefined,
+      keyId: undefined,
+      teamId: undefined
     },
     production: false
   },

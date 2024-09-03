@@ -7,11 +7,10 @@ const localizeProp = (prop: Event['title'], locale: string): string => {
 }
 
 export const localizeEvent = (event: Event, locale: string = config.i18n.defaultLocale): LocalizedEvent => {
-  const localizedEvent: LocalizedEvent = {
+  return {
     ...event,
     title: localizeProp(event.title, locale),
     body: event.body && localizeProp(event.body, locale),
     htmlBody: event.htmlBody && localizeProp(event.htmlBody, locale)
   }
-  return localizedEvent
 }

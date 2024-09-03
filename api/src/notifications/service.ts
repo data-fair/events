@@ -12,6 +12,7 @@ import mongo from '../mongo.ts'
 import config from '../config.ts'
 import * as metrics from './metrics.js'
 import { localizeEvent } from '../events/service.ts'
+import * as pushService from '../push/service.ts'
 
 const debug = Debug('notifications')
 
@@ -71,10 +72,7 @@ export const sendNotification = async (notification: Notification) => {
   await wsEmitter.emit(`user:${notification.recipient.id}:notifications`, notification)
   if (notification.outputs && notification.outputs.includes('devices')) {
     debug('Send notif to devices')
-    // TODO: replace this with new push recipe
-    /* req.app.get('push')(notification).catch((err: any) => {
-      internalError('notif-push', err)
-    }) */
+    pushService.push(notification).catch((err: any) => { internalError('notif-push', err) })
   }
   if (notification.outputs && notification.outputs.includes('email')) {
     // global.events.emit('sentNotification', { output: 'email', notification })

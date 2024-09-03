@@ -1,6 +1,9 @@
 import { errorHandler } from '@data-fair/lib/express/index.js'
 import express from 'express'
 import identitiesRouter from './identities/router.ts'
+import pushRouter from './push/router.ts'
+import notificationsRouter from './notifications/router.ts'
+import subscriptionsRouter from './subscriptions/router.ts'
 
 export const app = express()
 
@@ -10,6 +13,11 @@ app.set('query parser', 'simple')
 app.set('json spaces', 2)
 app.use(express.json())
 
-app.use(identitiesRouter)
+app.use('/api/v1/subscriptions', subscriptionsRouter)
+// app.use('/api/v1/webhook-subscriptions', auth(), require('./router/webhook-subscriptions'))
+// app.use('/api/v1/webhooks', auth(), require('./router/webhooks'))
+app.use('/api/v1/notifications', notificationsRouter)
+app.use('/api/v1/push', pushRouter)
+app.use('/api/v1/identities', identitiesRouter)
 
 app.use(errorHandler)

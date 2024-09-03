@@ -19,6 +19,7 @@
     "secretKeys",
     "gcmAPIKey",
     "apn",
+    "defaultPushNotif",
     "worker",
     "theme",
     "i18n"
@@ -54,7 +55,7 @@
       }
     },
     "gcmAPIKey": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "apn": {
       "type": "object",
@@ -67,13 +68,13 @@
           "required": ["key", "keyId", "teamId"],
           "properties": {
             "key": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "keyId": {
-              "type": ["string", "null"]
+              "type": "string"
             },
             "teamId": {
-              "type": ["string", "null"]
+              "type": "string"
             }
           }
         },
@@ -86,11 +87,8 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["apn", "webpush"],
-      "properties": {
-        "apn": {
-          "type": "object"
-        },
-        "webpush": {
+      "patternProperties": {
+        ".*": {
           "type": "object"
         }
       }
