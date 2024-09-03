@@ -11,6 +11,7 @@ export default {
     body:
       jsonSchema(SubscriptionSchema)
         .removeProperties(['created', 'updated'])
+        .removeFromRequired(['_id'])
         .removeId()
         .appendTitle(' post')
         .schema

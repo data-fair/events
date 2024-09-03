@@ -1,4 +1,6 @@
-import type { Event, Subscription, Notification, WebhookSubscription, Webhook } from '../../shared/types/index.js'
+import type { Subscription, Notification, WebhookSubscription, Webhook } from '../../shared/types/index.js'
+import type { SearchableEvent } from './types.ts'
+import type { Pointer } from './types.ts'
 
 import mongo from '@data-fair/lib/node/mongo.js'
 import config from './config.ts'
@@ -13,7 +15,7 @@ export class EventsMongo {
   }
 
   get events () {
-    return mongo.db.collection<Event>('events')
+    return mongo.db.collection<SearchableEvent>('events')
   }
 
   get subscriptions () {
@@ -36,15 +38,48 @@ export class EventsMongo {
     return mongo.db.collection<any>('pushSubscriptions')
   }
 
+  get pointers () {
+    return mongo.db.collection<Pointer>('pointers')
+  }
+
   init = async () => {
     await mongo.connect(config.mongoUrl)
+    // TODO: report index definitions from notify
     await mongo.configure({
-      events: {},
-      subscriptions: {},
-      notifications: {},
-      'webhook-subscriptions': {},
-      webhooks: {},
-      pushSubscriptions: {}
+      events: {
+        'main-keys': [
+          { 'sender.type': 1, 'sender.id': 1, date: -1, _search: 'text' },
+          { default_language: 'french' }
+        ]
+      },
+      subscriptions: {
+        'main-keys': [
+          { 'sender.type': 1, 'sender.id': 1, 'sender.department': 1, 'sender.role': 1, 'recipient.id': 1, 'topic.key': 1 },
+          { unique: true }
+        ]
+      },
+      notifications: {
+        'main-keys': { 'recipient.id': 1, date: -1 }
+      },
+      'webhook-subscriptions': {
+        'main-keys': [
+          { 'sender.type': 1, 'sender.id': 1, 'owner.type': 1, 'owner.id': 1, 'topic.key': 1 },
+          { unique: true }
+        ]
+      },
+      webhooks: {
+        'main-keys': { 'owner.type': 1, 'owner.id': 1, 'subscription._id': 1, 'notification.date': 1 },
+        'loop-keys': { status: 1, nextAttempt: 1 }
+      },
+      pushSubscriptions: {
+        'main-keys': [
+          { 'owner.type': 1, 'owner.id': 1 },
+          { unique: true }
+        ]
+      },
+      pointers: {
+        'main-keys': { 'recipient.id': 1 }
+      }
     })
   }
 }

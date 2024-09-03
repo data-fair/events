@@ -5,7 +5,7 @@ module.exports = {
   privateDirectoryUrl: 'PRIVATE_DIRECTORY_URL',
   secretKeys: {
     identities: 'SECRET_IDENTITIES',
-    notifications: 'SECRET_NOTIFICATIONS',
+    events: 'SECRET_EVENTS',
     sendMails: 'SECRET_SENDMAILS'
   },
   gcmAPIKey: 'GCM_API_KEY',
@@ -30,5 +30,14 @@ module.exports = {
   observer: {
     active: 'OBSERVER_ACTIVE',
     port: 'OBSERVER_PORT'
+  },
+  theme: {
+    logo: 'THEME_LOGO',
+    notificationIcon: 'THEME_NOTIFICATION_ICON',
+    notificationBadge: 'THEME_NOTIFICATION_BADGE'
+  },
+  i18n: {
+    locales: 'I18N_LOCALES',
+    defaultLocale: 'I18N_DEFAULT_LOCALE'
   }
 }

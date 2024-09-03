@@ -10,7 +10,7 @@ module.exports = {
   // secrets that can be used to configure global webhooks for example to update users and organizations
   secretKeys: {
     identities: null,
-    notifications: null,
+    events: null,
     sendMails: null
   },
   gcmAPIKey: null,
@@ -28,5 +28,14 @@ module.exports = {
   },
   worker: {
     loopInterval: 4000
+  },
+  theme: {
+    logo: null,
+    notificationIcon: null,
+    notificationBadge: null
+  },
+  i18n: {
+    locales: ['fr', 'en'],
+    defaultLocale: 'fr'
   }
 }

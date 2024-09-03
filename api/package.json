@@ -11,10 +11,15 @@
     "express": "^4.19.2",
     "http-errors": "^2.0.0",
     "http-terminator": "^3.2.0",
+    "i18n": "^0.15.1",
     "jsonwebtoken": "9",
     "jwks-rsa": "3",
     "mongodb": "^6.8.0",
     "nanoid": "^5.0.7",
-    "prom-client": "^15.1.2"
+    "prom-client": "^15.1.2",
+    "url-template": "^3.1.1"
+  },
+  "devDependencies": {
+    "@types/i18n": "^0.13.12"
   }
 }

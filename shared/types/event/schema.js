@@ -4,7 +4,10 @@
 const i18nMsg = (title) => ({
   type: 'object',
   title: `${title} internationalisé`,
-  properties: ['fr', 'en'].reduce((/** @type {Record<string, any>} */props, locale) => { props[locale] = { type: 'string', title: locale }; return props }, {})
+  patternProperties: {
+    '.*': { type: 'string' }
+  }
+  // properties: ['fr', 'en'].reduce((/** @type {Record<string, any>} */props, locale) => { props[locale] = { type: 'string', title: locale }; return props }, {})
 })
 
 export default {
@@ -13,7 +16,7 @@ export default {
   title: 'Event',
   type: 'object',
   additionalProperties: false,
-  required: ['_id', 'title', 'topic', 'sender', 'date'],
+  required: ['_id', 'title', 'topic', 'sender', 'date', 'visibility'],
   properties: {
     _id: {
       type: 'string',

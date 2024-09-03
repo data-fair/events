@@ -19,7 +19,9 @@
     "secretKeys",
     "gcmAPIKey",
     "apn",
-    "worker"
+    "worker",
+    "theme",
+    "i18n"
   ],
   "properties": {
     "mongoUrl": {
@@ -43,7 +45,7 @@
         "identities": {
           "type": ["string", "null"]
         },
-        "notifications": {
+        "events": {
           "type": ["string", "null"]
         },
         "sendMails": {
@@ -111,6 +113,39 @@
         },
         "port": {
           "type": "number"
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logo", "notificationIcon", "notificationBadge"],
+      "properties": {
+        "logo": {
+          "type": ["string", "null"]
+        },
+        "notificationIcon": {
+          "type": ["string", "null"]
+        },
+        "notificationBadge": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "i18n": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locales", "defaultLocale"],
+      "properties": {
+        "locales": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "defaultLocale": {
+          "type": "string",
+          "default": "fr"
         }
       }
     },

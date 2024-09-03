@@ -4,7 +4,7 @@ export default {
   title: 'Subscription',
   type: 'object',
   additionalProperties: false,
-  required: ['_id', 'sender', 'topic', 'recipient', 'outputs', 'created', 'updated'],
+  required: ['_id', 'sender', 'topic', 'recipient', 'outputs', 'visibility', 'created', 'updated'],
   properties: {
     _id: {
       type: 'string',
