@@ -104,5 +104,3 @@ router.post('/:id/_test', asyncHandler(async (req, res, next) => {
   }, subscription)
   res.status(204).send()
 }))
-
-module.exports = router

@@ -17,7 +17,6 @@
     "port",
     "observer",
     "secretKeys",
-    "gcmAPIKey",
     "apn",
     "defaultPushNotif",
     "worker",
@@ -65,7 +64,6 @@
         "token": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["key", "keyId", "teamId"],
           "properties": {
             "key": {
               "type": "string"

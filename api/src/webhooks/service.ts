@@ -1,4 +1,4 @@
-import { LocalizedEvent, Webhook, WebhookSubscription } from '../../../shared/types/index.ts'
+import type { LocalizedEvent, Webhook, WebhookSubscription } from '../../../shared/types/index.ts'
 
 import { nanoid } from 'nanoid'
 import mongo from '../mongo.ts'

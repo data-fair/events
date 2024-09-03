@@ -49,5 +49,3 @@ router.post('/:id/_cancel', asyncHandler(async (req, res, next) => {
   if (!webhook) throw httpError(404)
   res.send(webhook)
 }))
-
-module.exports = router

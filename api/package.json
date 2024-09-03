@@ -6,7 +6,9 @@
     "dev": "NODE_ENV=development DEBUG=upgrade node --watch --experimental-strip-types index.ts"
   },
   "dependencies": {
+    "agentkeepalive": "^4.5.0",
     "axios": "^1.7.5",
+    "cacheable-lookup": "^6.1.0",
     "config": "^3.3.11",
     "express": "^4.19.2",
     "fs-extra": "^11.2.0",
