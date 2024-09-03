@@ -1,15 +1,15 @@
 import jsonSchema from '@data-fair/lib/json-schema.js'
-import SubscriptionSchema from '../../../../shared/types/subscription/schema.js'
+import webhookSubscriptionSchema from '../../../../shared/types/webhook-subscription/schema.js'
 
 export default {
-  $id: 'https://github.com/data-fair/events/subscriptions/post-req',
-  title: 'Post subscription req',
+  $id: 'https://github.com/data-fair/events/webhook-subscriptions/post-req',
+  title: 'Post webhook-subscription req',
   'x-exports': ['validate', 'types'],
   type: 'object',
   required: ['body'],
   properties: {
     body:
-      jsonSchema(SubscriptionSchema)
+      jsonSchema(webhookSubscriptionSchema)
         .removeProperties(['created', 'updated'])
         .removeFromRequired(['_id'])
         .removeId()

@@ -70,8 +70,6 @@ const canSubscribePrivate = (sender: Subscription['sender'], user: User) => {
 
 // Create or update a subscription
 router.post('', asyncHandler(async (req, res, next) => {
-  const db = req.app.get('db')
-
   const { body } = postReq.returnValid(req)
 
   const { user } = await session.reqAuthenticated(req)
@@ -84,7 +82,7 @@ router.post('', asyncHandler(async (req, res, next) => {
   }
 
   subscription.title = body.title || `${body.topic.title} (${subscription.recipient.name})`
-  const existingSubscription = body._id && await db.collection('subscriptions').findOne({ _id: body._id })
+  const existingSubscription = body._id && await mongo.subscriptions.findOne({ _id: body._id })
   subscription._id = body._id || nanoid()
   subscription.updated = { id: user.id, name: user.name, date: new Date().toISOString() }
   subscription.created = existingSubscription ? existingSubscription.created : subscription.updated

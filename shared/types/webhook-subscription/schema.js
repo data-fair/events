@@ -4,7 +4,7 @@ export default {
   title: 'Webhook subscription',
   type: 'object',
   additionalProperties: false,
-  required: ['topic', 'owner', 'url'],
+  required: ['_id', 'topic', 'owner', 'url', 'sender', 'title'],
   properties: {
     _id: {
       type: 'string',

@@ -1,12 +1,14 @@
 // use push-notifications to send notifications to devices
 // by web push for now, using propriétary protocols for mobile devices later on
 
+import { Router } from 'express'
 import useragent from 'useragent'
 import config from '../config.ts'
+import mongo from '../mongo.ts'
 import { asyncHandler, session } from '@data-fair/lib/express/index.js'
 import { vapidKeys, push } from './service.ts'
 
-const router = require('express').Router()
+const router = Router()
 export default router
 
 const equalReg = (reg1: any, reg2: any) => {
@@ -21,9 +23,8 @@ router.get('/vapidkey', asyncHandler(async (req, res) => {
 
 router.get('/registrations', asyncHandler(async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
-  const db = await req.app.get('db')
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
-  const sub = await db.collection('pushSubscriptions').findOne(ownerFilter)
+  const sub = await mongo.pushSubscriptions.findOne(ownerFilter)
   const registrations = (sub && sub.registrations) || []
   registrations.forEach((r: any) => { r.type = r.type || 'webpush' })
   res.send(registrations)
@@ -31,9 +32,8 @@ router.get('/registrations', asyncHandler(async (req, res) => {
 
 router.put('/registrations', asyncHandler(async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
-  const db = await req.app.get('db')
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
-  await db.collection('pushSubscriptions').updateOne(ownerFilter, { $set: { registrations: req.body } })
+  await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: req.body } })
   res.send(req.body)
 }))
 
@@ -41,7 +41,6 @@ router.put('/registrations', asyncHandler(async (req, res) => {
 router.post('/registrations', asyncHandler(async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
   if (!req.body.id) return res.status(400).send('id is required')
-  const db = await req.app.get('db')
   const agent = useragent.parse(req.headers['user-agent'])
   const date = new Date().toISOString()
   const registration = { ...req.body, date }
@@ -49,7 +48,7 @@ router.post('/registrations', asyncHandler(async (req, res) => {
   if (!registration.deviceName) registration.deviceName = agent.toString()
 
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
-  let sub = await db.collection('pushSubscriptions').findOne(ownerFilter)
+  let sub = await mongo.pushSubscriptions.findOne(ownerFilter)
   if (!sub) {
     sub = {
       owner: { type: 'user', id: user.id, name: user.name },
@@ -58,7 +57,7 @@ router.post('/registrations', asyncHandler(async (req, res) => {
   }
   if (!sub.registrations.find((r: any) => equalReg(r.id, req.body.id))) {
     sub.registrations.push(registration)
-    await db.collection('pushSubscriptions').replaceOne(ownerFilter, sub, { upsert: true })
+    await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
     const errors = await push({
       _id: 'new-device',
       topic: { key: 'new-device' },

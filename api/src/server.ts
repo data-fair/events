@@ -8,7 +8,7 @@ import mongo from './mongo.ts'
 import { createHttpTerminator } from 'http-terminator'
 import { app } from './app.ts'
 import config from './config.ts'
-import * as webhooksWorker from './webhooks-worker.ts'
+import * as webhooksWorker from './webhooks/worker.ts'
 
 const server = http.createServer(app)
 const httpTerminator = createHttpTerminator({ server })
