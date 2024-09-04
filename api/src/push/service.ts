@@ -13,13 +13,13 @@ import * as metrics from './metrics.js'
 
 const debug = Debug('notifications')
 
-fs.ensureDirSync('./security')
+fs.ensureDirSync(config.securityDir)
 let _vapidKeys
-if (!fs.existsSync('./security/vapid.json')) {
+if (!fs.existsSync(config.securityDir + '/vapid.json')) {
   _vapidKeys = webpush.generateVAPIDKeys()
-  fs.writeJsonSync('./security/vapid.json', _vapidKeys)
+  fs.writeJsonSync(config.securityDir + '/vapid.json', _vapidKeys)
 } else {
-  _vapidKeys = fs.readJsonSync('./security/vapid.json')
+  _vapidKeys = fs.readJsonSync(config.securityDir + '/vapid.json')
 }
 
 export const vapidKeys = _vapidKeys

@@ -6,7 +6,7 @@
   </v-app>
 </template>
 
-<script>
+<script lang="ts">
 // built for being embedded all the time
 import 'iframe-resizer/js/iframeResizer.contentWindow'
 
