@@ -4,6 +4,12 @@ module.exports = {
   privateDirectoryUrl: 'http://localhost:8080',
   mongoUrl: 'mongodb://localhost:27017/data-fair-events-test',
   observer: {
-    port: 9092
+    port: 9092,
+    active: false
+  },
+  secretKeys: {
+    identities: 'SECRET_IDENTITIES',
+    events: 'SECRET_EVENTS',
+    sendMails: 'SECRET_SENDMAILS'
   }
 }

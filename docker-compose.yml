@@ -26,14 +26,15 @@ services:
     depends_on:
       - mongo
     environment:
-      - PORT=6221
+      - PORT=8080
       - DEBUG=session
       - ADMINS=["superadmin@test.com"]
-      - PUBLIC_URL=http://localhost:6218/simple-directory
+      - PUBLIC_URL=http://localhost:5600/simple-directory
       - MAILDEV_ACTIVE=true
       - STORAGE_TYPE=file
       - ROLES_DEFAULTS=["admin", "contrib", "user"]
       - PROMETHEUS_ACTIVE=false
+      - AUTHRATELIMIT_ATTEMPTS=1000
       - NO_UI=${NO_UI}
     volumes:
       - ./dev/resources/users.json:/webapp/data/users.json

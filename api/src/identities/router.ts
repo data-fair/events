@@ -41,7 +41,7 @@ export default createIdentitiesRouter(
           userOrg = undefined
         }
         if (!userOrg) {
-          console.log('remove private subscription that does not match user orgs anymore', identity, privateSubscription)
+          // console.log('remove private subscription that does not match user orgs anymore', identity, privateSubscription)
           await mongo.subscriptions.deleteOne({ _id: privateSubscription._id })
         }
       }

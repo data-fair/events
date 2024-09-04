@@ -14,10 +14,10 @@ export default router
 
 // Get the list of subscriptions
 router.get('', asyncHandler(async (req, res, next) => {
+  const { user } = await session.reqAuthenticated(req)
+
   const sort = mongoSort(req.query.sort)
   const { skip, size } = mongoPagination(req.query)
-
-  const { user } = await session.reqAuthenticated(req)
 
   const recipient = req.query.recipient || user.id
   if (recipient !== user.id && !user.adminMode) {
@@ -70,11 +70,13 @@ const canSubscribePrivate = (sender: Subscription['sender'], user: User) => {
 
 // Create or update a subscription
 router.post('', asyncHandler(async (req, res, next) => {
-  const { body } = postReq.returnValid(req)
-
   const { user } = await session.reqAuthenticated(req)
 
+  const { body } = postReq.returnValid(req)
+
   const subscription = body as Partial<Subscription>
+
+  subscription.outputs = subscription.outputs || []
 
   subscription.recipient = body.recipient || { id: user.id, name: user.name }
   if (subscription.recipient.id !== user.id && !user.adminMode) {
@@ -87,10 +89,8 @@ router.post('', asyncHandler(async (req, res, next) => {
   subscription.updated = { id: user.id, name: user.name, date: new Date().toISOString() }
   subscription.created = existingSubscription ? existingSubscription.created : subscription.updated
 
-  const sender = body.sender
-
   subscription.visibility = body.visibility || 'private'
-  if (!canSubscribePrivate(sender, user)) {
+  if (!canSubscribePrivate(body.sender, user)) {
     // other cases are accepted, but the subscription will only receive notifications
     // with public visibility
     subscription.visibility = 'public'
@@ -104,10 +104,11 @@ router.post('', asyncHandler(async (req, res, next) => {
 }))
 
 router.get('/:id', asyncHandler(async (req, res, next) => {
+  const { user } = await session.reqAuthenticated(req)
+
   const subscription = await mongo.subscriptions.findOne({ _id: req.params.id })
   if (!subscription) throw httpError(404)
 
-  const { user } = await session.reqAuthenticated(req)
   // both the sender and the recipient can create/modify a subscription
   if (!user.adminMode && subscription.recipient.id !== user.id) {
     throw httpError(403, 'Impossible de lire un abonnement pour un autre utilisateur')
@@ -117,10 +118,11 @@ router.get('/:id', asyncHandler(async (req, res, next) => {
 }))
 
 router.delete('/:id', asyncHandler(async (req, res, next) => {
+  const { user } = await session.reqAuthenticated(req)
+
   const subscription = await mongo.subscriptions.findOne({ _id: req.params.id })
   if (!subscription) return res.status(204).send()
 
-  const { user } = await session.reqAuthenticated(req)
   // both the sender and the recipient can create/modify a subscription
   if (!user.adminMode && subscription.recipient.id !== user.id) {
     throw httpError(403, 'Impossible de supprimer un abonnement pour un autre utilisateur')

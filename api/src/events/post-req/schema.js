@@ -11,6 +11,7 @@ export default {
     body:
       jsonSchema(EventSchema)
         .removeReadonlyProperties()
+        .removeFromRequired(['visibility'])
         .removeId()
         .appendTitle(' post')
         .schema

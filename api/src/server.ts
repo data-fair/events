@@ -4,6 +4,7 @@ import { session } from '@data-fair/lib/express/index.js'
 import { startObserver, stopObserver } from '@data-fair/lib/node/observer.js'
 import * as locks from '@data-fair/lib/node/locks.js'
 import * as wsServer from '@data-fair/lib/node/ws-server.js'
+import * as wsEmitter from '@data-fair/lib/node/ws-emitter.js'
 import mongo from './mongo.ts'
 import { createHttpTerminator } from 'http-terminator'
 import { app } from './app.ts'
@@ -32,6 +33,7 @@ export const start = async () => {
     if (sessionState.user.adminMode) return true
     return ownerType === 'user' && ownerId === sessionState.user.id
   })
+  await wsEmitter.init(mongo.db)
   await webhooksWorker.start()
 
   server.listen(config.port)

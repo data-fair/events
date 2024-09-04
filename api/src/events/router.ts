@@ -8,8 +8,10 @@ import config from '../config.ts'
 import * as postReq from './post-req/index.js'
 import { session, asyncHandler, mongoPagination, mongoProjection, httpError } from '@data-fair/lib/express/index.js'
 import { localizeEvent } from './service.ts'
+import { receiveEvent } from '../notifications/service.ts'
 
 const router = Router()
+export default router
 
 router.get('', asyncHandler(async (req, res, next) => {
   const { account, lang } = await session.reqAuthenticated(req)
@@ -45,7 +47,7 @@ router.get('', asyncHandler(async (req, res, next) => {
 router.post('', asyncHandler(async (req, res, next) => {
   if (!req.query.key || req.query.key !== config.secretKeys.events) return res.status(401).send()
 
-  const { body } = postReq.returnValid(req)
+  const { body } = postReq.returnValid(req, { name: 'req' })
 
   const event: SearchableEvent = {
     ...body,
@@ -60,8 +62,9 @@ router.post('', asyncHandler(async (req, res, next) => {
   event._search = searchParts.filter(Boolean).join(' ')
 
   await mongo.events.insertOne(event)
-
   delete event._search
+
+  await receiveEvent(event)
 
   res.status(201).json(event)
 }))
