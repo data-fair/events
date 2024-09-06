@@ -8,7 +8,7 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
-    "check-types": "tsc"
+    "check-types": "nuxt typecheck"
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",
@@ -27,6 +27,7 @@
     "vite-plugin-vuetify": "^2.0.1",
     "vue": "^3.4.5",
     "vue-i18n": "^9.14.0",
+    "vue-tsc": "^2.1.6",
     "vuetify": "^3.4.9"
   }
 }

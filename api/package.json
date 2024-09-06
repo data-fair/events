@@ -7,8 +7,7 @@
   },
   "imports": {
     "#config": "./src/config.ts",
-    "#mongo": "./src/mongo.ts",
-    "#shared/*": "../shared/*"
+    "#mongo": "./src/mongo.ts"
   },
   "dependencies": {
     "agentkeepalive": "^4.5.0",

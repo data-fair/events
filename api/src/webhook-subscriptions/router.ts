@@ -7,7 +7,7 @@ import { asyncHandler, session, mongoSort, mongoPagination, httpError } from '@d
 import mongo from '#mongo'
 import { createWebhook } from '../webhooks/service.ts'
 import * as postReq from './post-req/index.js'
-import * as webhookSubscriptionType from '#shared/types/webhook-subscription/index.js'
+import * as webhookSubscriptionType from '../../../shared/types/webhook-subscription/index.js'
 
 const router = Router()
 export default router

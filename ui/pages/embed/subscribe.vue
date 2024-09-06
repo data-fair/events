@@ -1,5 +1,5 @@
 <template>
-  <v-container
+  <!-- <v-container
     fluid
     data-iframe-height
   >
@@ -46,19 +46,25 @@
       </v-row>
     </template>
   </v-container>
+  -->
 </template>
 
 <i18n lang="yaml">
 fr:
-  notifyMe: " | Me notifier de cet évènement : | Me notifier de ces évènements :"
+  notifyMe: "Paramètre manquant | Me notifier de cet évènement : | Me notifier de ces évènements :"
 en:
-  notifyMe: " | Send me notifications for this event : | Send me notifications for these events :"
+  notifyMe: "Missing parameter | Send me notifications for this event : | Send me notifications for these events :"
 </i18n>
 
-<script>
-import { mapState } from 'vuex'
-import { parseSender } from '~/assets/sender-utils.js'
+<script setup>
+import useSession from '@data-fair/lib/vue/session.js'
+import { parseSender } from '~/assets/sender-utils.ts'
 
+const session = useSession()
+
+console.log(session)
+
+/*
 export default {
   layout: 'embed',
   data() {
@@ -100,7 +106,7 @@ export default {
       this.loading = false
     }
   }
-}
+} */
 </script>
 
 <style lang="css" scoped>

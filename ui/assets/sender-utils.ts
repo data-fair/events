@@ -1,9 +1,12 @@
-exports.parseSender = (senderStr) => {
+import type { Event } from '#shared/types/index.js'
+
+export const parseSender = (senderStr: string) => {
   if (senderStr === 'none') return senderStr
 
   const senderParts = senderStr.split(':')
-  const sender = {
-    type: senderParts[0],
+
+  const sender: Event['sender'] = {
+    type: senderParts[0] as 'organization' | 'user',
     id: senderParts[1]
   }
   if (senderParts[2]) sender.department = senderParts[2]
@@ -11,7 +14,7 @@ exports.parseSender = (senderStr) => {
   return sender
 }
 
-exports.serializeSender = (sender, includeRole) => {
+export const serializeSender = (sender: Event['sender'], includeRole = false) => {
   let str = `${sender.type}:${sender.id}:${sender.department || ''}`
   if (includeRole && sender.role) str += `:${sender.role}`
   return str

@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid'
 import { session, asyncHandler, mongoSort, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
 import mongo from '#mongo'
 import * as postReq from './post-req/index.js'
-import * as subscriptionType from '#shared/types/subscription/index.js'
+import * as subscriptionType from '../../../shared/types/subscription/index.js'
 
 const router = Router()
 export default router

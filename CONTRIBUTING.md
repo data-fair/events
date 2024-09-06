@@ -4,7 +4,7 @@
 
   - A Javascript/Typescript IDE with [Vue.js](https://vuejs.org/)  and [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) support.
   - A recent [Docker](https://docs.docker.com/engine/install/) installation.
-  - [Node.js v20+](https://nodejs.org/)
+  - [Node.js v22+](https://nodejs.org/)
 
 ## Install dependencies
 

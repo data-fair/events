@@ -1,14 +1,8 @@
 import neostandard from 'neostandard'
-import jsdoc from 'eslint-plugin-jsdoc'
+import dfLibRecommended from '@data-fair/lib/eslint/recommended.js'
 
 export default [
   { ignores: ['ui/*', '**/.type/'] },
-  ...neostandard({ ts: true }),
-  jsdoc.configs['flat/recommended'],
-  {
-    rules: {
-      'jsdoc/require-returns': 0,
-      'jsdoc/require-param-description': 0
-    }
-  }
+  dfLibRecommended,
+  ...neostandard({ ts: true })
 ]
