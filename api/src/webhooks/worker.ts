@@ -1,11 +1,11 @@
 // this single small worker loop doesn't rellay justify running in separate processes
 // we simply run it as part of the api server
 
-import config from '../config.ts'
+import config from '#config'
 import dayjs from 'dayjs'
 import Debug from 'debug'
-import type { Webhook } from '../../../shared/types/index.js'
-import mongo from '../mongo.ts'
+import type { Webhook } from '#shared/types/index.js'
+import mongo from '#mongo'
 import axios from '@data-fair/lib/node/axios.js'
 import { internalError } from '@data-fair/lib/node/observer.js'
 import * as locks from '@data-fair/lib/node/locks.js'

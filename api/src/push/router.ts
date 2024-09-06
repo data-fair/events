@@ -3,8 +3,8 @@
 
 import { Router } from 'express'
 import useragent from 'useragent'
-import config from '../config.ts'
-import mongo from '../mongo.ts'
+import config from '#config'
+import mongo from '#mongo'
 import { asyncHandler, session } from '@data-fair/lib/express/index.js'
 import { vapidKeys, push } from './service.ts'
 

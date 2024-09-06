@@ -1,13 +1,13 @@
 import type { Db } from 'mongodb'
-import type { Notification } from '../../../shared/types/index.ts'
+import type { Notification } from '#shared/types/index.ts'
 
 import fs from 'fs-extra'
 import webpush from 'web-push'
 import PushNotifications from 'node-pushnotifications'
 import dayjs from 'dayjs'
 import Debug from 'debug'
-import config from '../config.ts'
-import mongo from '../mongo.ts'
+import config from '#config'
+import mongo from '#mongo'
 import * as notificationsMetrics from '../notifications/metrics.js'
 import * as metrics from './metrics.js'
 

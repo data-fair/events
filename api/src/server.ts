@@ -8,7 +8,7 @@ import * as wsEmitter from '@data-fair/lib/node/ws-emitter.js'
 import mongo from './mongo.ts'
 import { createHttpTerminator } from 'http-terminator'
 import { app } from './app.ts'
-import config from './config.ts'
+import config from '#config'
 import * as webhooksWorker from './webhooks/worker.ts'
 
 const server = http.createServer(app)

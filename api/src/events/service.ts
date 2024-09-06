@@ -1,5 +1,5 @@
-import type { Event, LocalizedEvent } from '../../../shared/types/index.ts'
-import config from '../config.ts'
+import type { Event, LocalizedEvent } from '#shared/types/index.ts'
+import config from '#config'
 
 const localizeProp = (prop: Event['title'], locale: string): string => {
   if (prop && typeof prop === 'object') return prop[locale] || prop[config.i18n.defaultLocale]

@@ -1,9 +1,9 @@
 // Define a few routes to be used to synchronize data with the users/organizations directory
 // Useful both for functionalities and help respect GDPR rules
 
-import config from '../config.ts'
+import config from '#config'
 import { createIdentitiesRouter } from '@data-fair/lib/express/identities.js'
-import mongo from '../mongo.ts'
+import mongo from '#mongo'
 
 export default createIdentitiesRouter(
   config.secretKeys.identities,

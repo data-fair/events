@@ -1,9 +1,9 @@
-import type { Webhook } from '../../../shared/types/index.ts'
+import type { Webhook } from '#shared/types/index.ts'
 import type { Filter, Sort } from 'mongodb'
 
 import { Router } from 'express'
 import { asyncHandler, session, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
-import mongo from '../mongo.ts'
+import mongo from '#mongo'
 
 const router = Router()
 export default router

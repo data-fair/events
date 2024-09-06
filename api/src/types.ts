@@ -1,4 +1,4 @@
-import type { Notification } from '../../shared/types/index.ts'
+import type { Notification } from '#shared/types/index.ts'
 
 export type PrivateAccess = {
   type: 'user' | 'organization'

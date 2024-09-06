@@ -1,9 +1,9 @@
 import type { SortDirection } from 'mongodb'
 import type { Pointer } from '../types.ts'
-import type { Notification } from '../../../shared/types/index.ts'
+import type { Notification } from '#shared/types/index.ts'
 
 import { Router } from 'express'
-import mongo from '../mongo.ts'
+import mongo from '#mongo'
 import { session, asyncHandler, mongoPagination } from '@data-fair/lib/express/index.js'
 
 const router = Router()

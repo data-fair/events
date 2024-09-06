@@ -1,13 +1,13 @@
 import type { Filter } from 'mongodb'
-import type { WebhookSubscription } from '../../../shared/types/index.ts'
+import type { WebhookSubscription } from '#shared/types/index.ts'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { asyncHandler, session, mongoSort, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
-import mongo from '../mongo.ts'
+import mongo from '#mongo'
 import { createWebhook } from '../webhooks/service.ts'
 import * as postReq from './post-req/index.js'
-import * as webhookSubscriptionType from '../../../shared/types/webhook-subscription/index.js'
+import * as webhookSubscriptionType from '#shared/types/webhook-subscription/index.js'
 
 const router = Router()
 export default router

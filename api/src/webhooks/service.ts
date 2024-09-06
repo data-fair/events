@@ -1,7 +1,7 @@
-import type { LocalizedEvent, Webhook, WebhookSubscription } from '../../../shared/types/index.ts'
+import type { LocalizedEvent, Webhook, WebhookSubscription } from '#shared/types/index.ts'
 
 import { nanoid } from 'nanoid'
-import mongo from '../mongo.ts'
+import mongo from '#mongo'
 
 export const createWebhook = async (event: LocalizedEvent, webhookSubscription: WebhookSubscription) => {
   const webhook: Webhook = {

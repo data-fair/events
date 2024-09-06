@@ -1,10 +1,10 @@
 import type { SortDirection, Filter } from 'mongodb'
-import type { Event, SearchableEvent } from '../../../shared/types/index.ts'
+import type { Event, SearchableEvent } from '#shared/types/index.ts'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import mongo from '../mongo.ts'
-import config from '../config.ts'
+import mongo from '#mongo'
+import config from '#config'
 import * as postReq from './post-req/index.js'
 import { session, asyncHandler, mongoPagination, mongoProjection, httpError } from '@data-fair/lib/express/index.js'
 import { localizeEvent } from './service.ts'
