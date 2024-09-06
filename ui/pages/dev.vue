@@ -7,8 +7,11 @@
 
     <p>
       <ul>
-        <li>
-          <a href="/simple-directory/">/simple-directory</a>
+        <li
+          v-for="link in links"
+          :key="link"
+        >
+          <a :href="link">{{ link }}</a>
         </li>
       </ul>
     </p>
@@ -23,6 +26,15 @@ import personalMenu from '@data-fair/lib/vuetivy/personal-menu.vue'
 import { useSession } from '@data-fair/lib/vue/session.js'
 
 const session = useSession()
+
+const links = [
+  '/simple-directory',
+  '/events/embed/subscribe?key=topic&title=Topic',
+  '/events/embed/subscriptions',
+  '/events/embed/subscribe-webhooks?key=topic&title=Topic',
+  '/events/embed/notifications',
+  '/events/embed/devices'
+]
 </script>
 
   <style>

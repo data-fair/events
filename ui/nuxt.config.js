@@ -1,5 +1,6 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import { defineNuxtConfig } from 'nuxt/config'
+import autoImports from '@data-fair/lib/vue/auto-imports.js'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -51,6 +52,9 @@ export default defineNuxtConfig({
         commaDangle: 'never'
       }
     }
+  },
+  imports: {
+    presets: autoImports
   },
   compatibilityDate: '2024-08-30'
 })
