@@ -31,15 +31,18 @@ describe('subscriptions', () => {
     await user2.post('/api/v1/subscriptions', subscription)
     let res = await admin1.get('/api/v1/subscriptions')
     assert.equal(res.data.count, 1)
+    assert.equal(res.data.results[0].origin, 'http://localhost:5600')
 
     res = await axPush.post('/api/v1/events', {
       topic: { key: 'topic1' },
       title: 'a notification',
+      body: 'a notification from host {hostname}',
       sender: { type: 'user', id: 'user1' },
       visibility: 'public'
     })
     res = await admin1.get('/api/v1/notifications')
     assert.equal(res.data.count, 1)
+    assert.equal(res.data.results[0].body, 'a notification from host localhost')
     res = await user1.get('/api/v1/notifications')
     assert.equal(res.data.count, 1)
     res = await user2.get('/api/v1/notifications')

@@ -4,7 +4,7 @@ import type { User } from '@data-fair/lib/express/index.js'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import { session, asyncHandler, mongoSort, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
+import { session, asyncHandler, mongoSort, mongoPagination, httpError, reqOrigin } from '@data-fair/lib/express/index.js'
 import mongo from '#mongo'
 import * as postReq from './post-req/index.js'
 import * as subscriptionType from '../../../shared/types/subscription/index.js'
@@ -75,6 +75,8 @@ router.post('', asyncHandler(async (req, res, next) => {
   const { body } = postReq.returnValid(req)
 
   const subscription = body as Partial<Subscription>
+
+  subscription.origin = reqOrigin(req)
 
   subscription.outputs = subscription.outputs || []
 

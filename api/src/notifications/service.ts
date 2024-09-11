@@ -8,6 +8,7 @@ import i18n from 'i18n'
 import * as wsEmitter from '@data-fair/lib/node/ws-emitter.js'
 import { internalError } from '@data-fair/lib/node/observer.js'
 import axios from '@data-fair/lib/node/axios.js'
+import microTemplate from '@data-fair/lib/micro-template.js'
 import mongo from '#mongo'
 import config from '#config'
 import * as metrics from './metrics.js'
@@ -62,6 +63,11 @@ const prepareSubscriptionNotification = (event: Event, subscription: Subscriptio
   if (!notification.topic.title && subscription.topic.title) {
     notification.topic.title = subscription.topic.title
   }
+
+  const templateParams = { origin: subscription.origin, hostname: new URL(subscription.origin).hostname }
+  if (notification.body) notification.body = microTemplate(notification.body, templateParams)
+  if (notification.htmlBody) notification.htmlBody = microTemplate(notification.htmlBody, templateParams)
+
   return notification
 }
 

@@ -4,11 +4,16 @@ export default {
   title: 'Subscription',
   type: 'object',
   additionalProperties: false,
-  required: ['_id', 'sender', 'topic', 'recipient', 'outputs', 'visibility', 'created', 'updated'],
+  required: ['_id', 'origin', 'sender', 'topic', 'recipient', 'outputs', 'visibility', 'created', 'updated'],
   properties: {
     _id: {
       type: 'string',
       title: 'Identifiant',
+      readOnly: true
+    },
+    origin: {
+      type: 'string',
+      title: 'Site d\'origine de la souscription',
       readOnly: true
     },
     title: {
