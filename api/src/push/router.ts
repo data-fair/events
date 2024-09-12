@@ -5,7 +5,7 @@ import { Router } from 'express'
 import useragent from 'useragent'
 import config from '#config'
 import mongo from '#mongo'
-import { asyncHandler, session, reqOrigin } from '@data-fair/lib/express/index.js'
+import { session, reqOrigin } from '@data-fair/lib/express/index.js'
 import { vapidKeys, push } from './service.ts'
 
 const router = Router()
@@ -17,28 +17,28 @@ const equalReg = (reg1: any, reg2: any) => {
   return val1 === val2
 }
 
-router.get('/vapidkey', asyncHandler(async (req, res) => {
+router.get('/vapidkey', async (req, res) => {
   res.send({ publicKey: vapidKeys.publicKey })
-}))
+})
 
-router.get('/registrations', asyncHandler(async (req, res) => {
+router.get('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
   const sub = await mongo.pushSubscriptions.findOne(ownerFilter)
   const registrations = (sub && sub.registrations) || []
   registrations.forEach((r: any) => { r.type = r.type || 'webpush' })
   res.send(registrations)
-}))
+})
 
-router.put('/registrations', asyncHandler(async (req, res) => {
+router.put('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
   await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: req.body } })
   res.send(req.body)
-}))
+})
 
 // a shortcut to register current device
-router.post('/registrations', asyncHandler(async (req, res) => {
+router.post('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
   if (!req.body.id) return res.status(400).send('id is required')
   const agent = useragent.parse(req.headers['user-agent'])
@@ -73,4 +73,4 @@ router.post('/registrations', asyncHandler(async (req, res) => {
     if (errors.length) return res.status(500).send(errors)
   }
   res.send()
-}))
+})

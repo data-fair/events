@@ -20,8 +20,7 @@
     "defaultPushNotif",
     "worker",
     "theme",
-    "i18n",
-    "securityDir"
+    "i18n"
   ],
   "properties": {
     "mongoUrl": {
@@ -141,7 +140,6 @@
         }
       }
     },
-    "securityDir": { "type": "string" },
     "util": {},
     "get": {},
     "has": {}

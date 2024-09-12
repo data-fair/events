@@ -4,7 +4,7 @@ import type { User } from '@data-fair/lib/express/index.js'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import { session, asyncHandler, mongoSort, mongoPagination, httpError, reqOrigin } from '@data-fair/lib/express/index.js'
+import { session, mongoSort, mongoPagination, httpError, reqOrigin } from '@data-fair/lib/express/index.js'
 import mongo from '#mongo'
 import * as postReq from './post-req/index.js'
 import * as subscriptionType from '../../../shared/types/subscription/index.js'
@@ -13,7 +13,7 @@ const router = Router()
 export default router
 
 // Get the list of subscriptions
-router.get('', asyncHandler(async (req, res, next) => {
+router.get('', async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const sort = mongoSort(req.query.sort)
@@ -47,7 +47,7 @@ router.get('', asyncHandler(async (req, res, next) => {
     mongo.subscriptions.countDocuments(query)
   ])
   res.json({ results, count })
-}))
+})
 
 const canSubscribePrivate = (sender: Subscription['sender'], user: User) => {
   // super admin can do whatever he wants
@@ -69,7 +69,7 @@ const canSubscribePrivate = (sender: Subscription['sender'], user: User) => {
 }
 
 // Create or update a subscription
-router.post('', asyncHandler(async (req, res, next) => {
+router.post('', async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const { body } = postReq.returnValid(req)
@@ -103,9 +103,9 @@ router.post('', asyncHandler(async (req, res, next) => {
   await mongo.subscriptions.replaceOne({ _id: subscription._id }, subscription, { upsert: true })
 
   res.status(200).json(subscription)
-}))
+})
 
-router.get('/:id', asyncHandler(async (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const subscription = await mongo.subscriptions.findOne({ _id: req.params.id })
@@ -117,9 +117,9 @@ router.get('/:id', asyncHandler(async (req, res, next) => {
   }
 
   res.send(subscription)
-}))
+})
 
-router.delete('/:id', asyncHandler(async (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const subscription = await mongo.subscriptions.findOne({ _id: req.params.id })
@@ -132,4 +132,4 @@ router.delete('/:id', asyncHandler(async (req, res, next) => {
 
   await mongo.subscriptions.deleteOne({ _id: subscription._id })
   res.status(204).send()
-}))
+})

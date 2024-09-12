@@ -2,14 +2,14 @@ import type { Webhook } from '#shared/types/index.ts'
 import type { Filter, Sort } from 'mongodb'
 
 import { Router } from 'express'
-import { asyncHandler, session, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
+import {  session, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
 import mongo from '#mongo'
 
 const router = Router()
 export default router
 
 // Get the list of webhooks
-router.get('', asyncHandler(async (req, res, next) => {
+router.get('', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -22,9 +22,9 @@ router.get('', asyncHandler(async (req, res, next) => {
   const countPromise = mongo.webhooks.countDocuments(query)
   const [results, count] = await Promise.all([resultsPromise, countPromise])
   res.json({ results, count })
-}))
+})
 
-router.post('/:id/_retry', asyncHandler(async (req, res, next) => {
+router.post('/:id/_retry', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -35,9 +35,9 @@ router.post('/:id/_retry', asyncHandler(async (req, res, next) => {
 
   if (!webhook) throw httpError(404)
   res.send(webhook)
-}))
+})
 
-router.post('/:id/_cancel', asyncHandler(async (req, res, next) => {
+router.post('/:id/_cancel', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -48,4 +48,4 @@ router.post('/:id/_cancel', asyncHandler(async (req, res, next) => {
 
   if (!webhook) throw httpError(404)
   res.send(webhook)
-}))
+})

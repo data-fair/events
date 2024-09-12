@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import type { Db } from 'mongodb'
 import type { Notification } from '#shared/types/index.ts'
 
@@ -13,13 +14,15 @@ import * as metrics from './metrics.js'
 
 const debug = Debug('notifications')
 
-fs.ensureDirSync(config.securityDir)
+const securityDir = resolve(import.meta.dirname, '../../../security')
+
+fs.ensureDirSync(securityDir)
 let _vapidKeys
-if (!fs.existsSync(config.securityDir + '/vapid.json')) {
+if (!fs.existsSync(securityDir + '/vapid.json')) {
   _vapidKeys = webpush.generateVAPIDKeys()
-  fs.writeJsonSync(config.securityDir + '/vapid.json', _vapidKeys)
+  fs.writeJsonSync(securityDir + '/vapid.json', _vapidKeys)
 } else {
-  _vapidKeys = fs.readJsonSync(config.securityDir + '/vapid.json')
+  _vapidKeys = fs.readJsonSync(securityDir + '/vapid.json')
 }
 
 export const vapidKeys = _vapidKeys

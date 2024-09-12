@@ -3,7 +3,7 @@ import type { WebhookSubscription } from '#shared/types/index.ts'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import { asyncHandler, session, mongoSort, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
+import { session, mongoSort, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
 import mongo from '#mongo'
 import { createWebhook } from '../webhooks/service.ts'
 import * as postReq from './post-req/index.js'
@@ -13,7 +13,7 @@ const router = Router()
 export default router
 
 // Get the list of subscriptions
-router.get('', asyncHandler(async (req, res, next) => {
+router.get('', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -38,10 +38,10 @@ router.get('', asyncHandler(async (req, res, next) => {
     mongo.webhookSubscriptions.countDocuments(query)
   ])
   res.json({ results, count })
-}))
+})
 
 // Create or update a subscription
-router.post('', asyncHandler(async (req, res, next) => {
+router.post('', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -73,9 +73,9 @@ router.post('', asyncHandler(async (req, res, next) => {
 
   await mongo.webhookSubscriptions.replaceOne({ _id: webhookSubscription._id }, webhookSubscription, { upsert: true })
   res.status(200).json(webhookSubscription)
-}))
+})
 
-router.delete('/:id', asyncHandler(async (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -85,9 +85,9 @@ router.delete('/:id', asyncHandler(async (req, res, next) => {
   if (!subscription) return res.status(404).send()
   await mongo.webhookSubscriptions.deleteOne(filter)
   res.status(204).send()
-}))
+})
 
-router.post('/:id/_test', asyncHandler(async (req, res, next) => {
+router.post('/:id/_test', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -103,4 +103,4 @@ router.post('/:id/_test', asyncHandler(async (req, res, next) => {
     date: new Date().toISOString()
   }, subscription)
   res.status(204).send()
-}))
+})

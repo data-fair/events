@@ -10,6 +10,5 @@ module.exports = {
     identities: 'SECRET_IDENTITIES',
     events: 'SECRET_EVENTS',
     sendMails: 'SECRET_SENDMAILS'
-  },
-  securityDir: './security'
+  }
 }

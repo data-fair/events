@@ -4,12 +4,12 @@ import type { Notification } from '#shared/types/index.ts'
 
 import { Router } from 'express'
 import mongo from '#mongo'
-import { session, asyncHandler, mongoPagination } from '@data-fair/lib/express/index.js'
+import { session, mongoPagination } from '@data-fair/lib/express/index.js'
 
 const router = Router()
 
 // Get the list of notifications
-router.get('', asyncHandler(async (req, res, next) => {
+router.get('', async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const sort = { date: -1 as SortDirection }
@@ -40,12 +40,12 @@ router.get('', asyncHandler(async (req, res, next) => {
   if (req.query.count !== 'false') response.count = await mongo.notifications.countDocuments(query)
 
   res.json(response)
-}))
+})
 
 // push a notification
 // TODO: do we still support posting a notification to send directly to a user without going through an event ?
 /*
-router.post('', asyncHandler(async (req, res, next) => {
+router.post('', async (req, res, next) => {
   const db = req.app.get('db')
   const notification = req.body
 
@@ -108,7 +108,7 @@ router.post('', asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json(notification)
-}))
+})
   */
 
 export default router

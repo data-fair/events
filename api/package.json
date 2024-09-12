@@ -14,7 +14,7 @@
     "axios": "^1.7.5",
     "cacheable-lookup": "^6.1.0",
     "config": "^3.3.11",
-    "express": "^4.19.2",
+    "express": "^5.0.0",
     "fs-extra": "^11.2.0",
     "http-errors": "^2.0.0",
     "http-terminator": "^3.2.0",

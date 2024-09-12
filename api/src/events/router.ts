@@ -6,14 +6,14 @@ import { nanoid } from 'nanoid'
 import mongo from '#mongo'
 import config from '#config'
 import * as postReq from './post-req/index.js'
-import { session, asyncHandler, mongoPagination, mongoProjection, httpError } from '@data-fair/lib/express/index.js'
+import { session, mongoPagination, mongoProjection, httpError } from '@data-fair/lib/express/index.js'
 import { localizeEvent } from './service.ts'
 import { receiveEvent } from '../notifications/service.ts'
 
 const router = Router()
 export default router
 
-router.get('', asyncHandler(async (req, res, next) => {
+router.get('', async (req, res, next) => {
   const { account, lang } = await session.reqAuthenticated(req)
 
   const query: Filter<Event> = { 'sender.type': account.type, 'sender.id': account.id }
@@ -42,9 +42,9 @@ router.get('', asyncHandler(async (req, res, next) => {
   }
 
   res.json(response)
-}))
+})
 
-router.post('', asyncHandler(async (req, res, next) => {
+router.post('', async (req, res, next) => {
   if (!req.query.key || req.query.key !== config.secretKeys.events) return res.status(401).send()
 
   const { body } = postReq.returnValid(req, { name: 'req' })
@@ -67,4 +67,4 @@ router.post('', asyncHandler(async (req, res, next) => {
   await receiveEvent(event)
 
   res.status(201).json(event)
-}))
+})
