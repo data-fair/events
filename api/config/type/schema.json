@@ -13,7 +13,6 @@
   "required": [
     "privateDirectoryUrl",
     "mongoUrl",
-    "origin",
     "port",
     "observer",
     "secretKeys",
@@ -27,10 +26,6 @@
   "properties": {
     "mongoUrl": {
       "type": "string"
-    },
-    "origin": {
-      "type": "string",
-      "pattern": "^https?://"
     },
     "port": {
       "type": "number"

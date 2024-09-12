@@ -1,6 +1,5 @@
 module.exports = {
   mongoUrl: 'MONGO_URL',
-  origin: 'ORIGIN',
   port: 'PORT',
   privateDirectoryUrl: 'PRIVATE_DIRECTORY_URL',
   secretKeys: {

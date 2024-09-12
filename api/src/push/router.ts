@@ -5,7 +5,7 @@ import { Router } from 'express'
 import useragent from 'useragent'
 import config from '#config'
 import mongo from '#mongo'
-import { asyncHandler, session } from '@data-fair/lib/express/index.js'
+import { asyncHandler, session, reqOrigin } from '@data-fair/lib/express/index.js'
 import { vapidKeys, push } from './service.ts'
 
 const router = Router()
@@ -58,15 +58,17 @@ router.post('/registrations', asyncHandler(async (req, res) => {
   if (!sub.registrations.find((r: any) => equalReg(r.id, req.body.id))) {
     sub.registrations.push(registration)
     await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
+    const origin = reqOrigin(req)
     const errors = await push({
       _id: 'new-device',
+      origin,
       topic: { key: 'new-device' },
       sender: { type: 'user', id: user.id },
       recipient: { id: user.id, name: user.name },
       title: 'Un nouvel appareil recevra vos notifications',
       body: `L'appareil ${registration.deviceName} est confirmé comme destinataire de vos notifications.`,
       date,
-      icon: config.theme.notificationIcon || config.theme.logo || (config.origin + '/events/logo-192x192.png')
+      icon: config.theme.notificationIcon || config.theme.logo || (origin + '/events/logo-192x192.png')
     })
     if (errors.length) return res.status(500).send(errors)
   }

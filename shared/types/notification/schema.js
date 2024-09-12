@@ -4,11 +4,16 @@ export default {
   title: 'Notification',
   type: 'object',
   additionalProperties: false,
-  required: ['_id', 'title', 'topic', 'sender', 'recipient', 'date'],
+  required: ['_id', 'origin', 'title', 'topic', 'sender', 'recipient', 'date'],
   properties: {
     _id: {
       type: 'string',
       title: 'Identifiant',
+      readOnly: true
+    },
+    origin: {
+      type: 'string',
+      title: 'Site d\'origine de la souscription',
       readOnly: true
     },
     title: {

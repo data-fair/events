@@ -1,7 +1,6 @@
 module.exports = {
   privateDirectoryUrl: 'http://simple-directory:8080',
   mongoUrl: 'mongodb://localhost:27017/data-fair-events',
-  origin: null,
   port: 8080,
   observer: {
     active: true,

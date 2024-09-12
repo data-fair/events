@@ -39,10 +39,7 @@ export const start = async () => {
   server.listen(config.port)
   await new Promise(resolve => server.once('listening', resolve))
 
-  console.log(`
-API server listening on port ${config.port}
-API available at ${config.origin}/events/api/
-UI available at ${config.origin}/events/`)
+  console.log(`API server listening on port ${config.port}`)
 }
 
 export const stop = async () => {

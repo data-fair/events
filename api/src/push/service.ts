@@ -61,7 +61,7 @@ export const push = async (notification: Notification) => {
     const defaultPushNotif = config.defaultPushNotif[registration.type || 'webpush']
     const pushNotif: any = {
       ...notification,
-      badge: config.theme.notificationBadge || (config.origin + '/events/badge-72x72.png'),
+      badge: config.theme.notificationBadge || (notification.origin + '/events/badge-72x72.png'),
       ...defaultPushNotif
     }
     delete pushNotif.recipient

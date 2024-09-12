@@ -17,7 +17,7 @@ import * as pushService from '../push/service.ts'
 
 const debug = Debug('notifications')
 
-const directoryUrl = config.privateDirectoryUrl || config.origin + '/simple-directory'
+const directoryUrl = config.privateDirectoryUrl
 
 export const receiveEvent = async (event: Event) => {
   // prepare the filter to find the topics matching this subscription
@@ -48,11 +48,12 @@ const prepareSubscriptionNotification = (event: Event, subscription: Subscriptio
   const localizedEvent = localizeEvent(event, subscription.locale)
   delete localizedEvent.urlParams
   const notification: Notification = {
-    icon: subscription.icon || config.theme.notificationIcon || config.theme.logo || (config.origin + '/events/logo-192x192.png'),
+    icon: subscription.icon || config.theme.notificationIcon || config.theme.logo || (subscription.origin + '/events/logo-192x192.png'),
     locale: subscription.locale,
     ...localizedEvent,
     _id: nanoid(),
-    recipient: subscription.recipient
+    recipient: subscription.recipient,
+    origin: subscription.origin
   }
   if (subscription.outputs && (!notification.outputs || !notification.outputs.length)) {
     notification.outputs = subscription.outputs
