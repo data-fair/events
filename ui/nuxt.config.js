@@ -8,7 +8,9 @@ export default defineNuxtConfig({
   },
   ignore: process.env.NODE_ENV === 'development' ? [] : ['pages/dev.vue'],
   modules: [
-    '@data-fair/lib/nuxt.js'
+    // we don't use eslint plugin yet, as edlint-plugin-vuetify is not compatible with eslint 9
+    // see https://github.com/vuetifyjs/eslint-plugin-vuetify/issues/93
+    ['@data-fair/lib/nuxt.js', { eslint: false }]
   ],
   compatibilityDate: '2024-08-30'
 })

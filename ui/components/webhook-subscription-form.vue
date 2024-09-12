@@ -9,10 +9,10 @@
         <v-text-field
           v-model="subscription.title"
           label="Libellé"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           hide-details="auto"
-          validate-on-blur
+          validate-on="blur"
           :rules="[
             v => v && !!v.trim() || 'Ce paramètre est requis'
           ]"
@@ -22,10 +22,10 @@
         <v-text-field
           v-model="subscription.url"
           label="URL"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           hide-details="auto"
-          validate-on-blur
+          validate-on="blur"
           :rules="[
             v => v && !!v.trim() || 'Ce paramètre est requis',
             v => !!v.trim().startsWith('http://') || !!v.trim().startsWith('https://') || `Cette URL n'est pas valide`
@@ -39,8 +39,8 @@
         <v-text-field
           v-model="subscription.header.key"
           label="Clé de header HTTP"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           hide-details="auto"
         />
       </v-col>
@@ -51,8 +51,8 @@
         <v-text-field
           v-model="subscription.header.value"
           label="Valeur de header HTTP"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           hide-details="auto"
         />
       </v-col>
@@ -65,7 +65,7 @@
       />
       <v-btn
         color="primary"
-        depressed
+        variant="flat"
         :loading="saving"
         class="ml-2"
         :disabled="JSON.stringify(subscription) === previousState"

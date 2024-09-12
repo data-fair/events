@@ -6,7 +6,7 @@
     persistent
     max-width="700px"
   >
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-btn
         v-if="!item"
         color="primary"
@@ -20,15 +20,15 @@
         v-else
         color="primary"
         icon
-        text
-        v-on="on"
+        variant="text"
+        v-bind="props"
       >
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
     </template>
 
     <v-card>
-      <v-card-title class="title">
+      <v-card-title class="text-h6">
         {{ !item ? `Ajout d'un élément` : `Édition d'un élément` }}
       </v-card-title>
 
@@ -48,7 +48,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn
-          text
+          variant="text"
           @click.native="dialog = false"
         >
           Annuler

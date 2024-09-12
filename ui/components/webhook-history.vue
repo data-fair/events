@@ -8,12 +8,12 @@
       <v-btn
         v-if="webhooks && !webhooks.length"
         color="primary"
-        depressed
+        variant="flat"
         :loading="testing"
         @click="test"
       >
         tester
-        <v-icon right>
+        <v-icon end>
           mdi-send
         </v-icon>
       </v-btn>

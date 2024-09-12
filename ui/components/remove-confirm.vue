@@ -3,12 +3,12 @@
     v-model="dialog"
     width="500"
   >
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-btn
         icon
         color="warning"
-        text
-        v-on="on"
+        variant="text"
+        v-bind="props"
         @click="open"
       >
         <v-icon>mdi-delete</v-icon>
@@ -16,7 +16,7 @@
     </template>
 
     <v-card>
-      <v-card-title class="title">
+      <v-card-title class="text-h6">
         Suppression d'un élément
       </v-card-title>
 
@@ -24,7 +24,7 @@
         <p>
           Voulez vous vraiment supprimer l'élément <span
             v-if="label"
-            class="accent--text"
+            class="text-accent"
           >{{ label }}</span> ?
         </p>
         <p>La suppression est définitive.</p>
@@ -35,7 +35,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn
-          text
+          variant="text"
           @click.native="dialog = false"
         >
           Annuler

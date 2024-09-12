@@ -2,7 +2,7 @@
   <v-expansion-panels
     v-model="currentPanel"
     dense
-    inset
+    variant="inset"
   >
     <div style="height:4px;width:100%;">
       <v-progress-linear
@@ -17,23 +17,23 @@
         v-for="subscription in subscriptions"
         :key="subscription._id"
       >
-        <v-expansion-panel-header>{{ subscription.title }}</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-title>{{ subscription.title }}</v-expansion-panel-title>
+        <v-expansion-panel-text>
           <webhook-subscription-form
             :initial-subscription="subscription"
             @refresh="refresh"
           />
           <webhook-history :subscription="subscription" />
-        </v-expansion-panel-content>
+        </v-expansion-panel-text>
       </v-expansion-panel>
       <v-expansion-panel v-if="!loading">
-        <v-expansion-panel-header>{{ $t('new') }}</v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-title>{{ $t('new') }}</v-expansion-panel-title>
+        <v-expansion-panel-text>
           <webhook-subscription-form
             :initial-subscription="{ topic, sender: sender || activeAccount }"
             @refresh="refresh"
           />
-        </v-expansion-panel-content>
+        </v-expansion-panel-text>
       </v-expansion-panel>
     </template>
   </v-expansion-panels>
@@ -76,11 +76,9 @@ export default {
       }
       if (this.noSender) {
         params.noSender = 'true'
-      }
-      else if (this.sender) {
+      } else if (this.sender) {
         params.sender = this.sender.type + ':' + this.sender.id
-      }
-      else {
+      } else {
         params.sender = this.activeAccount.type + ':' + this.activeAccount.id
       }
       this.subscriptions = (await this.$axios.$get('api/v1/webhook-subscriptions', { params })).results

@@ -2,7 +2,7 @@
   <v-alert
     :elevation="isLocal ? 8 : 0"
     :color="color"
-    outlined
+    variant="outlined"
     class="pa-0"
   >
     <v-card-title>

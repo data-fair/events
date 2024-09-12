@@ -3,7 +3,7 @@
     fluid
     data-iframe-height
   >
-    <div class="title mb-5">
+    <div class="text-h6 mb-5">
       <v-icon class="mt-n1 mr-1">
         mdi-bell
       </v-icon><span>{{ $tc('notifications', notifications ? notifications.count : 0, { nb: notifications ? notifications.count : 0 }) }}</span>
@@ -24,7 +24,7 @@
             rounded
             :href="notification && notification.url"
             target="_blank"
-            outlined
+            border
           >
             <v-card-text class="d-flex justify-space-between pt-1 pb-1">
               <div class="d-flex align-center">
@@ -43,7 +43,7 @@
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div
-                    class="black--text subtitle-1"
+                    class="text-black text-subtitle-1"
                     style="align-self: start;"
                   >
                     {{ typeof notification.title === 'object' ? notification.title[$i18n.locale] || notification.title['en'] || notification.title['fr'] : notification.title }}
@@ -60,9 +60,9 @@
                 class="d-flex align-center justify-end"
                 style="flex-shrink: 0;"
               >
-                <v-tooltip top>
-                  <template #activator="{ on }">
-                    <span v-on="on">{{ notification.date | date('fromNow') }}</span>
+                <v-tooltip location="top">
+                  <template #activator="{ props }">
+                    <span v-bind="props">{{ notification.date | date('fromNow') }}</span>
                   </template>
                   <span>{{ notification.date | date('LLLL') }}</span>
                 </v-tooltip>
@@ -127,8 +127,7 @@ export default {
       const tmp = await this.$axios.$get('api/v1/notifications', { params: { skip: this.page * this.size, size: this.size } })
       if (!clean && this.notifications && this.notifications.results && this.notifications.results.length) {
         this.notifications.results = this.notifications.results.concat(tmp.results)
-      }
-      else {
+      } else {
         this.notifications = tmp
       }
     }

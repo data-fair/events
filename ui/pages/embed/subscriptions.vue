@@ -3,7 +3,7 @@
     fluid
     data-iframe-height
   >
-    <div class="title mb-5">
+    <div class="text-h6 mb-5">
       <v-icon class="mt-n1 mr-1">
         mdi-rss-box
       </v-icon><span>{{ $tc('subscriptions', recipientSubscriptions ? recipientSubscriptions.count : 0, { nb: recipientSubscriptions ? recipientSubscriptions.count : 0 }) }}</span>
@@ -22,7 +22,7 @@
             :elevation="hover ? 2 : 0"
             height="100%"
             rounded
-            outlined
+            border
           >
             <v-card-text class="d-flex justify-space-between pt-1 pb-1">
               <div class="d-flex align-center">
@@ -41,7 +41,7 @@
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div
-                    class="black--text subtitle-1"
+                    class="text-black text-subtitle-1"
                     style="align-self: start;"
                   >
                     {{ typeof subscription.title === 'object' ? subscription.title[$i18n.locale] || subscription.title['en'] || subscription.title['fr'] : subscription.title }}
@@ -71,10 +71,10 @@
               >
                 <v-tooltip
                   v-if="subscription.updated"
-                  top
+                  location="top"
                 >
-                  <template #activator="{ on }">
-                    <span v-on="on">{{ subscription.updated.date | date('fromNow') }}</span>
+                  <template #activator="{ props }">
+                    <span v-bind="props">{{ subscription.updated.date | date('fromNow') }}</span>
                   </template>
                   <span>{{ subscription.updated.date | date('LLLL') }}</span>
                 </v-tooltip>
@@ -82,7 +82,7 @@
                   class="ml-4"
                   color="error"
                   icon
-                  small
+                  size="small"
                   @click="unsubscribe(subscription)"
                 >
                   <v-icon>mdi-delete</v-icon>

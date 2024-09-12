@@ -5,20 +5,20 @@
     scrollable
     max-width="700px"
   >
-    <template #activator="{ on }">
+    <template #activator="{ props }">
       <v-btn
         color="primary"
         icon
-        text
+        variant="text"
         title="Historique"
-        v-on="on"
+        v-bind="props"
       >
         <v-icon>mdi-calendar-text</v-icon>
       </v-btn>
     </template>
 
     <v-card>
-      <v-card-title class="title">
+      <v-card-title class="text-h6">
         Historique du webhook {{ subscription.title || subscription._id }}
       </v-card-title>
 

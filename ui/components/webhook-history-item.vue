@@ -26,43 +26,42 @@
         mdi-check-circle
       </v-icon>
     </v-list-item-icon>
-    <v-list-item-content>
-      <v-list-item-title>
-        {{ webhook.notification.date | date }} - {{ $t(webhook.status) }}
-        <template v-if="webhook.status === 'error' && webhook.lastAttempt">
-          {{ webhook.lastAttempt.status || webhook.lastAttempt.error }}
-        </template>
-      </v-list-item-title>
-      <v-list-item-subtitle>
-        {{ description }}
-      </v-list-item-subtitle>
-    </v-list-item-content>
+
+    <v-list-item-title>
+      {{ webhook.notification.date | date }} - {{ $t(webhook.status) }}
+      <template v-if="webhook.status === 'error' && webhook.lastAttempt">
+        {{ webhook.lastAttempt.status || webhook.lastAttempt.error }}
+      </template>
+    </v-list-item-title>
+    <v-list-item-subtitle>
+      {{ description }}
+    </v-list-item-subtitle>
+
     <v-list-item-action>
       <v-menu
         v-if="webhook.status !== 'waiting' && webhook.status !== 'working'"
-        left
+        location="left"
       >
-        <template #activator="{ on, attrs }">
+        <template #activator="{ props }">
           <v-btn
             icon
-            v-bind="attrs"
-            v-on="on"
+
+            v-bind="props"
           >
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
-        <v-list dense>
+        <v-list density="compact">
           <v-list-item @click="retry">
             <v-list-item-icon>
               <v-icon color="primary">
                 mdi-send
               </v-icon>
             </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>
-                {{ $t('retry') }}
-              </v-list-item-title>
-            </v-list-item-content>
+
+            <v-list-item-title>
+              {{ $t('retry') }}
+            </v-list-item-title>
           </v-list-item>
           <v-list-item
             v-if="webhook.status === 'waiting' || webhook.nextAttempt"
@@ -73,11 +72,10 @@
                 mdi-cancel
               </v-icon>
             </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>
-                {{ $t('cancel') }}
-              </v-list-item-title>
-            </v-list-item-content>
+
+            <v-list-item-title>
+              {{ $t('cancel') }}
+            </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>

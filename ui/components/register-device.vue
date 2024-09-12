@@ -3,7 +3,7 @@
     v-if="ready && (!subscription || err)"
     :color="err ? 'error' : 'accent'"
     dark
-    dense
+    density="compact"
     class="ma-1"
     :class="{ 'py-0 pr-0': !err }"
   >
@@ -13,7 +13,7 @@
     <template v-else>
       {{ $t('registerDevice') }}
       <v-btn
-        text
+        variant="text"
         class="ml-1"
         @click="register"
       >
@@ -87,14 +87,12 @@ export default {
           console.log('Local subscription is not matched by remote, unsubscribe')
           await this.subscription.unsubscribe()
           this.subscription = null
-        }
-        else {
+        } else {
           this.$emit('registration', registration)
         }
       }
       this.ready = true
-    }
-    catch (err) {
+    } catch (err) {
       console.error('Error while preparing for subscription', err)
     }
   },
@@ -110,14 +108,12 @@ export default {
         await this.sendBrowserRegistration(registrationId)
         this.$emit('register', registrationId)
         this.subscription = registrationId
-      }
-      catch (err) {
+      } catch (err) {
         if (Notification.permission === 'denied') {
           this.ready = false
           console.log('The user has blocked permissions')
           this.err = 'Les notifications sont bloquées sur cet appareil pour cette application.'
-        }
-        else {
+        } else {
           console.error('Error while subscribing', err)
           this.err = 'Échec lors de l\'envoi d\'une notification à cet appareil.'
         }

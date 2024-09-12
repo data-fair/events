@@ -2,12 +2,13 @@
   <v-menu
     v-model="menu"
     max-width="500"
-    left
+    location="left"
   >
-    <template #activator="{ on, attrs }">
+    <template #activator="{ props }">
       <v-btn
-        v-bind="{ ...attrs, ...btnProps }"
-        v-on="on"
+        v-bind="
+        v-bind="
+        props"
       >
         Supprimer
       </v-btn>
@@ -23,7 +24,7 @@
         <v-alert
           v-if="alert"
           :type="alert"
-          outlined
+          variant="outlined"
         >
           {{ text }}
         </v-alert>
@@ -35,7 +36,7 @@
         <v-spacer />
         <v-btn
           v-t="'no'"
-          text
+          variant="text"
           @click="menu = false"
         />
         <v-btn

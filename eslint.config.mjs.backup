@@ -3,6 +3,6 @@ import dfLibRecommended from '@data-fair/lib/eslint/recommended.js'
 
 export default [
   { ignores: ['ui/*', '**/.type/'] },
-  dfLibRecommended,
+  ...dfLibRecommended,
   ...neostandard({ ts: true })
 ]

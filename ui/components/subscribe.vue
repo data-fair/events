@@ -5,9 +5,9 @@
       :loading="loading"
       :label="topic.title"
       hide-details
-      dense
+      density="compact"
       :value="!!subscription"
-      @change="switchSubscription"
+      @update:model-value="switchSubscription"
     />
 
     <template v-if="subscription">
@@ -19,7 +19,7 @@
         class="ml-10 mt-0"
         :label="$t('devices')"
         value="devices"
-        @change="sendSubscription(subscription)"
+        @update:model-value="sendSubscription(subscription)"
       />
       <v-checkbox
         v-if="outputs.includes('email')"
@@ -29,7 +29,7 @@
         class="ml-10 mt-0"
         :label="$t('email')"
         value="email"
-        @change="sendSubscription(subscription)"
+        @update:model-value="sendSubscription(subscription)"
       />
     </template>
   </v-col>
@@ -75,11 +75,9 @@ export default {
       }
       if (this.noSender || this.sender === 'none') {
         params.sender = 'none'
-      }
-      else if (this.sender) {
+      } else if (this.sender) {
         params.sender = serializeSender(this.sender, true)
-      }
-      else {
+      } else {
         params.sender = serializeSender(this.activeAccount, false)
       }
       this.subscription = (await this.$axios.$get('api/v1/subscriptions', { params })).results[0]
@@ -106,8 +104,7 @@ export default {
         if (this.urlTemplate) subscription.urlTemplate = this.urlTemplate
         await this.sendSubscription(subscription)
         await this.refresh()
-      }
-      else {
+      } else {
         await this.$axios.$delete('api/v1/subscriptions/' + this.subscription._id)
         this.subscription = null
       }

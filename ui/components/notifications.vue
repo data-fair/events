@@ -6,7 +6,7 @@
     :color="notification.type"
     :timeout="notification.type === 'error' ? 0 : 6000"
     class="notification"
-    top
+    location="top"
   >
     <div>
       <p v-html="notification.msg" />

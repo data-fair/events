@@ -8,8 +8,8 @@
       <v-btn
 
         fab
-        depressed
-        small
+        variant="flat"
+        size="small"
       >
         {{ $i18n.locale }}
       </v-btn>
@@ -20,7 +20,7 @@
       :to="switchLocalePath(locale)"
       fab
       elevation="1"
-      small
+      size="small"
       nuxt
     >
       {{ locale }}
