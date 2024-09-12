@@ -6,7 +6,7 @@
     persistent
     max-width="700px"
   >
-    <template #activator="{on}">
+    <template #activator="{ on }">
       <v-btn
         v-if="!item"
         color="primary"
@@ -41,7 +41,7 @@
             v-if="editItem"
             v-model="editItem"
             :schema="schema"
-            :options="{hideReadOnly: true, deleteReadOnly:true}"
+            :options="{ hideReadOnly: true, deleteReadOnly: true }"
           />
         </v-form>
       </v-card-text>
@@ -83,11 +83,11 @@ export default {
     editItem: null,
     eventBus
   }),
-  created () {
+  created() {
     this.editItem = JSON.parse(JSON.stringify(this.item || {}))
   },
   methods: {
-    confirm () {
+    confirm() {
       if (this.$refs.form.validate()) {
         this.$emit('saved', this.editItem)
         this.dialog = false

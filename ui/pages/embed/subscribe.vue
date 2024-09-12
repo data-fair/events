@@ -1,5 +1,5 @@
 <template>
-  <!-- <v-container
+  <v-container
     fluid
     data-iframe-height
   >
@@ -46,7 +46,6 @@
       </v-row>
     </template>
   </v-container>
-  -->
 </template>
 
 <i18n lang="yaml">
@@ -56,13 +55,24 @@ en:
   notifyMe: "Missing parameter | Send me notifications for this event : | Send me notifications for these events :"
 </i18n>
 
-<script setup>
-import useSession from '@data-fair/lib/vue/session.js'
-import { parseSender } from '~/assets/sender-utils.ts'
+<script setup lang="ts">
+const reactiveSearchParams = useReactiveSearchParams()
+const querySenders = useStringsArraySearchParam('sender')
+const keys = useStringsArraySearchParam('key')
+const titles = useStringsArraySearchParam('title')
+
+const topics = computed(() => keys.value.map((key, i) => ({ key, title: titles.value[i] })))
+const senders = computed(() => querySenders.value.filter(Boolean).map(parseSender))
+const header = computed(() => {
+  if (reactiveSearchParams.header === 'no') return ''
+  return reactiveSearchParams.header || $tc('notifyMe', topics.value.length)
+})
 
 const session = useSession()
 
-console.log(session)
+const register = ref(false)
+const loading = ref(false)
+const registrations = ref<object | null>(null)
 
 /*
 export default {
@@ -78,16 +88,16 @@ export default {
   computed: {
     ...mapState('session', ['user']),
     topics() {
-      const keys = this.$route.query.key.split(',')
-      const titles = this.$route.query.title.split(',')
+      const keys = reactiveSearchParams.key.split(',')
+      const titles = reactiveSearchParams.title.split(',')
       return keys.map((key, i) => ({ key, title: titles[i] }))
     },
     senders() {
-      return this.$route.query.sender ? this.$route.query.sender.split(',').map(s => s ? parseSender(s) : null) : []
+      return reactiveSearchParams.sender ? reactiveSearchParams.sender.split(',').map(s => s ? parseSender(s) : null) : []
     },
     header() {
-      if (this.$route.query.header === 'no') return ''
-      return this.$route.query.header || this.$tc('notifyMe', this.topics.length)
+      if (reactiveSearchParams.header === 'no') return ''
+      return reactiveSearchParams.header || this.$tc('notifyMe', this.topics.length)
     }
   },
   mounted() {
@@ -95,10 +105,10 @@ export default {
   },
   methods: {
     async refresh() {
-      if (this.$route.query.outputs !== 'auto') this.outputs = ['devices', 'email']
+      if (reactiveSearchParams.outputs !== 'auto') this.outputs = ['devices', 'email']
       this.loading = true
       this.registrations = await this.$axios.$get('api/v1/push/registrations')
-      if (this.$route.query.outputs === 'auto') {
+      if (reactiveSearchParams.outputs === 'auto') {
         const outputs = ['email']
         if (this.registrations.find(r => !r.disabled)) outputs.push('devices')
         this.outputs = outputs

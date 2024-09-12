@@ -6,7 +6,7 @@
   >
     <template #activator="{ on, attrs }">
       <v-btn
-        v-bind="{...attrs, ...btnProps}"
+        v-bind="{ ...attrs, ...btnProps }"
         v-on="on"
       >
         Supprimer
@@ -85,7 +85,7 @@ export default {
       default: ''
     }
   },
-  data () {
+  data() {
     return { menu: false }
   }
 }

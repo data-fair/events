@@ -38,6 +38,7 @@
     "@nuxt/eslint": "^0.5.4",
     "@types/config": "^3.3.3",
     "@types/debug": "^4.1.12",
+    "@types/eslint__eslintrc": "^2.1.2",
     "ajv": "^8.13.0",
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^2.1.1",

@@ -5,7 +5,7 @@
     dark
     dense
     class="ma-1"
-    :class="{'py-0 pr-0' : !err}"
+    :class="{ 'py-0 pr-0': !err }"
   >
     <template v-if="err">
       {{ err }}
@@ -30,8 +30,7 @@ fr:
 </i18n>
 
 <script>
-
-function urlBase64ToUint8Array (base64String) {
+function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4)
   const base64 = (base64String + padding)
     .replace(/-/g, '+')
@@ -46,7 +45,7 @@ function urlBase64ToUint8Array (base64String) {
   return outputArray
 }
 
-function equalReg (reg1, reg2) {
+function equalReg(reg1, reg2) {
   const val1 = typeof reg1 === 'object' ? reg1.endpoint : reg1
   const val2 = typeof reg2 === 'object' ? reg2.endpoint : reg2
   return val1 === val2
@@ -56,7 +55,7 @@ export default {
   props: {
     registrations: { type: Array, required: true }
   },
-  data () {
+  data() {
     return {
       ready: false,
       subscription: null,
@@ -64,7 +63,7 @@ export default {
       err: null
     }
   },
-  async mounted () {
+  async mounted() {
     // see web-push client example
     // https://github.com/alex-friedl/webpush-example/blob/master/client/main.js
 
@@ -88,17 +87,19 @@ export default {
           console.log('Local subscription is not matched by remote, unsubscribe')
           await this.subscription.unsubscribe()
           this.subscription = null
-        } else {
+        }
+        else {
           this.$emit('registration', registration)
         }
       }
       this.ready = true
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Error while preparing for subscription', err)
     }
   },
   methods: {
-    async register () {
+    async register() {
       try {
         const serviceWorkerRegistration = await navigator.serviceWorker.ready
         const vapidKey = await this.$axios.$get('api/v1/push/vapidkey')
@@ -109,22 +110,24 @@ export default {
         await this.sendBrowserRegistration(registrationId)
         this.$emit('register', registrationId)
         this.subscription = registrationId
-      } catch (err) {
+      }
+      catch (err) {
         if (Notification.permission === 'denied') {
           this.ready = false
           console.log('The user has blocked permissions')
           this.err = 'Les notifications sont bloquées sur cet appareil pour cette application.'
-        } else {
+        }
+        else {
           console.error('Error while subscribing', err)
           this.err = 'Échec lors de l\'envoi d\'une notification à cet appareil.'
         }
       }
     },
-    async getRegistration () {
+    async getRegistration() {
       const res = this.registrations
       return res.find(r => equalReg(r.id, this.subscription))
     },
-    async sendBrowserRegistration (id) {
+    async sendBrowserRegistration(id) {
       await this.$axios.$post('api/v1/push/registrations', { id })
     }
   }

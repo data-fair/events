@@ -1,4 +1,4 @@
-import type { Event } from '../../shared/types/index.js'
+import type { Event } from '#shared/types/index.js'
 
 export const parseSender = (senderStr: string) => {
   if (senderStr === 'none') return senderStr

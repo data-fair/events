@@ -6,7 +6,7 @@
     <div class="title mb-5">
       <v-icon class="mt-n1 mr-1">
         mdi-bell
-      </v-icon><span>{{ $tc('notifications', notifications ? notifications.count : 0, {nb: notifications ? notifications.count : 0}) }}</span>
+      </v-icon><span>{{ $tc('notifications', notifications ? notifications.count : 0, { nb: notifications ? notifications.count : 0 }) }}</span>
     </div>
     <v-row v-if="notifications">
       <v-col
@@ -83,7 +83,7 @@
         {{ $tc('seeMore') }}
       </v-btn>
     </div>
-    <!--    <pre style="font-size: 10px;">{{ notifications }}</pre>-->
+    <!--    <pre style="font-size: 10px;">{{ notifications }}</pre> -->
   </v-container>
 </template>
 
@@ -111,23 +111,24 @@ export default {
   computed: {
     ...mapState('session', ['user']),
     ...mapGetters('session', ['activeAccount']),
-    channel () {
+    channel() {
       return `user:${this.user.id}:notifications`
     }
   },
-  async mounted () {
+  async mounted() {
     await this.refresh()
     eventBus.$emit('subscribe', this.channel)
-    eventBus.$on(this.channel, notification => {
+    eventBus.$on(this.channel, (notification) => {
       this.refresh(true)
     })
   },
   methods: {
-    async refresh (clean) {
+    async refresh(clean) {
       const tmp = await this.$axios.$get('api/v1/notifications', { params: { skip: this.page * this.size, size: this.size } })
       if (!clean && this.notifications && this.notifications.results && this.notifications.results.length) {
         this.notifications.results = this.notifications.results.concat(tmp.results)
-      } else {
+      }
+      else {
         this.notifications = tmp
       }
     }

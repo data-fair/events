@@ -42,10 +42,10 @@ export default {
     isLocal: { type: Boolean, default: false }
   },
   computed: {
-    temporarilyDisabled () {
+    temporarilyDisabled() {
       return this.registration.disabledUntil && this.registration.disabledUntil > new Date().toISOString()
     },
-    infos () {
+    infos() {
       const infos = []
       if (this.registration.date) {
         infos.push(`crée ${this.$options.filters.fromNow(this.registration.date)}`)
@@ -64,7 +64,7 @@ export default {
       }
       return infos.join(', ')
     },
-    color () {
+    color() {
       if (this.registration.disabled === 'gone') return 'grey'
       if (this.registration.disabled === 'errors') return 'error'
       if (this.temporarilyDisabled) return 'warning'

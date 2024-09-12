@@ -5,7 +5,7 @@
     scrollable
     max-width="700px"
   >
-    <template #activator="{on}">
+    <template #activator="{ on }">
       <v-btn
         color="primary"
         icon

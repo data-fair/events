@@ -43,6 +43,7 @@ fr:
 
 <script>
 import { mapState, mapGetters } from 'vuex'
+
 const { serializeSender } = require('~/assets/sender-utils')
 
 export default {
@@ -62,11 +63,11 @@ export default {
     ...mapState('session', ['user']),
     ...mapGetters('session', ['activeAccount'])
   },
-  async mounted () {
+  async mounted() {
     this.refresh()
   },
   methods: {
-    async refresh () {
+    async refresh() {
       this.loading = true
       const params = {
         recipient: this.user.id,
@@ -74,9 +75,11 @@ export default {
       }
       if (this.noSender || this.sender === 'none') {
         params.sender = 'none'
-      } else if (this.sender) {
+      }
+      else if (this.sender) {
         params.sender = serializeSender(this.sender, true)
-      } else {
+      }
+      else {
         params.sender = serializeSender(this.activeAccount, false)
       }
       this.subscription = (await this.$axios.$get('api/v1/subscriptions', { params })).results[0]
@@ -89,7 +92,7 @@ export default {
 
       this.loading = false
     },
-    async switchSubscription () {
+    async switchSubscription() {
       this.loading = true
       if (!this.subscription) {
         const subscription = {
@@ -103,13 +106,14 @@ export default {
         if (this.urlTemplate) subscription.urlTemplate = this.urlTemplate
         await this.sendSubscription(subscription)
         await this.refresh()
-      } else {
+      }
+      else {
         await this.$axios.$delete('api/v1/subscriptions/' + this.subscription._id)
         this.subscription = null
       }
       this.loading = false
     },
-    async sendSubscription (subscription) {
+    async sendSubscription(subscription) {
       await this.$axios.$post('api/v1/subscriptions', subscription)
       if (subscription?.outputs.includes('devices')) this.$emit('register')
     }

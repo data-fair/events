@@ -23,9 +23,11 @@
 
 <script setup lang="ts">
 import personalMenu from '@data-fair/lib/vuetivy/personal-menu.vue'
-import { useSession } from '@data-fair/lib/vue/session.js'
+// import { useSession } from '@data-fair/lib/vue/session.js'
 
 const session = useSession()
+
+// const a = BIM
 
 const links = [
   '/simple-directory',

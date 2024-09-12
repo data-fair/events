@@ -35,27 +35,27 @@
 <script>
 export default {
   layout: 'embed',
-  data () {
+  data() {
     return {
       loading: false,
       registrations: null,
       localRegistration: null
     }
   },
-  async created () {
+  async created() {
     this.refresh()
   },
   methods: {
-    async refresh () {
+    async refresh() {
       this.loading = true
       this.registrations = await this.$axios.$get('api/v1/push/registrations')
       this.loading = false
     },
-    async saveRegistrations () {
+    async saveRegistrations() {
       await this.$axios.$put('api/v1/push/registrations', this.registrations)
       await this.refresh()
     },
-    async remove (i) {
+    async remove(i) {
       this.registrations.splice(i, 1)
       await this.saveRegistrations()
     }

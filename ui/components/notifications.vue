@@ -29,14 +29,14 @@
 import eventBus from '../assets/event-bus'
 
 export default {
-  data () {
+  data() {
     return {
       notification: null,
       showSnackbar: false
     }
   },
-  mounted () {
-    eventBus.$on('notification', async notif => {
+  mounted() {
+    eventBus.$on('notification', async (notif) => {
       this.showSnackbar = false
       await this.$nextTick()
       if (typeof notif === 'string') notif = { msg: notif }
@@ -52,12 +52,10 @@ export default {
     })
   }
 }
-
 </script>
 
 <style>
-
-  .notification .v-snack__content {
+.notification .v-snack__content {
     height: auto;
   }
 

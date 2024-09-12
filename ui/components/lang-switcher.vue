@@ -4,14 +4,16 @@
     direction="bottom"
     transition="fade-transition"
   >
-    <v-btn
-      slot="activator"
-      fab
-      depressed
-      small
-    >
-      {{ $i18n.locale }}
-    </v-btn>
+    <template #activator>
+      <v-btn
+
+        fab
+        depressed
+        small
+      >
+        {{ $i18n.locale }}
+      </v-btn>
+    </template>
     <v-btn
       v-for="locale in locales.filter(l => l !== $i18n.locale)"
       :key="locale"
@@ -32,7 +34,7 @@ import { mapState } from 'vuex'
 export default {
   computed: {
     ...mapState(['env']),
-    locales () {
+    locales() {
       return this.env.i18n.locales.split(',')
     }
   }

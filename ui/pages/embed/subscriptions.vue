@@ -6,7 +6,7 @@
     <div class="title mb-5">
       <v-icon class="mt-n1 mr-1">
         mdi-rss-box
-      </v-icon><span>{{ $tc('subscriptions', recipientSubscriptions ? recipientSubscriptions.count : 0, {nb: recipientSubscriptions ? recipientSubscriptions.count : 0}) }}</span>
+      </v-icon><span>{{ $tc('subscriptions', recipientSubscriptions ? recipientSubscriptions.count : 0, { nb: recipientSubscriptions ? recipientSubscriptions.count : 0 }) }}</span>
     </div>
     <v-row v-if="recipientSubscriptions">
       <v-col
@@ -93,7 +93,7 @@
         </v-hover>
       </v-col>
     </v-row>
-    <!--    <pre style="font-size: 10px;">{{ recipientSubscriptions }}</pre>-->
+    <!--    <pre style="font-size: 10px;">{{ recipientSubscriptions }}</pre> -->
   </v-container>
 </template>
 
@@ -116,14 +116,14 @@ export default {
     ...mapState('session', ['user']),
     ...mapGetters('session', ['activeAccount'])
   },
-  async mounted () {
+  async mounted() {
     await this.refresh()
   },
   methods: {
-    async refresh () {
+    async refresh() {
       this.recipientSubscriptions = await this.$axios.$get('api/v1/subscriptions', { params: { recipient: this.user.id } })
     },
-    async unsubscribe (subscription) {
+    async unsubscribe(subscription) {
       await this.$axios.$delete('api/v1/subscriptions/' + subscription._id)
       this.refresh()
     }
