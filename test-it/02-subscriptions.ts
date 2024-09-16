@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert'
 import { it, describe, before, beforeEach, after } from 'node:test'
 import { axios, axiosAuth, clean, startApiServer, stopApiServer } from './utils/index.ts'
 
-const axPush = axios({ params: { key: 'SECRET_EVENTS' } })
+const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082/events' })
 const user1 = await axiosAuth('user1@test.com')
 const user2 = await axiosAuth('user2@test.com')
 const admin1 = await axiosAuth('admin1@test.com')

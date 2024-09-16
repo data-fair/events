@@ -7,7 +7,9 @@ import mongo from '@data-fair/lib/node/mongo.js'
 const directoryUrl = 'http://localhost:5600/simple-directory'
 
 const axiosOpts = { baseURL: 'http://localhost:5600/events' }
+
 export const axios = (opts = {}) => axiosBuilder({ ...axiosOpts, ...opts })
+
 export const axiosAuth = (opts: string | Omit<AxiosAuthOpts, 'directoryUrl' | 'axiosOpts' | 'password'>) => {
   opts = typeof opts === 'string' ? { email: opts } : opts
   const password = opts.email === 'superadmin@test.com' ? 'superpasswd' : 'passwd'

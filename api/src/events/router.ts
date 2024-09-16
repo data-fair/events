@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid'
 import mongo from '#mongo'
 import config from '#config'
 import * as postReq from './post-req/index.js'
-import { session, mongoPagination, mongoProjection, httpError } from '@data-fair/lib/express/index.js'
+import { session, mongoPagination, mongoProjection, httpError, assertReqInternal } from '@data-fair/lib/express/index.js'
 import { localizeEvent } from './service.ts'
 import { receiveEvent } from '../notifications/service.ts'
 
@@ -17,7 +17,7 @@ router.get('', async (req, res, next) => {
   const { account, lang } = await session.reqAuthenticated(req)
 
   const query: Filter<Event> = { 'sender.type': account.type, 'sender.id': account.id }
-  if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q }
+  if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q, $language: lang || config.i18n.defaultLocale }
 
   const project = mongoProjection(req.query.select, ['_search', 'htmlBody'])
 
@@ -45,7 +45,8 @@ router.get('', async (req, res, next) => {
 })
 
 router.post('', async (req, res, next) => {
-  if (!req.query.key || req.query.key !== config.secretKeys.events) return res.status(401).send()
+  assertReqInternal(req)
+  if (!req.query.key || config.secretKeys.events !== req.query.key) throw httpError(401, 'Bad secret key')
 
   const { body } = postReq.returnValid(req, { name: 'req' })
 
@@ -56,10 +57,14 @@ router.post('', async (req, res, next) => {
     visibility: body.visibility ?? 'private'
   }
 
-  // TODO: use multi-language indexing
-  const localizedEvent = localizeEvent(event)
-  const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body]
-  event._search = searchParts.filter(Boolean).join(' ')
+  // this logic should work much better on a mongodb version that would support multi-language indexing
+  // https://www.mongodb.com/docs/manual/core/indexes/index-types/index-text/specify-language-text-index/create-text-index-multiple-languages/
+  event._search = []
+  for (const locale of config.i18n.locales) {
+    const localizedEvent = localizeEvent(event, locale)
+    const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body]
+    event._search.push({ language: locale, text: searchParts.filter(Boolean).join(' ') })
+  }
 
   await mongo.events.insertOne(event)
   delete event._search

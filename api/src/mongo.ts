@@ -43,12 +43,11 @@ export class EventsMongo {
 
   init = async () => {
     await mongo.connect(config.mongoUrl)
-    // TODO: report index definitions from notify
     await mongo.configure({
       events: {
         'main-keys': [
-          { 'sender.type': 1, 'sender.id': 1, date: -1, _search: 'text' },
-          { default_language: 'french' }
+          { 'sender.type': 1, 'sender.id': 1, '_search.text': 'text', date: -1 },
+          { default_language: config.i18n.defaultLocale }
         ]
       },
       subscriptions: {

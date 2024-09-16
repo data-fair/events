@@ -8,4 +8,4 @@ export type { Event } from './event/index.js'
 
 export type LocalizedEvent = Omit<Event, 'title' | 'body' | 'htmlBody'> & { title: string, body?: string, htmlBody?: string }
 
-export type SearchableEvent = Event & { _search?: string }
+export type SearchableEvent = Event & { _search?: {language: string, text: string}[] }
