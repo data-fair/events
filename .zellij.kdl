@@ -1,9 +1,9 @@
 layout {
     pane {
       split_direction "vertical"
-      pane name="processings" borderless=true {
+      pane name="events" borderless=true {
         command "${DEV_SHELL}"
-        args "-ic" "nvm use > /dev/null 2>&1 && ${DEV_SHELL}"
+        args "-ic" "nvm use > /dev/null 2>&1 && echo \"Service available on http://localhost:5600 or http://localhost:5601\" && ${DEV_SHELL}"
       }
       pane name="deps" {
         command "${DEV_SHELL}"
