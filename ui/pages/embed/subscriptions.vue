@@ -116,14 +116,14 @@ export default {
     ...mapState('session', ['user']),
     ...mapGetters('session', ['activeAccount'])
   },
-  async mounted() {
+  async mounted () {
     await this.refresh()
   },
   methods: {
-    async refresh() {
+    async refresh () {
       this.recipientSubscriptions = await this.$axios.$get('api/v1/subscriptions', { params: { recipient: this.user.id } })
     },
-    async unsubscribe(subscription) {
+    async unsubscribe (subscription) {
       await this.$axios.$delete('api/v1/subscriptions/' + subscription._id)
       this.refresh()
     }

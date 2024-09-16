@@ -86,7 +86,7 @@ export default {
       default: ''
     }
   },
-  data() {
+  data () {
     return { menu: false }
   }
 }

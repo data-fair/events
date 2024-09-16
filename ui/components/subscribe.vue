@@ -63,11 +63,11 @@ export default {
     ...mapState('session', ['user']),
     ...mapGetters('session', ['activeAccount'])
   },
-  async mounted() {
+  async mounted () {
     this.refresh()
   },
   methods: {
-    async refresh() {
+    async refresh () {
       this.loading = true
       const params = {
         recipient: this.user.id,
@@ -90,7 +90,7 @@ export default {
 
       this.loading = false
     },
-    async switchSubscription() {
+    async switchSubscription () {
       this.loading = true
       if (!this.subscription) {
         const subscription = {
@@ -110,7 +110,7 @@ export default {
       }
       this.loading = false
     },
-    async sendSubscription(subscription) {
+    async sendSubscription (subscription) {
       await this.$axios.$post('api/v1/subscriptions', subscription)
       if (subscription?.outputs.includes('devices')) this.$emit('register')
     }

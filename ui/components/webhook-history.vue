@@ -52,18 +52,18 @@ export default {
   props: {
     subscription: { type: Object, default: null }
   },
-  data() {
+  data () {
     return {
       loading: false,
       webhooks: null,
       testing: false
     }
   },
-  async mounted() {
+  async mounted () {
     await this.refresh()
   },
   methods: {
-    async refresh() {
+    async refresh () {
       this.loading = true
       this.webhooks = (await this.$axios.$get('api/v1/webhooks', {
         params: {
@@ -73,7 +73,7 @@ export default {
       })).results
       this.loading = false
     },
-    async test() {
+    async test () {
       this.testing = true
       await this.$axios.$post(`api/v1/webhook-subscriptions/${this.subscription._id}/_test`)
       await this.refresh()

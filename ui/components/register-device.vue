@@ -30,7 +30,7 @@ fr:
 </i18n>
 
 <script>
-function urlBase64ToUint8Array(base64String) {
+function urlBase64ToUint8Array (base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4)
   const base64 = (base64String + padding)
     .replace(/-/g, '+')
@@ -45,7 +45,7 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray
 }
 
-function equalReg(reg1, reg2) {
+function equalReg (reg1, reg2) {
   const val1 = typeof reg1 === 'object' ? reg1.endpoint : reg1
   const val2 = typeof reg2 === 'object' ? reg2.endpoint : reg2
   return val1 === val2
@@ -55,7 +55,7 @@ export default {
   props: {
     registrations: { type: Array, required: true }
   },
-  data() {
+  data () {
     return {
       ready: false,
       subscription: null,
@@ -63,7 +63,7 @@ export default {
       err: null
     }
   },
-  async mounted() {
+  async mounted () {
     // see web-push client example
     // https://github.com/alex-friedl/webpush-example/blob/master/client/main.js
 
@@ -97,7 +97,7 @@ export default {
     }
   },
   methods: {
-    async register() {
+    async register () {
       try {
         const serviceWorkerRegistration = await navigator.serviceWorker.ready
         const vapidKey = await this.$axios.$get('api/v1/push/vapidkey')
@@ -119,11 +119,11 @@ export default {
         }
       }
     },
-    async getRegistration() {
+    async getRegistration () {
       const res = this.registrations
       return res.find(r => equalReg(r.id, this.subscription))
     },
-    async sendBrowserRegistration(id) {
+    async sendBrowserRegistration (id) {
       await this.$axios.$post('api/v1/push/registrations', { id })
     }
   }

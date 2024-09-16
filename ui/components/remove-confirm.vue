@@ -60,7 +60,7 @@ export default {
     dialog: false
   }),
   methods: {
-    open(e) {
+    open (e) {
       this.dialog = true
       e.stopPropagation()
     }

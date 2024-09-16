@@ -83,11 +83,11 @@ export default {
     editItem: null,
     eventBus
   }),
-  created() {
+  created () {
     this.editItem = JSON.parse(JSON.stringify(this.item || {}))
   },
   methods: {
-    confirm() {
+    confirm () {
       if (this.$refs.form.validate()) {
         this.$emit('saved', this.editItem)
         this.dialog = false

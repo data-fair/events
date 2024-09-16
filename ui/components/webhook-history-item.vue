@@ -112,7 +112,7 @@ en:
 export default {
   props: { webhook: { type: Object, required: true } },
   computed: {
-    description() {
+    description () {
       const parts = []
       parts.push(this.$tc('nbAttempts', this.webhook.nbAttempts, this.webhook))
       if (this.webhook.lastAttempt) parts.push(this.$t('lastAttempt', { date: this.$dayjs(this.webhook.lastAttempt.date).format('LLL') }))
@@ -121,11 +121,11 @@ export default {
     }
   },
   methods: {
-    async retry() {
+    async retry () {
       await this.$axios.$post(`api/v1/webhooks/${this.webhook._id}/_retry`)
       this.$emit('refresh')
     },
-    async cancel() {
+    async cancel () {
       await this.$axios.$post(`api/v1/webhooks/${this.webhook._id}/_cancel`)
       this.$emit('refresh')
     }

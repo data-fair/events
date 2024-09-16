@@ -34,7 +34,7 @@ import { mapState } from 'vuex'
 export default {
   computed: {
     ...mapState(['env']),
-    locales() {
+    locales () {
       return this.env.i18n.locales.split(',')
     }
   }

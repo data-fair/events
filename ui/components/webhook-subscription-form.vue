@@ -82,7 +82,7 @@ export default {
   props: {
     initialSubscription: { type: Object, required: true }
   },
-  data() {
+  data () {
     return {
       subscription: {
         title: '',
@@ -97,7 +97,7 @@ export default {
       removing: false
     }
   },
-  mounted() {
+  mounted () {
     this.subscription = {
       ...this.subscription,
       ...this.initialSubscription
@@ -105,7 +105,7 @@ export default {
     this.previousState = JSON.stringify(this.subscription)
   },
   methods: {
-    async save() {
+    async save () {
       if (!this.$refs.form.validate()) return
       this.saving = true
       const savedSubscription = await this.$axios.$post('api/v1/webhook-subscriptions', this.subscription)
@@ -113,7 +113,7 @@ export default {
       this.$emit('refresh', !this.initialSubscription._id && savedSubscription._id)
       this.saving = false
     },
-    async remove() {
+    async remove () {
       this.removing = true
       await this.$axios.$delete('api/v1/webhook-subscriptions/' + this.subscription._id)
       this.$emit('refresh')

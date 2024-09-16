@@ -63,11 +63,11 @@ export default {
     ...mapState('session', ['user']),
     ...mapGetters('session', ['activeAccount'])
   },
-  async mounted() {
+  async mounted () {
     this.refresh()
   },
   methods: {
-    async refresh(id) {
+    async refresh (id) {
       this.loading = true
       const params = {
         recipient: this.user.id,
@@ -91,7 +91,7 @@ export default {
         this.currentPanel = this.subscriptions.findIndex(s => s._id === id)
       }
     },
-    async saveSubscription(subscription) {
+    async saveSubscription (subscription) {
       await this.$axios.$post('api/v1/webhook-subscriptions', subscription)
     }
   }
