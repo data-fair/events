@@ -1,16 +1,15 @@
 // use push-notifications to send notifications to devices
 // by web push for now, using propriétary protocols for mobile devices later on
 
-import type { DeviceRegistration } from '#shared/types/index.ts'
+import type { DeviceRegistration } from '#types'
 
 import { Router } from 'express'
 import useragent from 'useragent'
 import config from '#config'
 import mongo from '#mongo'
+import doc from '#doc'
 import { nanoid } from 'nanoid'
 import { session, reqOrigin } from '@data-fair/lib/express/index.js'
-import * as postRegistrationReq from './post-registration-req/index.js'
-import * as putRegistrationReq from './put-registration-req/index.js'
 import { vapidKeys, push } from './service.ts'
 
 const router = Router()
@@ -31,7 +30,7 @@ router.get('/registrations', async (req, res) => {
 
 router.put('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
-  const { body } = putRegistrationReq.returnValid(req)
+  const { body } = doc.push.putRegistrationReq.returnValid(req)
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
   await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: body } })
   res.send(req.body)
@@ -40,7 +39,7 @@ router.put('/registrations', async (req, res) => {
 // a shortcut to register current device
 router.post('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
-  const { body } = postRegistrationReq.returnValid(req)
+  const { body } = doc.push.postRegistrationReq.returnValid(req)
   const agent = useragent.parse(req.headers['user-agent'])
   const date = new Date().toISOString()
   const registration: DeviceRegistration = {

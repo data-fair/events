@@ -4,7 +4,7 @@
 import config from '#config'
 import dayjs from 'dayjs'
 import Debug from 'debug'
-import type { Webhook } from '#shared/types/index.js'
+import type { Webhook } from '#types'
 import mongo from '#mongo'
 import axios from '@data-fair/lib/node/axios.js'
 import { internalError } from '@data-fair/lib/node/observer.js'

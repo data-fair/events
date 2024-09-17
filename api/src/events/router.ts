@@ -1,11 +1,11 @@
 import type { SortDirection, Filter } from 'mongodb'
-import type { Event, SearchableEvent } from '#shared/types/index.ts'
+import type { Event, SearchableEvent } from '#types'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import mongo from '#mongo'
 import config from '#config'
-import * as postReq from './post-req/index.js'
+import doc from '#doc'
 import { session, mongoPagination, mongoProjection, httpError, assertReqInternal } from '@data-fair/lib/express/index.js'
 import { localizeEvent } from './service.ts'
 import { receiveEvent } from '../notifications/service.ts'
@@ -48,7 +48,7 @@ router.post('', async (req, res, next) => {
   assertReqInternal(req)
   if (!req.query.key || config.secretKeys.events !== req.query.key) throw httpError(401, 'Bad secret key')
 
-  const { body } = postReq.returnValid(req, { name: 'req' })
+  const { body } = doc.events.postReq.returnValid(req, { name: 'req' })
 
   const event: SearchableEvent = {
     ...body,

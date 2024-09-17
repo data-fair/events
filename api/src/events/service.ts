@@ -1,4 +1,4 @@
-import type { Event, LocalizedEvent } from '#shared/types/index.ts'
+import type { Event, LocalizedEvent } from '#types'
 import config from '#config'
 
 const localizeProp = (prop: Event['title'], locale: string): string => {

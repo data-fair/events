@@ -6,7 +6,8 @@
     "checkJs": true,
     "moduleResolution": "bundler",
     "paths": {
-      "#shared/*": ["../shared/*"]
+      "#api/types": ["../api/types/index.ts"],
+      "#api/doc": ["../api/doc/index.ts"]
     }
   }
 }

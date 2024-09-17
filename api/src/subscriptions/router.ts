@@ -1,4 +1,4 @@
-import type { Subscription } from '#shared/types/subscription/index.js'
+import type { Subscription } from '#types'
 import type { Filter } from 'mongodb'
 import type { User } from '@data-fair/lib/express/index.js'
 
@@ -6,8 +6,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { session, mongoSort, mongoPagination, httpError, reqOrigin } from '@data-fair/lib/express/index.js'
 import mongo from '#mongo'
-import * as postReq from './post-req/index.js'
-import * as subscriptionType from '../../../shared/types/subscription/index.js'
+import doc from '#doc'
 
 const router = Router()
 export default router
@@ -72,33 +71,34 @@ const canSubscribePrivate = (sender: Subscription['sender'], user: User) => {
 router.post('', async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
-  const { body } = postReq.returnValid(req)
+  const { body } = doc.subscriptions.postReq.returnValid(req)
+  const date = new Date().toISOString()
 
-  const subscription = body as Partial<Subscription>
+  const subscription: Subscription = {
+    _id: nanoid(),
+    outputs: [],
+    recipient: { id: user.id, name: user.name },
+    title: `${body.topic.title} (${body.recipient?.name ?? user.name})`,
+    visibility: 'private',
+    ...body,
+    origin: reqOrigin(req),
+    created: { id: user.id, name: user.name, date },
+    updated: { id: user.id, name: user.name, date }
+  }
 
-  subscription.origin = reqOrigin(req)
-
-  subscription.outputs = subscription.outputs || []
-
-  subscription.recipient = body.recipient || { id: user.id, name: user.name }
   if (subscription.recipient.id !== user.id && !user.adminMode) {
     throw httpError(403, 'Impossible de créer un abonnement pour un autre utilisateur')
   }
 
-  subscription.title = body.title || `${body.topic.title} (${subscription.recipient.name})`
-  const existingSubscription = body._id && await mongo.subscriptions.findOne({ _id: body._id })
-  subscription._id = body._id || nanoid()
-  subscription.updated = { id: user.id, name: user.name, date: new Date().toISOString() }
-  subscription.created = existingSubscription ? existingSubscription.created : subscription.updated
-
-  subscription.visibility = body.visibility || 'private'
-  if (!canSubscribePrivate(body.sender, user)) {
-    // other cases are accepted, but the subscription will only receive notifications
-    // with public visibility
-    subscription.visibility = 'public'
+  if (body._id) {
+    const existingSubscription = await mongo.subscriptions.findOne({ _id: body._id })
+    if (!existingSubscription) throw httpError(404)
+    subscription.created = existingSubscription.created
   }
 
-  subscriptionType.assertValid(subscription)
+  if (!canSubscribePrivate(body.sender, user)) {
+    subscription.visibility = 'public'
+  }
 
   await mongo.subscriptions.replaceOne({ _id: subscription._id }, subscription, { upsert: true })
 

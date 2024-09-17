@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import type { Db } from 'mongodb'
-import type { Notification } from '#shared/types/index.ts'
+import type { Notification } from '#types'
 
 import fs from 'fs-extra'
 import webpush from 'web-push'

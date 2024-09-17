@@ -1,13 +1,12 @@
 import type { Filter } from 'mongodb'
-import type { WebhookSubscription } from '#shared/types/index.ts'
+import type { WebhookSubscription } from '#types'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { session, mongoSort, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
 import mongo from '#mongo'
+import doc from '#doc'
 import { createWebhook } from '../webhooks/service.ts'
-import * as postReq from './post-req/index.js'
-import * as webhookSubscriptionType from '../../../shared/types/webhook-subscription/index.js'
 
 const router = Router()
 export default router
@@ -45,20 +44,27 @@ router.post('', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
-  const { body } = postReq.returnValid(req)
+  const { body } = doc.webhookSubscriptions.postReq.returnValid(req)
+  const owner = account
+  const date = new Date().toISOString()
 
-  const webhookSubscription = body as Partial<WebhookSubscription>
+  const webhookSubscription: WebhookSubscription = {
+    _id: nanoid(),
+    visibility: 'private',
+    ...body,
+    owner,
+    created: { id: user.id, name: user.name, date },
+    updated: { id: user.id, name: user.name, date },
+  }
 
-  const owner = body.owner = account
-
-  const existingWebhookSubscription = body._id && await mongo.webhookSubscriptions.findOne({ _id: body._id })
-  body._id = body._id || nanoid()
-  webhookSubscription.updated = { id: user.id, name: user.name, date: new Date().toISOString() }
-  webhookSubscription.created = existingWebhookSubscription ? existingWebhookSubscription.created : webhookSubscription.updated
+  if (body._id) {
+    const existingWebhookSubscription = body._id && await mongo.webhookSubscriptions.findOne({ _id: body._id })
+    if (!existingWebhookSubscription) throw httpError(404)
+    webhookSubscription.created = existingWebhookSubscription.created
+  }
 
   const sender = webhookSubscription.sender
 
-  webhookSubscription.visibility = webhookSubscription.visibility || 'private'
   if (user.adminMode) {
     // super admin can do whatever he wants
   } else if (sender && sender.type === owner.type && sender.id === owner.id) {
@@ -68,8 +74,6 @@ router.post('', async (req, res, next) => {
     // with public visibility
     webhookSubscription.visibility = 'public'
   }
-
-  webhookSubscriptionType.assertValid(webhookSubscription)
 
   await mongo.webhookSubscriptions.replaceOne({ _id: webhookSubscription._id }, webhookSubscription, { upsert: true })
   res.status(200).json(webhookSubscription)

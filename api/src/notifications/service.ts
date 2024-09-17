@@ -1,4 +1,4 @@
-import type { Event, Notification, Subscription } from '#shared/types/index.ts'
+import type { Event, Notification, Subscription } from '#types'
 import type { Filter } from 'mongodb'
 
 import { parseTemplate } from 'url-template'

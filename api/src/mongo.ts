@@ -1,4 +1,4 @@
-import type { Subscription, Notification, WebhookSubscription, Webhook, SearchableEvent, PushSubscription } from '#shared/types/index.ts'
+import type { Subscription, Notification, WebhookSubscription, Webhook, SearchableEvent, PushSubscription } from '#types'
 import type { Pointer } from './types.ts'
 
 import mongo from '@data-fair/lib/node/mongo.js'

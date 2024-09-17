@@ -7,7 +7,9 @@
   },
   "imports": {
     "#config": "./src/config.ts",
-    "#mongo": "./src/mongo.ts"
+    "#mongo": "./src/mongo.ts",
+    "#doc": "./doc/index.ts",
+    "#types": "./types/index.ts"
   },
   "dependencies": {
     "agentkeepalive": "^4.5.0",

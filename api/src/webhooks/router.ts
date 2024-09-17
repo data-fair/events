@@ -1,4 +1,4 @@
-import type { Webhook } from '#shared/types/index.ts'
+import type { Webhook } from '#types'
 import type { Filter, Sort } from 'mongodb'
 
 import { Router } from 'express'
