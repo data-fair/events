@@ -1,21 +1,20 @@
 // use push-notifications to send notifications to devices
 // by web push for now, using propriétary protocols for mobile devices later on
 
+import type { DeviceRegistration } from '#shared/types/index.ts'
+
 import { Router } from 'express'
 import useragent from 'useragent'
 import config from '#config'
 import mongo from '#mongo'
+import { nanoid } from 'nanoid'
 import { session, reqOrigin } from '@data-fair/lib/express/index.js'
+import * as postRegistrationReq from './post-registration-req/index.js'
+import * as putRegistrationReq from './put-registration-req/index.js'
 import { vapidKeys, push } from './service.ts'
 
 const router = Router()
 export default router
-
-const equalReg = (reg1: any, reg2: any) => {
-  const val1 = typeof reg1 === 'object' ? reg1.endpoint : reg1
-  const val2 = typeof reg2 === 'object' ? reg2.endpoint : reg2
-  return val1 === val2
-}
 
 router.get('/vapidkey', async (req, res) => {
   res.send({ publicKey: vapidKeys.publicKey })
@@ -32,30 +31,34 @@ router.get('/registrations', async (req, res) => {
 
 router.put('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
+  const { body } = putRegistrationReq.returnValid(req)
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
-  await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: req.body } })
+  await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: body } })
   res.send(req.body)
 })
 
 // a shortcut to register current device
 router.post('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
-  if (!req.body.id) return res.status(400).send('id is required')
+  const { body } = postRegistrationReq.returnValid(req)
   const agent = useragent.parse(req.headers['user-agent'])
   const date = new Date().toISOString()
-  const registration = { ...req.body, date }
-  if (!registration.type) registration.type = 'webpush'
-  if (!registration.deviceName) registration.deviceName = agent.toString()
+  const registration: DeviceRegistration = {
+    type: 'webpush',
+    deviceName: agent.toString(),
+    ...body
+  }
 
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
   let sub = await mongo.pushSubscriptions.findOne(ownerFilter)
   if (!sub) {
     sub = {
+      _id: nanoid(),
       owner: { type: 'user', id: user.id, name: user.name },
       registrations: []
     }
   }
-  if (!sub.registrations.find((r: any) => equalReg(r.id, req.body.id))) {
+  if (!sub.registrations.find((r: any) => r.id === body.id)) {
     sub.registrations.push(registration)
     await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
     const origin = reqOrigin(req)

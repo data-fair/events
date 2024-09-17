@@ -1,4 +1,4 @@
-import type { Subscription, Notification, WebhookSubscription, Webhook, SearchableEvent } from '#shared/types/index.ts'
+import type { Subscription, Notification, WebhookSubscription, Webhook, SearchableEvent, PushSubscription } from '#shared/types/index.ts'
 import type { Pointer } from './types.ts'
 
 import mongo from '@data-fair/lib/node/mongo.js'
@@ -34,7 +34,7 @@ export class EventsMongo {
   }
 
   get pushSubscriptions () {
-    return mongo.db.collection<any>('pushSubscriptions')
+    return mongo.db.collection<PushSubscription>('pushSubscriptions')
   }
 
   get pointers () {
