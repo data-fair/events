@@ -9,7 +9,7 @@
       style="display:inline-block;"
       class="my-1"
     >
-      {{ $t('logged') }}
+      {{ t('logged') }}
     </v-alert>
     <v-alert
       v-else-if="session.state.accountRole !== 'admin'"
@@ -17,7 +17,7 @@
       style="display:inline-block;"
       class="my-1"
     >
-      {{ $t('admin') }}
+      {{ t('admin') }}
     </v-alert>
     <template v-else>
       <template
@@ -26,12 +26,12 @@
       >
         <v-row>
           <v-col>
-            <v-subheader
-              class="px-0"
+            <div
+              class="text-subtitle2"
               style="height: auto;"
             >
-              {{ $t('webhooks', topic) }}
-            </v-subheader>
+              {{ t('webhooks', topic) }}
+            </div>
           </v-col>
         </v-row>
         <v-row
@@ -55,29 +55,19 @@ fr:
   webhooks: "Configurer des Webhooks pour l'évènement {title}"
 </i18n>
 
-<script setup>
-/*
-import { computed } from 'vue'
-import { useSession } from '@data-fair/lib/vue/session.js'
-import { parseSender } from '~/utils/sender-utils'
+<script lang="ts" setup>
+const keys = useStringsArraySearchParam('key')
+const titles = useStringsArraySearchParam('title')
+const topics = computed(() => keys.value.map((key, i) => ({ key, title: titles.value[i] })))
 
 const session = useSession()
 const route = useRoute()
-
-const topics = computed(() => {
-  if (typeof route.query.key !== 'string') throw new Error('query.key is required')
-  if (typeof route.query.title !== 'string') throw new Error('query.title is required')
-  const keys = route.query.key.split(',')
-  const titles = route.query.title.split(',')
-  return keys.map((key, i) => ({ key, title: titles[i] }))
-})
+const { t } = useI18n()
 
 const sender = computed(() => {
   if (typeof route.query.sender !== 'string') return null
   return parseSender(route.query.sender)
 })
-
-*/
 </script>
 
 <style lang="css" scoped>

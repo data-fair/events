@@ -14,14 +14,18 @@ const debug = Debug('webhooks-worker')
 
 let loopPromise: Promise<void> | null = null
 let stopped = false
+let acquiredLock = false
 
 const loop = async () => {
   // eslint-disable-next-line no-unmodified-loop-condition
   while (!stopped) {
-    if (!await locks.acquire('webhooks-loop')) {
-      debug('lock was not available, wait for interval', config.worker.loopInterval)
-      await new Promise(resolve => setTimeout(resolve, config.worker.loopInterval))
-      continue
+    if (!acquiredLock) {
+      acquiredLock = await locks.acquire('webhooks-loop')
+      if (!acquiredLock) {
+        debug('lock was not available, wait for interval', config.worker.loopInterval)
+        await new Promise(resolve => setTimeout(resolve, config.worker.loopInterval))
+        continue
+      }
     }
     const webhook = (await mongo.webhooks.findOneAndUpdate({
       $or: [

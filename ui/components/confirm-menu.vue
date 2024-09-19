@@ -6,7 +6,7 @@
   >
     <template #activator="{ props }">
       <v-btn
-        v-bind="props"
+        v-bind="{ ...props, ...btnProps }"
       >
         Supprimer
       </v-btn>
@@ -33,15 +33,17 @@
       <v-card-actions>
         <v-spacer />
         <v-btn
-          v-t="'no'"
           variant="text"
           @click="menu = false"
-        />
+        >
+          {{ t('no') }}
+        </v-btn>
         <v-btn
-          v-t="'yes'"
           :color="yesColor"
           @click="$emit('confirm')"
-        />
+        >
+          {{ t('yes') }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-menu>
@@ -56,38 +58,39 @@ en:
   no: No
 </i18n>
 
-<script>
-export default {
-  props: {
-    title: {
-      type: String,
-      default: ''
-    },
-    text: {
-      type: String,
-      default: 'Souhaitez-vous confirmer cette opération ?'
-    },
-    tooltip: {
-      type: String,
-      default: ''
-    },
-    yesColor: {
-      type: String,
-      default: 'warning'
-    },
-    btnProps: {
-      type: Object,
-      default: () => ({ color: 'warning', depressed: true })
-    },
-    alert: {
-      type: String,
-      default: ''
-    }
+<script setup lang="ts">
+const { t } = useI18n()
+
+defineProps({
+  title: {
+    type: String,
+    default: ''
   },
-  data () {
-    return { menu: false }
+  text: {
+    type: String,
+    default: 'Souhaitez-vous confirmer cette opération ?'
+  },
+  tooltip: {
+    type: String,
+    default: ''
+  },
+  yesColor: {
+    type: String,
+    default: 'warning'
+  },
+  btnProps: {
+    type: Object,
+    default: () => ({ color: 'warning', depressed: true })
+  },
+  alert: {
+    type: String,
+    default: ''
   }
-}
+})
+
+defineEmits<{ confirm: [] }>()
+
+const menu = ref(false)
 </script>
 
 <style lang="css" scoped>

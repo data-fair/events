@@ -14,7 +14,7 @@
           hide-details="auto"
           validate-on="blur"
           :rules="[
-            v => v && !!v.trim() || 'Ce paramètre est requis'
+            (v: string) => v && !!v.trim() || 'Ce paramètre est requis'
           ]"
         />
       </v-col>
@@ -27,8 +27,8 @@
           hide-details="auto"
           validate-on="blur"
           :rules="[
-            v => v && !!v.trim() || 'Ce paramètre est requis',
-            v => !!v.trim().startsWith('http://') || !!v.trim().startsWith('https://') || `Cette URL n'est pas valide`
+            (v: string) => v && !!v.trim() || 'Ce paramètre est requis',
+            (v: string) => !!v.trim().startsWith('http://') || !!v.trim().startsWith('https://') || `Cette URL n'est pas valide`
           ]"
         />
       </v-col>
@@ -60,7 +60,7 @@
     <v-row class="mx-0 mb-0">
       <v-spacer />
       <confirm-menu
-        v-if="initialSubscription._id"
+        v-if="modelValue._id"
         @confirm="remove"
       />
       <v-btn
@@ -68,7 +68,7 @@
         variant="flat"
         :loading="saving"
         class="ml-2"
-        :disabled="JSON.stringify(subscription) === previousState"
+        :disabled="JSON.stringify(subscription) === previousState || saving"
         @click="save"
       >
         Enregistrer
@@ -77,50 +77,46 @@
   </v-form>
 </template>
 
-<script>
-export default {
-  props: {
-    initialSubscription: { type: Object, required: true }
-  },
-  data () {
-    return {
-      subscription: {
-        title: '',
-        url: '',
-        header: {
-          key: '',
-          value: ''
-        }
-      },
-      previousState: null,
-      saving: false,
-      removing: false
-    }
-  },
-  mounted () {
-    this.subscription = {
-      ...this.subscription,
-      ...this.initialSubscription
-    }
-    this.previousState = JSON.stringify(this.subscription)
-  },
-  methods: {
-    async save () {
-      if (!this.$refs.form.validate()) return
-      this.saving = true
-      const savedSubscription = await this.$axios.$post('api/v1/webhook-subscriptions', this.subscription)
-      this.previousState = JSON.stringify(this.subscription)
-      this.$emit('refresh', !this.initialSubscription._id && savedSubscription._id)
-      this.saving = false
-    },
-    async remove () {
-      this.removing = true
-      await this.$axios.$delete('api/v1/webhook-subscriptions/' + this.subscription._id)
-      this.$emit('refresh')
-      this.removing = false
-    }
+<script lang="ts" setup>
+import type { VForm } from 'vuetify/components'
+import type { WebhookSubscription } from '#api/types'
+
+// const { modelValue } = defineProps<{ modelValue?: WebhookSubscription }>()
+const modelValue = defineModel<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'topic' | 'sender'>>>({ required: true })
+const emit = defineEmits<{ saved: [], deleted: [] }>()
+
+const form = ref<VForm | null>(null)
+
+const subscription = reactive<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'header'>>>({
+  title: '',
+  url: '',
+  header: {
+    key: '',
+    value: ''
   }
-}
+})
+
+watch(modelValue, () => {
+  if (modelValue.value) Object.assign(subscription, modelValue.value)
+}, { immediate: true })
+
+const previousState = ref(JSON.stringify(subscription))
+
+const saving = ref(false)
+const save = withFatalError(async () => {
+  const valid = (await form.value?.validate())?.valid
+  if (!valid) return
+  saving.value = true
+  await $fetch<WebhookSubscription>('/events/api/v1/webhook-subscriptions', { method: 'POST', body: subscription })
+  previousState.value = JSON.stringify(subscription)
+  emit('saved')
+  saving.value = false
+})
+
+const remove = withFatalError(async () => {
+  await $fetch('api/v1/webhook-subscriptions/' + subscription._id, { method: 'DELETE' })
+  emit('deleted')
+})
 </script>
 
 <style>

@@ -1,34 +1,36 @@
 <template>
   <v-list-item>
-    <v-list-item-icon>
-      <v-progress-circular
-        v-if="webhook.status === 'working' || webhook.status === 'waiting'"
-        :size="20"
-        color="primary"
-        indeterminate
-      />
-      <v-icon
-        v-if="webhook.status === 'error'"
-        color="error"
-      >
-        mdi-alert-circle
-      </v-icon>
-      <v-icon
-        v-if="webhook.status === 'cancelled'"
-        color="error"
-      >
-        mdi-cancel
-      </v-icon>
-      <v-icon
-        v-if="webhook.status === 'ok'"
-        color="success"
-      >
-        mdi-check-circle
-      </v-icon>
-    </v-list-item-icon>
+    <template #prepend>
+      <div class="mr-4">
+        <v-progress-circular
+          v-if="webhook.status === 'working' || webhook.status === 'waiting'"
+          :size="20"
+          color="primary"
+          indeterminate
+        />
+        <v-icon
+          v-if="webhook.status === 'error'"
+          color="error"
+        >
+          mdi-alert-circle
+        </v-icon>
+        <v-icon
+          v-if="webhook.status === 'cancelled'"
+          color="error"
+        >
+          mdi-cancel
+        </v-icon>
+        <v-icon
+          v-if="webhook.status === 'ok'"
+          color="success"
+        >
+          mdi-check-circle
+        </v-icon>
+      </div>
+    </template>
 
     <v-list-item-title>
-      {{ webhook.notification.date | date }} - {{ $t(webhook.status) }}
+      {{ dayjs(webhook.notification.date).format('LLL') }} - {{ t(webhook.status) }}
       <template v-if="webhook.status === 'error' && webhook.lastAttempt">
         {{ webhook.lastAttempt.status || webhook.lastAttempt.error }}
       </template>
@@ -37,7 +39,7 @@
       {{ description }}
     </v-list-item-subtitle>
 
-    <v-list-item-action>
+    <template #append>
       <v-menu
         v-if="webhook.status !== 'waiting' && webhook.status !== 'working'"
         location="left"
@@ -45,7 +47,7 @@
         <template #activator="{ props }">
           <v-btn
             icon
-
+            variant="flat"
             v-bind="props"
           >
             <v-icon>mdi-dots-vertical</v-icon>
@@ -53,33 +55,19 @@
         </template>
         <v-list density="compact">
           <v-list-item @click="retry">
-            <v-list-item-icon>
+            <template #append>
               <v-icon color="primary">
                 mdi-send
               </v-icon>
-            </v-list-item-icon>
+            </template>
 
             <v-list-item-title>
-              {{ $t('retry') }}
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item
-            v-if="webhook.status === 'waiting' || webhook.nextAttempt"
-            @click="cancel"
-          >
-            <v-list-item-icon>
-              <v-icon color="warning">
-                mdi-cancel
-              </v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-title>
-              {{ $t('cancel') }}
+              {{ t('retry') }}
             </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
-    </v-list-item-action>
+    </template>
   </v-list-item>
 </template>
 
@@ -108,29 +96,32 @@ en:
   cancel: cancel
 </i18n>
 
-<script>
-export default {
-  props: { webhook: { type: Object, required: true } },
-  computed: {
-    description () {
-      const parts = []
-      parts.push(this.$tc('nbAttempts', this.webhook.nbAttempts, this.webhook))
-      if (this.webhook.lastAttempt) parts.push(this.$t('lastAttempt', { date: this.$dayjs(this.webhook.lastAttempt.date).format('LLL') }))
-      if (this.webhook.nextAttempt) parts.push(this.$t('nextAttempt', { date: this.$dayjs(this.webhook.nextAttempt).format('LLL') }))
-      return parts.join(' - ')
-    }
-  },
-  methods: {
-    async retry () {
-      await this.$axios.$post(`api/v1/webhooks/${this.webhook._id}/_retry`)
-      this.$emit('refresh')
-    },
-    async cancel () {
-      await this.$axios.$post(`api/v1/webhooks/${this.webhook._id}/_cancel`)
-      this.$emit('refresh')
-    }
-  }
-}
+<script lang="ts" setup>
+import type { Webhook } from '#api/types'
+
+const { webhook } = defineProps<{ webhook: Webhook }>()
+const emit = defineEmits<{ refresh: [] }>()
+
+const { t } = useI18n()
+const { dayjs } = useLocaleDayjs()
+
+const description = computed(() => {
+  const parts = []
+  parts.push(t('nbAttempts', webhook.nbAttempts, { plural: webhook.nbAttempts }))
+  if (webhook.lastAttempt) parts.push(t('lastAttempt', { date: dayjs(webhook.lastAttempt.date).format('LLL') }))
+  if (webhook.nextAttempt) parts.push(t('nextAttempt', { date: dayjs(webhook.nextAttempt).format('LLL') }))
+  return parts.join(' - ')
+})
+
+const retry = withFatalError(async () => {
+  await $fetch(`/events/api/v1/webhooks/${webhook._id}/_retry`, { method: 'POST' })
+  emit('refresh')
+})
+
+/* const cancel = withFatalError(async () => {
+  await $fetch(`/events/api/v1/webhooks/${webhook._id}/_cancel`, { method: 'POST' })
+  emit('refresh')
+}) */
 </script>
 
 <style>

@@ -60,10 +60,7 @@ export class EventsMongo {
         'main-keys': { 'recipient.id': 1, date: -1 }
       },
       'webhook-subscriptions': {
-        'main-keys': [
-          { 'sender.type': 1, 'sender.id': 1, 'owner.type': 1, 'owner.id': 1, 'topic.key': 1 },
-          { unique: true }
-        ]
+        'main-keys': { 'sender.type': 1, 'sender.id': 1, 'owner.type': 1, 'owner.id': 1, 'topic.key': 1 }
       },
       webhooks: {
         'main-keys': { 'owner.type': 1, 'owner.id': 1, 'subscription._id': 1, 'notification.date': 1 },

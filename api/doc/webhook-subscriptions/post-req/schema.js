@@ -11,7 +11,7 @@ export default {
     body:
       jsonSchema(webhookSubscriptionSchema)
         .removeProperties(['created', 'updated'])
-        .removeFromRequired(['_id'])
+        .removeFromRequired(['_id', 'owner'])
         .removeId()
         .appendTitle(' post')
         .schema
