@@ -105,6 +105,7 @@ en:
 </i18n>
 
 <script>
+/*
 import { mapGetters, mapState } from 'vuex'
 
 export default {
@@ -129,4 +130,5 @@ export default {
     }
   }
 }
+*/
 </script>

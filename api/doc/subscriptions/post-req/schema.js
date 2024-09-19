@@ -1,5 +1,5 @@
 import jsonSchema from '@data-fair/lib/json-schema.js'
-import SubscriptionSchema from '../../../../shared/types/subscription/schema.js'
+import SubscriptionSchema from '#types/subscription/schema.js'
 
 export default {
   $id: 'https://github.com/data-fair/events/subscriptions/post-req',
@@ -10,8 +10,8 @@ export default {
   properties: {
     body:
       jsonSchema(SubscriptionSchema)
-        .removeProperties(['created', 'updated', 'origin'])
-        .removeFromRequired(['_id', 'visibility', 'outputs', 'recipient'])
+        .removeProperties([])
+        .removeFromRequired(['_id', 'visibility', 'outputs', 'recipient', 'created', 'updated', 'origin'])
         .removeId()
         .appendTitle(' post')
         .schema

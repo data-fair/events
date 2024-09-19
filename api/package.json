@@ -9,7 +9,8 @@
     "#config": "./src/config.ts",
     "#mongo": "./src/mongo.ts",
     "#doc": "./doc/index.ts",
-    "#types": "./types/index.ts"
+    "#types": "./types/index.ts",
+    "#types/*": "./types/*"
   },
   "dependencies": {
     "agentkeepalive": "^4.5.0",

@@ -1,7 +1,7 @@
 export default {
   $id: 'https://github.com/data-fair/events/push-subscription',
   'x-exports': ['types', 'validate'],
-  title: 'Push subscription',
+  title: 'Devices push subscription',
   type: 'object',
   additionalProperties: false,
   required: ['_id', 'recipient', 'registrations'],

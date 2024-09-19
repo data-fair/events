@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
-import type { Db } from 'mongodb'
-import type { Notification } from '#types'
+import type { DeviceRegistration, DevicesPushSubscription, Notification } from '#types'
+import type { RegistrationId } from 'node-pushnotifications'
 
 import fs from 'fs-extra'
 import webpush from 'web-push'
@@ -27,30 +27,27 @@ if (!fs.existsSync(securityDir + '/vapid.json')) {
 
 export const vapidKeys = _vapidKeys
 
-let pushNotifications: PushNotifications | null
-
-export const init = async (db: Db) => {
-  const settings: PushNotifications.Settings = {
-    web: {
-      vapidDetails: {
-        subject: 'mailto:Koumoul <contact@koumoul.com>',
-        publicKey: vapidKeys.publicKey,
-        privateKey: vapidKeys.privateKey
-      },
-      gcmAPIKey: config.gcmAPIKey
-    }
+const settings: PushNotifications.Settings = {
+  web: {
+    vapidDetails: {
+      subject: 'mailto:Koumoul <contact@koumoul.com>',
+      publicKey: vapidKeys.publicKey,
+      privateKey: vapidKeys.privateKey
+    },
+    // gcmAPIKey: config.gcmAPIKey
   }
-  if (config.apn.token.key) {
-    settings.apn = config.apn
-  }
-  pushNotifications = new PushNotifications(settings)
 }
+if (config.apn.token.key) {
+  settings.apn = config.apn
+}
+console.log(settings)
+const pushNotifications = new PushNotifications(settings)
 
-export const push = async (notification: Notification) => {
+export const push = async (notification: Notification, pushSub: { registrations: DeviceRegistration[] } | null = null) => {
   if (!pushNotifications) throw new Error('pushNotifications was not initialized')
 
   const ownerFilter = { 'owner.type': 'user', 'owner.id': notification.recipient.id }
-  const pushSub = await mongo.pushSubscriptions.findOne(ownerFilter)
+  pushSub = pushSub ?? await mongo.pushSubscriptions.findOne(ownerFilter)
   if (!pushSub) return []
   const errors = []
   for (const registration of pushSub.registrations) {
@@ -68,7 +65,8 @@ export const push = async (notification: Notification) => {
       ...defaultPushNotif
     }
     delete pushNotif.recipient
-    const res = await pushNotifications.send([registration.id], pushNotif)
+    console.log('push', registration, pushNotif)
+    const res = await pushNotifications.send([registration.id as RegistrationId], pushNotif)
     debug('Send push notif', notification.recipient.id, registration, pushNotif, res[0])
     const errorMessage = res[0].message.find(m => !!m.error)
     if (errorMessage) {

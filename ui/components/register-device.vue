@@ -1,23 +1,28 @@
 <template>
   <v-alert
-    v-if="ready && (!subscription || err)"
-    :color="err ? 'error' : 'accent'"
-    dark
+    v-if="error"
+    type="error"
     density="compact"
-    class="ma-1"
-    :class="{ 'py-0 pr-0': !err }"
+    variant="outlined"
+    class="py-1"
   >
-    <template v-if="err">
-      {{ err }}
-    </template>
-    <template v-else>
-      {{ $t('registerDevice') }}
+    {{ error }}
+  </v-alert>
+  <v-alert
+    v-else-if="ready && !pushManagerSubscription"
+    color="accent"
+    density="compact"
+    variant="outlined"
+    class="py-0 pr-0"
+  >
+    {{ t('registerDevice') }}
+    <template #append>
       <v-btn
         variant="text"
         class="ml-1"
         @click="register"
       >
-        {{ $t('ok') }}
+        {{ t('ok') }}
       </v-btn>
     </template>
   </v-alert>
@@ -29,102 +34,82 @@ fr:
   registerDevice: Ajouter cet appareil comme destinataire permanent de vos notifications ?
 </i18n>
 
-<script>
-function urlBase64ToUint8Array (base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4)
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/')
+<script lang="ts" setup>
+import type { DeviceRegistration } from '#api/types'
 
-  const rawData = window.atob(base64)
-  const outputArray = new Uint8Array(rawData.length)
+const { registrations } = defineProps<{ registrations: DeviceRegistration[] }>()
 
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i)
+const emit = defineEmits<{ registration: [] }>()
+
+const { t } = useI18n()
+
+const ready = ref(false)
+const error = ref<string | null>()
+
+const pushManagerSubscription = ref<PushSubscription | null>(null)
+
+function equalDeviceRegistrations (regId1: DeviceRegistration['id'] | null, regId2: DeviceRegistration['id'] | null) {
+  if (regId1 === null || regId2 === null) return false
+  if (typeof regId1 === 'string' && typeof regId2 === 'string' && regId1 === regId2) return true
+  if (typeof regId1 === 'object' && typeof regId2 === 'object' && regId1.endpoint === regId2.endpoint) return true
+  return false
+}
+
+const prepareServiceWorker = async () => {
+  // see web-push client example
+  // https://github.com/alex-friedl/webpush-example/blob/master/client/main.js
+
+  if (!('showNotification' in ServiceWorkerRegistration.prototype)) {
+    return console.log('Notifications are not supported')
   }
-  return outputArray
-}
+  if (Notification.permission === 'denied') {
+    return console.log('The user has blocked permissions')
+  }
+  if (!('serviceWorker' in navigator)) {
+    return console.log('Service workers are not supported')
+  }
 
-function equalReg (reg1, reg2) {
-  const val1 = typeof reg1 === 'object' ? reg1.endpoint : reg1
-  const val2 = typeof reg2 === 'object' ? reg2.endpoint : reg2
-  return val1 === val2
-}
-
-export default {
-  props: {
-    registrations: { type: Array, required: true }
-  },
-  data () {
-    return {
-      ready: false,
-      subscription: null,
-      remoteSubscription: null,
-      err: null
+  try {
+    await navigator.serviceWorker.register('/events/push-sw.js')
+    const serviceWorkerRegistration = await navigator.serviceWorker.ready
+    pushManagerSubscription.value = await serviceWorkerRegistration.pushManager.getSubscription()
+    if (pushManagerSubscription.value) {
+      const registration = registrations.find(r => equalDeviceRegistrations(r.id, pushManagerSubscription.value))
+      if (!registration) {
+        console.log('Local subscription is not matched by remote, unsubscribe')
+        await pushManagerSubscription.value.unsubscribe()
+        pushManagerSubscription.value = null
+      } else {
+        // refresh the registration so that it is identified as active
+        await $fetch('api/v1/push/registrations', { body: registration, method: 'POST' })
+      }
     }
-  },
-  async mounted () {
-    // see web-push client example
-    // https://github.com/alex-friedl/webpush-example/blob/master/client/main.js
+    ready.value = true
+  } catch (err) {
+    console.error('Error while preparing for subscription', err)
+  }
+}
+prepareServiceWorker()
 
-    if (!('showNotification' in ServiceWorkerRegistration.prototype)) {
-      return console.log('Notifications are not supported')
-    }
+const register = async () => {
+  try {
+    const serviceWorkerRegistration = await navigator.serviceWorker.ready
+    const vapidKey = await $fetch<{ publicKey: string }>('api/v1/push/vapidkey')
+    pushManagerSubscription.value = await serviceWorkerRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidKey.publicKey)
+    })
+    const registration: Partial<DeviceRegistration> = { id: pushManagerSubscription.value }
+    await $fetch('api/v1/push/registrations', { body: registration, method: 'POST' })
+    emit('registration')
+  } catch (err) {
     if (Notification.permission === 'denied') {
-      return console.log('The user has blocked permissions')
-    }
-    if (!('serviceWorker' in navigator)) {
-      return console.log('Service workers are not supported')
-    }
-
-    try {
-      await navigator.serviceWorker.register('./push-sw.js')
-      const serviceWorkerRegistration = await navigator.serviceWorker.ready
-      this.subscription = await serviceWorkerRegistration.pushManager.getSubscription()
-      if (this.subscription) {
-        const registration = await this.getRegistration()
-        if (!registration) {
-          console.log('Local subscription is not matched by remote, unsubscribe')
-          await this.subscription.unsubscribe()
-          this.subscription = null
-        } else {
-          this.$emit('registration', registration)
-        }
-      }
-      this.ready = true
-    } catch (err) {
-      console.error('Error while preparing for subscription', err)
-    }
-  },
-  methods: {
-    async register () {
-      try {
-        const serviceWorkerRegistration = await navigator.serviceWorker.ready
-        const vapidKey = await this.$axios.$get('api/v1/push/vapidkey')
-        const registrationId = await serviceWorkerRegistration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidKey.publicKey)
-        })
-        await this.sendBrowserRegistration(registrationId)
-        this.$emit('register', registrationId)
-        this.subscription = registrationId
-      } catch (err) {
-        if (Notification.permission === 'denied') {
-          this.ready = false
-          console.log('The user has blocked permissions')
-          this.err = 'Les notifications sont bloquées sur cet appareil pour cette application.'
-        } else {
-          console.error('Error while subscribing', err)
-          this.err = 'Échec lors de l\'envoi d\'une notification à cet appareil.'
-        }
-      }
-    },
-    async getRegistration () {
-      const res = this.registrations
-      return res.find(r => equalReg(r.id, this.subscription))
-    },
-    async sendBrowserRegistration (id) {
-      await this.$axios.$post('api/v1/push/registrations', { id })
+      ready.value = false
+      console.log('The user has blocked permissions')
+      error.value = 'Les notifications sont bloquées sur cet appareil pour cette application.'
+    } else {
+      console.error('Error while subscribing to service worker', err)
+      error.value = 'Échec lors de l\'envoi d\'une notification à cet appareil. Votre navigateur n\'est peut-être pas compatible avec la fonctionnalité "push messaging".'
     }
   }
 }

@@ -6,9 +6,7 @@
   >
     <template #activator="{ props }">
       <v-btn
-        v-bind="
-        v-bind="
-        props"
+        v-bind="props"
       >
         Supprimer
       </v-btn>

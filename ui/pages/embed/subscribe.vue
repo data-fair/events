@@ -4,7 +4,7 @@
     data-iframe-height
   >
     <v-alert
-      v-if="!user"
+      v-if="!session.state.user"
       type="error"
       style="display:inline-block;"
       class="my-1"
@@ -12,20 +12,17 @@
       Vous devez être connecté pour pouvoir recevoir des notifications.
     </v-alert>
     <template v-else>
-      <v-row v-if="register && $route.query.register !== 'false' && registrations && !loading">
+      <v-row v-if="hasDeviceOutput && reactiveSearchParams.register !== 'false' && fetchRegistrations.data.value && fetchRegistrations.status.value !== 'pending'">
         <register-device
-          :registrations="registrations"
-          @register="refresh"
+          :registrations="fetchRegistrations.data.value"
+          @register="fetchRegistrations.refresh()"
         />
       </v-row>
       <v-row v-if="header">
         <v-col>
-          <v-subheader
-            class="px-0"
-            style="height: auto;"
-          >
+          <div class="text-subtitle-2">
             {{ header }}
-          </v-subheader>
+          </div>
         </v-col>
       </v-row>
       <v-row
@@ -33,15 +30,14 @@
         :key="topic.key"
         class="ma-0"
       >
-        <subscribe
+        <subscribe-topic
           v-if="outputs"
           :topic="topic"
-          :no-sender="!!$route.query.noSender"
-          :icon="$route.query.icon"
-          :url-template="$route.query['url-template']"
+          :no-sender="!!reactiveSearchParams.noSender"
+          :icon="reactiveSearchParams.icon"
+          :url-template="reactiveSearchParams['url-template']"
           :outputs="outputs"
           :sender="senders[i] || null"
-          @register="register = true"
         />
       </v-row>
     </template>
@@ -56,67 +52,39 @@ en:
 </i18n>
 
 <script setup lang="ts">
+import type { DeviceRegistration } from '#api/types'
+
 const reactiveSearchParams = useReactiveSearchParams()
 const querySenders = useStringsArraySearchParam('sender')
 const keys = useStringsArraySearchParam('key')
 const titles = useStringsArraySearchParam('title')
 
+const { t } = useI18n()
+
 const topics = computed(() => keys.value.map((key, i) => ({ key, title: titles.value[i] })))
 const senders = computed(() => querySenders.value.filter(Boolean).map(parseSender))
 const header = computed(() => {
   if (reactiveSearchParams.header === 'no') return ''
-  return reactiveSearchParams.header || $tc('notifyMe', topics.value.length)
+  return reactiveSearchParams.header || t('notifyMe', topics.value.length)
 })
 
 const session = useSession()
+const { topicsSubscriptions } = useSubscriptions()
 
-const register = ref(false)
-const loading = ref(false)
-const registrations = ref<object | null>(null)
+const hasDeviceOutput = computed(() => !!topics.value.find(t => topicsSubscriptions[t.key]?.outputs.includes('devices')))
 
-/*
-export default {
-  layout: 'embed',
-  data() {
-    return {
-      register: false,
-      loading: null,
-      registrations: null,
-      outputs: null
-    }
-  },
-  computed: {
-    ...mapState('session', ['user']),
-    topics() {
-      const keys = reactiveSearchParams.key.split(',')
-      const titles = reactiveSearchParams.title.split(',')
-      return keys.map((key, i) => ({ key, title: titles[i] }))
-    },
-    senders() {
-      return reactiveSearchParams.sender ? reactiveSearchParams.sender.split(',').map(s => s ? parseSender(s) : null) : []
-    },
-    header() {
-      if (reactiveSearchParams.header === 'no') return ''
-      return reactiveSearchParams.header || this.$tc('notifyMe', this.topics.length)
-    }
-  },
-  mounted() {
-    this.refresh()
-  },
-  methods: {
-    async refresh() {
-      if (reactiveSearchParams.outputs !== 'auto') this.outputs = ['devices', 'email']
-      this.loading = true
-      this.registrations = await this.$axios.$get('api/v1/push/registrations')
-      if (reactiveSearchParams.outputs === 'auto') {
-        const outputs = ['email']
-        if (this.registrations.find(r => !r.disabled)) outputs.push('devices')
-        this.outputs = outputs
-      }
-      this.loading = false
-    }
+const fetchRegistrations = useFetch<DeviceRegistration[]>('/events/api/v1/push/registrations', { lazy: true })
+
+const outputs = computed(() => {
+  if (!fetchRegistrations.data.value) return null
+  if (reactiveSearchParams.outputs === 'auto') {
+    const outputs = ['email']
+    if (fetchRegistrations.data.value.find(r => !r.disabled)) outputs.push('devices')
+    return outputs
+  } else {
+    return ['devices', 'email']
   }
-} */
+})
 </script>
 
 <style lang="css" scoped>

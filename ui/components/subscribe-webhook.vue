@@ -46,8 +46,6 @@ fr:
 </i18n>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
-
 export default {
   props: {
     topic: { type: Object, default: null },

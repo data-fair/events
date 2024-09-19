@@ -7,8 +7,25 @@ export default {
   required: ['id', 'type', 'deviceName'],
   properties: {
     id: {
-      type: 'string',
-      title: 'Identifiant'
+      title: 'Identifiant',
+      oneOf: [
+        { type: 'string' },
+        {
+          type: 'object',
+          required: ['endpoint', 'keys'],
+          properties: {
+            endpoint: { type: 'string' },
+            /* keys: {
+              type: 'object',
+              required: ['p256dh', 'auth'],
+              properties: {
+                p256dh: { type: 'string' },
+                auth: { type: 'string' }
+              }
+            } */
+          }
+        }
+      ]
     },
     type: {
       type: 'string',

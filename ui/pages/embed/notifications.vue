@@ -97,9 +97,7 @@ en:
 </i18n>
 
 <script>
-import eventBus from 'assets/event-bus'
-import { mapGetters, mapState } from 'vuex'
-
+/*
 export default {
   layout: 'embed',
   data: () => ({
@@ -132,5 +130,5 @@ export default {
       }
     }
   }
-}
+} */
 </script>

@@ -33,6 +33,7 @@
 </template>
 
 <script>
+/*
 export default {
   layout: 'embed',
   data () {
@@ -60,7 +61,7 @@ export default {
       await this.saveRegistrations()
     }
   }
-}
+} */
 </script>
 
 <style>

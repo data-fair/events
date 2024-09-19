@@ -1,4 +1,4 @@
-import type { Event } from '#shared/types/index.js'
+import type { Event } from '#types/index.js'
 
 export const parseSender = (senderStr: string) => {
   if (senderStr === 'none') return senderStr
@@ -14,8 +14,8 @@ export const parseSender = (senderStr: string) => {
   return sender
 }
 
-export const serializeSender = (sender: Event['sender'], includeRole = false) => {
+export const serializeSender = (sender: Event['sender']) => {
   let str = `${sender.type}:${sender.id}:${sender.department || ''}`
-  if (includeRole && sender.role) str += `:${sender.role}`
+  if (sender.role) str += `:${sender.role}`
   return str
 }

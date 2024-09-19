@@ -56,6 +56,7 @@ fr:
 </i18n>
 
 <script setup>
+/*
 import { computed } from 'vue'
 import { useSession } from '@data-fair/lib/vue/session.js'
 import { parseSender } from '~/utils/sender-utils'
@@ -75,6 +76,8 @@ const sender = computed(() => {
   if (typeof route.query.sender !== 'string') return null
   return parseSender(route.query.sender)
 })
+
+*/
 </script>
 
 <style lang="css" scoped>

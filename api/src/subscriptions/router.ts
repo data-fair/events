@@ -71,7 +71,7 @@ const canSubscribePrivate = (sender: Subscription['sender'], user: User) => {
 router.post('', async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
-  const { body } = doc.subscriptions.postReq.returnValid(req)
+  const { body } = doc.subscriptions.postReq.returnValid(req, { name: 'req' })
   const date = new Date().toISOString()
 
   const subscription: Subscription = {

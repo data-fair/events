@@ -6,6 +6,7 @@ import { startObserver, stopObserver } from '@data-fair/lib/node/observer.js'
 import * as locks from '@data-fair/lib/node/locks.js'
 import * as wsServer from '@data-fair/lib/node/ws-server.js'
 import * as wsEmitter from '@data-fair/lib/node/ws-emitter.js'
+// import upgradeScripts from '@data-fair/lib/node/upgrade-scripts.js'
 import mongo from './mongo.ts'
 import { createHttpTerminator } from 'http-terminator'
 import { app } from './app.ts'
@@ -28,6 +29,8 @@ export const start = async () => {
   session.init(config.privateDirectoryUrl)
   await mongo.init()
   await locks.init(mongo.db)
+  // await upgradeScripts(mongo.db, resolve(import.meta.dirname, '../..'))
+
   await wsServer.start(server, mongo.db, async (channel, sessionState) => {
     const [ownerType, ownerId] = channel.split(':')
     if (!sessionState.user) return false

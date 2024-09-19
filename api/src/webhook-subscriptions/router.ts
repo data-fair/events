@@ -44,7 +44,7 @@ router.post('', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
-  const { body } = doc.webhookSubscriptions.postReq.returnValid(req)
+  const { body } = doc.webhookSubscriptions.postReq.returnValid(req, { name: 'req' })
   const owner = account
   const date = new Date().toISOString()
 
