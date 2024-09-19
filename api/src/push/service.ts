@@ -40,7 +40,6 @@ const settings: PushNotifications.Settings = {
 if (config.apn.token.key) {
   settings.apn = config.apn
 }
-console.log(settings)
 const pushNotifications = new PushNotifications(settings)
 
 export const push = async (notification: Notification, pushSub: { registrations: DeviceRegistration[] } | null = null) => {
@@ -65,7 +64,6 @@ export const push = async (notification: Notification, pushSub: { registrations:
       ...defaultPushNotif
     }
     delete pushNotif.recipient
-    console.log('push', registration, pushNotif)
     const res = await pushNotifications.send([registration.id as RegistrationId], pushNotif)
     debug('Send push notif', notification.recipient.id, registration, pushNotif, res[0])
     const errorMessage = res[0].message.find(m => !!m.error)

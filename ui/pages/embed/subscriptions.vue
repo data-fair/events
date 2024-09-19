@@ -6,7 +6,7 @@
     <div class="text-h6 mb-5">
       <v-icon class="mt-n1 mr-1">
         mdi-rss-box
-      </v-icon><span>{{ $tc('subscriptions', recipientSubscriptions ? recipientSubscriptions.count : 0, { nb: recipientSubscriptions ? recipientSubscriptions.count : 0 }) }}</span>
+      </v-icon><span>{{ t('subscriptions', recipientSubscriptions ? recipientSubscriptions.count : 0, { nb: recipientSubscriptions ? recipientSubscriptions.count : 0 }) }}</span>
     </div>
     <v-row v-if="recipientSubscriptions">
       <v-col
@@ -74,9 +74,9 @@
                   location="top"
                 >
                   <template #activator="{ props }">
-                    <span v-bind="props">{{ subscription.updated.date | date('fromNow') }}</span>
+                    <span v-bind="props">{{ dayjs(subscription.updated.date).fromNow() }}</span>
                   </template>
-                  <span>{{ subscription.updated.date | date('LLLL') }}</span>
+                  <span>{{ dayjs(subscription.updated.date).format('LLLL') }}</span>
                 </v-tooltip>
                 <v-btn
                   class="ml-4"
@@ -104,7 +104,27 @@ en:
   subscriptions: "No subscription | {nb} subscription | {nb} subscriptions"
 </i18n>
 
-<script>
+<script lang="ts" setup>
+import type { Subscription } from '#api/types'
+
+const session = useSessionAuthenticated()
+const { t } = useI18n()
+const { dayjs } = useLocaleDayjs()
+
+const fetchSubscriptions = await useFetch('/events/api/v1/subscriptions', { query: { recipient: session.state.user.id } })
+if (fetchSubscriptions.error.value) throwFatalError(fetchSubscriptions.error.value)
+
+const recipientSubscriptions = computed(() => fetchSubscriptions.data.value)
+
+const unsubscribe = async (subscription: Subscription) => {
+  try {
+    await $fetch('api/v1/subscriptions/' + subscription._id, { method: 'DELETE' })
+  } catch (err) {
+    throwFatalError(err)
+  }
+  fetchSubscriptions.refresh()
+}
+
 /*
 import { mapGetters, mapState } from 'vuex'
 
