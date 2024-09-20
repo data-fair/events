@@ -19,30 +19,22 @@ Pull images at first and then once in a while:
 ddocker compose pull
 ```
 
-Then run the containers:
-
-```bash
-npm run dev-deps
-```
-
-## Work on @data-fair/events/ui
+## Run the development servers
 
 The UI is a [nuxt](https://nuxt.com/) project.
 
-Run a development server (access it here http://localhost:6218/events/):
-
-```
-npm run dev-ui
-```
-
-## Work on @data-fair/events/api
-
 The API is a small [https://expressjs.com](Express) server.
 
-Run a development server (access it here http://localhost:6218/events/api/):
+The recommended way to run the development servers is to use [zellij](https://zellij.dev/):
 
 ```
-npm run dev-api
+npm run dev-zellij
+```
+
+To send notifications in the dev environment you can edit en run [send-notifications.ts](dev/scripts/send-notifications.ts):
+
+```
+npm run dev-send-notifications
 ```
 
 ## Working on types

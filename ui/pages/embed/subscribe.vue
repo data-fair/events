@@ -15,7 +15,7 @@
       <v-row v-if="hasDeviceOutput && reactiveSearchParams.register !== 'false' && fetchRegistrations.data.value && fetchRegistrations.status.value !== 'pending'">
         <register-device
           :registrations="fetchRegistrations.data.value"
-          @register="fetchRegistrations.refresh()"
+          @registration="fetchRegistrations.refresh()"
         />
       </v-row>
       <v-row v-if="header">

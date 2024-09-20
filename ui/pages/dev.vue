@@ -31,7 +31,7 @@ const session = useSession()
 
 const links = [
   '/simple-directory',
-  '/events/embed/subscribe?key=topic1,topic2&title=Topic 1,Topic 2',
+  '/events/embed/subscribe?key=topic1,topic2&title=Topic 1,Topic 2&sender=organization:orga1',
   '/events/embed/subscriptions',
   '/events/embed/subscribe-webhooks?key=topic&title=Topic',
   '/events/embed/notifications',

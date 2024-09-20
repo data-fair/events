@@ -23,6 +23,7 @@
     "iframe-resizer": "^4.3.9",
     "jwt-decode": "^4.0.0",
     "nuxt": "^3.13.1",
+    "reconnecting-websocket": "^4.4.0",
     "requireindex": "^1.2.0",
     "sass": "^1.69.5",
     "universal-cookie": "^7.2.0",

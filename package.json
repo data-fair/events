@@ -11,6 +11,7 @@
     "stop-dev-deps": "docker compose stop",
     "dev-ui": "npm -w ui run dev",
     "dev-zellij": "export DEV_SHELL=$(basename \"$SHELL\") && zellij --layout .zellij.kdl && rm data/zellij-deps-ready",
+    "dev-send-notifications": "NODE_ENV=development node --experimental-strip-types dev/scripts/send-notifications.ts",
     "lint": "eslint . && npm -w ui run lint",
     "lint-fix": "eslint --fix . && npm -w ui run lint-fix",
     "test": "NODE_ENV=test node --experimental-strip-types --test-force-exit --test-concurrency=1 --test test-it/*.ts",

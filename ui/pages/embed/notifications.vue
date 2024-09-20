@@ -6,7 +6,7 @@
     <div class="text-h6 mb-5">
       <v-icon class="mt-n1 mr-1">
         mdi-bell
-      </v-icon><span>{{ $tc('notifications', notifications ? notifications.count : 0, { nb: notifications ? notifications.count : 0 }) }}</span>
+      </v-icon><span>{{ t('notifications', { nb: notifications ? notifications.count : 0 }, { plural: notifications ? notifications.count : 0 }) }}</span>
     </div>
     <v-row v-if="notifications">
       <v-col
@@ -33,7 +33,7 @@
                   class="mr-3 mt-1"
                 >
                   <img
-                    v-if="notification.icon && notification.icon.length && notification.icon.toString().trim().startsWith('http')"
+                    v-if="notification.icon && notification.icon.toString().trim().startsWith('http')"
                     :src="notification.icon"
                     alt="icon"
                   >
@@ -46,10 +46,10 @@
                     class="text-black text-subtitle-1"
                     style="align-self: start;"
                   >
-                    {{ typeof notification.title === 'object' ? notification.title[$i18n.locale] || notification.title['en'] || notification.title['fr'] : notification.title }}
+                    {{ notification.title }}
                   </div>
                   <div
-                    v-if="notification.body && notification.body.length"
+                    v-if="notification.body"
                     style="align-self: start;"
                   >
                     {{ notification.body }}
@@ -62,9 +62,9 @@
               >
                 <v-tooltip location="top">
                   <template #activator="{ props }">
-                    <span v-bind="props">{{ notification.date | date('fromNow') }}</span>
+                    <span v-bind="props">{{ dayjs(notification.date).fromNow() }}</span>
                   </template>
-                  <span>{{ notification.date | date('LLLL') }}</span>
+                  <span>{{ dayjs(notification.date).format('LLL') }}</span>
                 </v-tooltip>
               </div>
             </v-card-text>
@@ -73,14 +73,15 @@
       </v-col>
     </v-row>
     <div
-      v-if="notifications && notifications.count && !(((notifications.results && notifications.results.length) || 0) >= (notifications.count || 0))"
+      v-if="notifications && notifications.count && notifications.results.length < notifications.count"
       class="mt-3"
     >
       <v-btn
+        variant="flat"
         block
-        @click="page++; refresh()"
+        @click="fetchNotifications(true)"
       >
-        {{ $tc('seeMore') }}
+        {{ t('seeMore') }}
       </v-btn>
     </div>
     <!--    <pre style="font-size: 10px;">{{ notifications }}</pre> -->
@@ -96,9 +97,36 @@ en:
   seeMore: "See more"
 </i18n>
 
-<script>
-/*
-export default {
+<script lang="ts" setup>
+import type { Notification } from '#api/types'
+
+type NotificationsRes = { results: Notification[], count: number }
+
+const { t } = useI18n()
+const session = useSessionAuthenticated()
+const { dayjs } = useLocaleDayjs()
+
+useWS('/events/api/')?.subscribe<Notification>(`user:${session.state.user.id}:notifications`, () => {
+  fetchNotifications()
+})
+
+const page = ref(0)
+const size = 10
+const notifications = ref<NotificationsRes | null>(null)
+
+const fetchNotifications = withFatalError(async (next?: boolean) => {
+  if (next) page.value += 1
+  else page.value = 0
+  const newNotifications = await $fetch<NotificationsRes>('/events/api/v1/notifications', { params: { skip: page.value * size, size } })
+  if (next && notifications.value) {
+    notifications.value.results = notifications.value.results.concat(newNotifications.results)
+  } else {
+    notifications.value = newNotifications
+  }
+})
+fetchNotifications()
+
+/* export default {
   layout: 'embed',
   data: () => ({
     eventBus,
