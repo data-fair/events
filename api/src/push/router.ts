@@ -9,7 +9,7 @@ import config from '#config'
 import mongo from '#mongo'
 import doc from '#doc'
 import { nanoid } from 'nanoid'
-import { session, reqOrigin } from '@data-fair/lib/express/index.js'
+import { session, reqOrigin, httpError } from '@data-fair/lib/express/index.js'
 import { vapidKeys, push } from './service.ts'
 
 const router = Router()
@@ -37,7 +37,7 @@ router.get('/registrations', async (req, res) => {
 
 router.put('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
-  const { body } = doc.push.putRegistrationReq.returnValid(req, { name: 'req' })
+  const { body } = doc.push.putRegistrationsReq.returnValid(req, { name: 'req' })
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
   await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: body } })
   res.send(req.body)
@@ -49,10 +49,11 @@ router.post('/registrations', async (req, res) => {
   const { body } = doc.push.postRegistrationReq.returnValid(req, { name: 'req' })
   const agent = useragent.parse(req.headers['user-agent'])
   const date = new Date().toISOString()
-  const registration: DeviceRegistration = {
+  const newRegistration: DeviceRegistration = {
     type: 'webpush',
     deviceName: agent.toString(),
-    ...body
+    ...body,
+    date: new Date().toISOString()
   }
 
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
@@ -65,13 +66,15 @@ router.post('/registrations', async (req, res) => {
     }
   }
 
-  const existingRegistration = sub.registrations.find((r) => equalDeviceRegistrations(r.id, registration.id))
+  const existingRegistration = sub.registrations.find((r) => equalDeviceRegistrations(r.id, newRegistration.id))
   if (existingRegistration) {
     delete existingRegistration.disabled
     delete existingRegistration.disabledUntil
     delete existingRegistration.lastErrors
+    await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
+    res.send(existingRegistration)
   } else {
-    sub.registrations.push(registration)
+    sub.registrations.push(newRegistration)
     const origin = reqOrigin(req)
     const errors = await push({
       _id: 'new-device',
@@ -80,15 +83,38 @@ router.post('/registrations', async (req, res) => {
       sender: { type: 'user', id: user.id },
       recipient: { id: user.id, name: user.name },
       title: 'Un nouvel appareil recevra vos notifications',
-      body: `L'appareil ${registration.deviceName} est confirmé comme destinataire de vos notifications.`,
+      body: `L'appareil ${newRegistration.deviceName} est confirmé comme destinataire de vos notifications.`,
       date,
       icon: config.theme.notificationIcon || config.theme.logo || (origin + '/events/logo-192x192.png')
-    }, { registrations: [registration] })
+    }, { registrations: [newRegistration] })
     if (errors.length) {
-      return res.status(500).send(errors)
-    } else {
-      await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
+      return res.status(500).send(errors[0])
     }
+    await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
+    res.send(newRegistration)
   }
-  res.send()
+})
+
+router.post('/registrations/:i/_test', async (req, res) => {
+  const { user } = await session.reqAuthenticated(req)
+  const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
+  const sub = await mongo.pushSubscriptions.findOne(ownerFilter)
+  if (!sub) throw httpError(404)
+  const i = Number(req.params.i)
+  if (isNaN(i)) throw httpError(400)
+  const registration = sub.registrations[i]
+  if (!registration) throw httpError(404)
+
+  const origin = reqOrigin(req)
+  const errors = await push({
+    _id: 'test-device',
+    origin,
+    topic: { key: 'test-device' },
+    sender: { type: 'user', id: user.id },
+    recipient: { id: user.id, name: user.name },
+    title: 'Cet appareil est correctement configuré pour recevoir vos notifications',
+    date: new Date().toISOString(),
+    icon: config.theme.notificationIcon || config.theme.logo || (origin + '/events/logo-192x192.png')
+  }, { registrations: [registration] })
+  res.send({ error: errors[0] })
 })

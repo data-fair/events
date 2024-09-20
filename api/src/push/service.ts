@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import type { DeviceRegistration, DevicesPushSubscription, Notification } from '#types'
+import type { DeviceRegistration, Notification } from '#types'
 import type { RegistrationId } from 'node-pushnotifications'
 
 import fs from 'fs-extra'
@@ -11,6 +11,7 @@ import config from '#config'
 import mongo from '#mongo'
 import * as notificationsMetrics from '../notifications/metrics.js'
 import * as metrics from './metrics.js'
+import { internalError } from '@data-fair/lib/node/observer.js'
 
 const debug = Debug('notifications')
 
@@ -34,7 +35,7 @@ const settings: PushNotifications.Settings = {
       publicKey: vapidKeys.publicKey,
       privateKey: vapidKeys.privateKey
     },
-    // gcmAPIKey: config.gcmAPIKey
+    gcmAPIKey: config.gcmAPIKey
   }
 }
 if (config.apn.token.key) {
@@ -64,31 +65,35 @@ export const push = async (notification: Notification, pushSub: { registrations:
       ...defaultPushNotif
     }
     delete pushNotif.recipient
-    const res = await pushNotifications.send([registration.id as RegistrationId], pushNotif)
-    debug('Send push notif', notification.recipient.id, registration, pushNotif, res[0])
-    const errorMessage = res[0].message.find(m => !!m.error)
-    if (errorMessage) {
-      const error = errorMessage.error as any
-      metrics.pushDeviceErrors.inc({ output: 'device-' + registration.type, statusCode: error.statusCode })
-      errors.push(error)
-      if (error.statusCode === 410) {
-        console.log('registration has unsubscribed or expired, disable it', error.body || error.response || error.statusCode, JSON.stringify(registration))
-        registration.disabled = 'gone' // cf https://developer.mozilla.org/fr/docs/Web/HTTP/Status/410
-        delete registration.lastErrors
-      } else {
-        registration.lastErrors = registration.lastErrors || []
-        registration.lastErrors.push(error?.statusCode ? error : error?.errorMsg)
-        if (registration.lastErrors.length >= 10) {
-          registration.disabled = 'errors'
-          console.warn('registration returned too many errors, disable it', error, JSON.stringify(registration))
+    try {
+      const res = await pushNotifications.send([registration.id as RegistrationId], pushNotif)
+      debug('Send push notif', notification.recipient.id, registration, pushNotif, res[0])
+      const errorMessage = res[0].message.find(m => !!m.error)
+      if (errorMessage) {
+        const error = errorMessage.error as any
+        metrics.pushDeviceErrors.inc({ output: 'device-' + registration.type, statusCode: error.statusCode })
+        errors.push(error)
+        if (error.statusCode === 410) {
+          console.log('registration has unsubscribed or expired, disable it', error.body || error.response || error.statusCode, JSON.stringify(registration))
+          registration.disabled = 'gone' // cf https://developer.mozilla.org/fr/docs/Web/HTTP/Status/410
+          delete registration.lastErrors
         } else {
-          registration.disabledUntil = dayjs().add(Math.ceil(Math.pow(registration.lastErrors.length, 2.5)), 'minute').toISOString()
-          console.warn('registration returned an error, progressively backoff', error, JSON.stringify(registration))
+          registration.lastErrors = registration.lastErrors || []
+          registration.lastErrors.push(error?.statusCode ? error : error?.errorMsg)
+          if (registration.lastErrors.length >= 10) {
+            registration.disabled = 'errors'
+            console.warn('registration returned too many errors, disable it', error, JSON.stringify(registration))
+          } else {
+            registration.disabledUntil = dayjs().add(Math.ceil(Math.pow(registration.lastErrors.length, 2.5)), 'minute').toISOString()
+            console.warn('registration returned an error, progressively backoff', error, JSON.stringify(registration))
+          }
         }
+      } else {
+        delete registration.lastErrors
+        registration.lastSuccess = dayjs().toISOString()
       }
-    } else {
-      delete registration.lastErrors
-      registration.lastSuccess = dayjs().toISOString()
+    } catch (err) {
+      internalError('notif-push', err)
     }
   }
   await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: pushSub.registrations } })

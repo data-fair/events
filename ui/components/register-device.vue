@@ -39,7 +39,7 @@ import type { DeviceRegistration } from '#api/types'
 
 const { registrations } = defineProps<{ registrations: DeviceRegistration[] }>()
 
-const emit = defineEmits<{ registration: [] }>()
+const emit = defineEmits<{ registration: [DeviceRegistration] }>()
 
 const { t } = useI18n()
 
@@ -47,13 +47,6 @@ const ready = ref(false)
 const error = ref<string | null>()
 
 const pushManagerSubscription = ref<PushSubscription | null>(null)
-
-function equalDeviceRegistrations (regId1: DeviceRegistration['id'] | null, regId2: DeviceRegistration['id'] | null) {
-  if (regId1 === null || regId2 === null) return false
-  if (typeof regId1 === 'string' && typeof regId2 === 'string' && regId1 === regId2) return true
-  if (typeof regId1 === 'object' && typeof regId2 === 'object' && regId1.endpoint === regId2.endpoint) return true
-  return false
-}
 
 const prepareServiceWorker = async () => {
   // see web-push client example
@@ -81,8 +74,11 @@ const prepareServiceWorker = async () => {
         pushManagerSubscription.value = null
       } else {
         // refresh the registration so that it is identified as active
-        await $fetch('api/v1/push/registrations', { body: registration, method: 'POST' })
+        const refreshedRegistration = await $fetch<DeviceRegistration>('api/v1/push/registrations', { body: registration, method: 'POST' })
+        emit('registration', refreshedRegistration)
       }
+    } else {
+      console.log('no existing subscription')
     }
     ready.value = true
   } catch (err) {
@@ -100,8 +96,8 @@ const register = async () => {
       applicationServerKey: urlBase64ToUint8Array(vapidKey.publicKey)
     })
     const registration: Partial<DeviceRegistration> = { id: pushManagerSubscription.value }
-    await $fetch('api/v1/push/registrations', { body: registration, method: 'POST' })
-    emit('registration')
+    const createdRegistration = await $fetch<DeviceRegistration>('api/v1/push/registrations', { body: registration, method: 'POST' })
+    emit('registration', createdRegistration)
   } catch (err) {
     if (Notification.permission === 'denied') {
       ready.value = false

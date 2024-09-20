@@ -74,7 +74,6 @@ const prepareSubscriptionNotification = (event: Event, subscription: Subscriptio
 
 const sendNotification = async (notification: Notification) => {
   // global.events.emit('saveNotification', notification)
-  console.log('insert', notification)
   await mongo.notifications.insertOne(notification)
   debug('Send WS notif', notification.recipient, notification)
   await wsEmitter.emit(`user:${notification.recipient.id}:notifications`, notification)

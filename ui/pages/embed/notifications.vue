@@ -125,38 +125,4 @@ const fetchNotifications = withFatalError(async (next?: boolean) => {
   }
 })
 fetchNotifications()
-
-/* export default {
-  layout: 'embed',
-  data: () => ({
-    eventBus,
-    page: 0,
-    size: 10,
-    notifications: null
-  }),
-  computed: {
-    ...mapState('session', ['user']),
-    ...mapGetters('session', ['activeAccount']),
-    channel () {
-      return `user:${this.user.id}:notifications`
-    }
-  },
-  async mounted () {
-    await this.refresh()
-    eventBus.$emit('subscribe', this.channel)
-    eventBus.$on(this.channel, (notification) => {
-      this.refresh(true)
-    })
-  },
-  methods: {
-    async refresh (clean) {
-      const tmp = await this.$axios.$get('api/v1/notifications', { params: { skip: this.page * this.size, size: this.size } })
-      if (!clean && this.notifications && this.notifications.results && this.notifications.results.length) {
-        this.notifications.results = this.notifications.results.concat(tmp.results)
-      } else {
-        this.notifications = tmp
-      }
-    }
-  }
-} */
 </script>

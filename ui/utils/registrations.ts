@@ -1,3 +1,5 @@
+import type { DeviceRegistration } from '#api/types'
+
 export function urlBase64ToUint8Array (base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4)
   const base64 = (base64String + padding)
@@ -13,9 +15,9 @@ export function urlBase64ToUint8Array (base64String: string) {
   return outputArray
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function equalReg (reg1: any, reg2: any) {
-  const val1 = typeof reg1 === 'object' ? reg1.endpoint : reg1
-  const val2 = typeof reg2 === 'object' ? reg2.endpoint : reg2
-  return val1 === val2
+export function equalDeviceRegistrations (regId1: DeviceRegistration['id'] | null | undefined, regId2: DeviceRegistration['id'] | null | undefined) {
+  if (!regId1 || !regId2) return false
+  if (typeof regId1 === 'string' && typeof regId2 === 'string' && regId1 === regId2) return true
+  if (typeof regId1 === 'object' && typeof regId2 === 'object' && regId1.endpoint === regId2.endpoint) return true
+  return false
 }

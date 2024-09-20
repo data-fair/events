@@ -4,7 +4,7 @@ export default {
   title: 'Device registration',
   type: 'object',
   additionalProperties: false,
-  required: ['id', 'type', 'deviceName'],
+  required: ['id', 'type', 'deviceName', 'date'],
   properties: {
     id: {
       title: 'Identifiant',
@@ -33,6 +33,10 @@ export default {
     },
     deviceName: {
       type: 'string'
+    },
+    date: {
+      type: 'string',
+      format: 'date-time'
     },
     lastSuccess: {
       type: 'string',
