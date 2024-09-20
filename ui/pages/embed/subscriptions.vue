@@ -6,7 +6,10 @@
     <div class="text-h6 mb-5">
       <v-icon class="mt-n1 mr-1">
         mdi-rss-box
-      </v-icon><span>{{ t('subscriptions', recipientSubscriptions ? recipientSubscriptions.count : 0, { nb: recipientSubscriptions ? recipientSubscriptions.count : 0 }) }}</span>
+      </v-icon>
+      <span v-if="recipientSubscriptions">
+        {{ t('subscriptions', { nb: recipientSubscriptions.count }, { plural: recipientSubscriptions.count }) }}
+      </span>
     </div>
     <v-row v-if="recipientSubscriptions">
       <v-col
@@ -93,7 +96,6 @@
         </v-hover>
       </v-col>
     </v-row>
-    <!--    <pre style="font-size: 10px;">{{ recipientSubscriptions }}</pre> -->
   </v-container>
 </template>
 
@@ -111,7 +113,7 @@ const session = useSessionAuthenticated()
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
 
-const fetchSubscriptions = await useFetch('/events/api/v1/subscriptions', { query: { recipient: session.state.user.id } })
+const fetchSubscriptions = await useFetch<{ results: Subscription[], count: number }>('/events/api/v1/subscriptions', { query: { recipient: session.state.user.id } })
 if (fetchSubscriptions.error.value) throwFatalError(fetchSubscriptions.error.value)
 
 const recipientSubscriptions = computed(() => fetchSubscriptions.data.value)

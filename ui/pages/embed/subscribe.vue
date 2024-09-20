@@ -62,7 +62,7 @@ const titles = useStringsArraySearchParam('title')
 const { t } = useI18n()
 
 const topics = computed(() => keys.value.map((key, i) => ({ key, title: titles.value[i] })))
-const senders = computed(() => querySenders.value.filter(Boolean).map(parseSender))
+const senders = computed(() => querySenders.value.filter(Boolean).map(parseSender).filter(s => s !== 'none'))
 const header = computed(() => {
   if (reactiveSearchParams.header === 'no') return ''
   return reactiveSearchParams.header || t('notifyMe', topics.value.length)

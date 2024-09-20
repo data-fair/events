@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* global clients */
 
 // cf web-push client example

@@ -1,4 +1,4 @@
-import type { Subscription } from '../shared/types/index.js'
+import type { Subscription } from '../api/types/index.js'
 
 import { strict as assert } from 'node:assert'
 import { describe, it, before, beforeEach, after } from 'node:test'

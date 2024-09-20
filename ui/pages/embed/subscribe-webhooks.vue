@@ -65,8 +65,10 @@ const route = useRoute()
 const { t } = useI18n()
 
 const sender = computed(() => {
-  if (typeof route.query.sender !== 'string') return null
-  return parseSender(route.query.sender)
+  if (typeof route.query.sender !== 'string') return
+  const sender = parseSender(route.query.sender)
+  if (sender === 'none') return
+  return sender
 })
 </script>
 

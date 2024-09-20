@@ -21,13 +21,12 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
+// @ts-expect-error lib does not properly export types for vue components yet
 import personalMenu from '@data-fair/lib/vuetivy/personal-menu.vue'
 // import { useSession } from '@data-fair/lib/vue/session.js'
 
 const session = useSession()
-
-// const a = BIM
 
 const links = [
   '/simple-directory',
