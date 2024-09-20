@@ -1,6 +1,6 @@
 #################################
 # install root dev deps and build types
-FROM node:22.7.0-alpine3.19 AS builder
+FROM node:22.9.0-alpine3.19 AS builder
 
 WORKDIR /app/
 
@@ -8,13 +8,12 @@ ADD /package.json .
 ADD /package-lock.json .
 RUN npm ci --workspaces=false --no-audit --no-fund --omit=optional
 
-ADD shared shared
 ADD api api
 RUN npm run build-types
 
 ##########################
 # install api prod deps
-FROM node:22.7.0-alpine3.19 AS installer
+FROM node:22.9.0-alpine3.19 AS installer
 
 RUN npm i -g clean-modules@3.0.5
 
@@ -31,14 +30,13 @@ RUN mkdir -p /app/api/node_modules
 
 ##########################
 # copy deps and build and assemble actual dist
-FROM node:22.7.0-alpine3.19
+FROM node:22.9.0-alpine3.19
 LABEL org.opencontainers.image.authors="contact@koumoul.com"
 
 ENV NODE_ENV=production
 
 WORKDIR /app/
 
-COPY --from=builder /app/shared /app/shared
 COPY --from=builder /app/api /app/api
 COPY --from=installer /app/node_modules /app/node_modules
 COPY --from=installer /app/api/node_modules /app/api/node_modules

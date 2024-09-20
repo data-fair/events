@@ -1,6 +1,6 @@
 ##########################
 # install root dev deps and build
-FROM node:22.7.0-alpine3.19 AS builder
+FROM node:22.9.0-alpine3.19 AS builder
 
 RUN npm i -g clean-modules@3.0.4
 
@@ -17,7 +17,7 @@ RUN npm -w ui run build
 
 ##########################
 # copy built app and assemble actual dist
-FROM node:22.7.0-alpine3.19
+FROM node:22.9.0-alpine3.19
 
 ENV NODE_ENV=production
 ENV PORT=8080
