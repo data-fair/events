@@ -41,7 +41,7 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
 
-    - name: Build and push api docker images
+    - name: Build and push docker images
       id: docker_build
       uses: docker/build-push-action@v5
       with:
