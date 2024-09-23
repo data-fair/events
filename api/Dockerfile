@@ -24,7 +24,7 @@ ADD /package-lock.json .
 ADD /api/package.json api/
 RUN npm pkg set scripts.prepare="echo 'skip prepare'"
 RUN npm -w api --include-workspace-root ci --no-audit --no-fund --omit=optional --omit=dev &&\
-    clean-modules --yes
+    clean-modules --yes --exclude ramda/src/test.js
 # it might not exist, depending on the dependencies versions
 RUN mkdir -p /app/api/node_modules
 
