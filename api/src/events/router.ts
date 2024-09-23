@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid'
 import mongo from '#mongo'
 import config from '#config'
 import doc from '#doc'
-import { session, mongoPagination, mongoProjection, httpError, assertReqInternal } from '@data-fair/lib/express/index.js'
+import { session, mongoPagination, mongoProjection, httpError, assertReqInternal, reqOrigin } from '@data-fair/lib/express/index.js'
 import { localizeEvent } from './service.ts'
 import { receiveEvent } from '../notifications/service.ts'
 
@@ -27,7 +27,8 @@ router.get('', async (req, res, next) => {
   if (skip) throw httpError(400, 'skip is not supported, use "before" parameter with the date of the last event of the previous page')
   if (req.query.before && typeof req.query.before === 'string') {
     const [beforeId, beforeDate] = req.query.before.split(':')
-    query.date = { $lte: beforeDate, _id: { $ne: beforeId } }
+    query.date = { $lte: beforeDate }
+    query._id = { $ne: beforeId }
   }
 
   const events = (await mongo.events.find(query).project(project).limit(size).sort(sort).toArray()) as Event[]
@@ -37,8 +38,9 @@ router.get('', async (req, res, next) => {
   const response: any = { results }
 
   if (results.length === size) {
-    const next = new URL('/events' + req.originalUrl, req.headers.origin)
-    next.searchParams.set('before', results[results.length - 1].date)
+    const next = new URL(req.originalUrl, reqOrigin(req))
+    next.searchParams.set('before', results[results.length - 1]._id + ':' + results[results.length - 1].date)
+    response.next = next.href
   }
 
   res.json(response)
