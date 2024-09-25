@@ -106,7 +106,6 @@ const fetchEvents = withFatalError(async () => {
 const fetchNextEvents = withFatalError(async () => {
   if (!events.value?.next) return
   const newEvents = await $fetch<EventsRes>(events.value.next)
-  console.log('NEW', newEvents)
   events.value.results = events.value.results.concat(newEvents.results)
   events.value.next = newEvents.next
 })

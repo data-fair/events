@@ -1,5 +1,4 @@
 import type { Event, Notification, Subscription } from '#types'
-import type { Filter } from 'mongodb'
 
 import { parseTemplate } from 'url-template'
 import { nanoid } from 'nanoid'
@@ -19,32 +18,7 @@ const debug = Debug('notifications')
 
 const directoryUrl = config.privateDirectoryUrl
 
-export const receiveEvent = async (event: Event) => {
-  // prepare the filter to find the topics matching this subscription
-  const topicParts = event.topic.key.split(':')
-  const topicKeys = topicParts.map((part, i) => topicParts.slice(0, i + 1).join(':'))
-  const subscriptionsFilter: Filter<Subscription> = { 'topic.key': { $in: topicKeys } }
-  if (event.visibility === 'private') subscriptionsFilter.visibility = 'private'
-  if (event.sender) {
-    subscriptionsFilter['sender.type'] = event.sender.type
-    subscriptionsFilter['sender.id'] = event.sender.id
-    if (event.sender.role) subscriptionsFilter['sender.role'] = event.sender.role
-    if (event.sender.department) {
-      if (event.sender.department !== '*') {
-        subscriptionsFilter['sender.department'] = event.sender.department
-      }
-    } else {
-      subscriptionsFilter['sender.department'] = { $exists: false }
-    }
-  } else {
-    subscriptionsFilter.sender = { $exists: false }
-  }
-  for await (const subscription of mongo.subscriptions.find(subscriptionsFilter)) {
-    await sendNotification(prepareSubscriptionNotification(event, subscription))
-  }
-}
-
-const prepareSubscriptionNotification = (event: Event, subscription: Subscription): Notification => {
+export const prepareSubscriptionNotification = (event: Event, subscription: Subscription): Notification => {
   const localizedEvent = localizeEvent(event, subscription.locale)
   delete localizedEvent.urlParams
   const notification: Notification = {
@@ -72,7 +46,7 @@ const prepareSubscriptionNotification = (event: Event, subscription: Subscriptio
   return notification
 }
 
-const sendNotification = async (notification: Notification) => {
+export const sendNotification = async (notification: Notification) => {
   // global.events.emit('saveNotification', notification)
   await mongo.notifications.insertOne(notification)
   debug('Send WS notif', notification.recipient, notification)
