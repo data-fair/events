@@ -3,7 +3,7 @@ import type { WebhookSubscription } from '#types'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import { session, mongoSort, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
+import { session, mongoSort, mongoPagination, httpError } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
 import doc from '#doc'
 import { createWebhook } from '../webhooks/service.ts'

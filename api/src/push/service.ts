@@ -11,7 +11,7 @@ import config from '#config'
 import mongo from '#mongo'
 import * as notificationsMetrics from '../notifications/metrics.js'
 import * as metrics from './metrics.js'
-import { internalError } from '@data-fair/lib/node/observer.js'
+import { internalError } from '@data-fair/lib-node/observer.js'
 
 const debug = Debug('notifications')
 

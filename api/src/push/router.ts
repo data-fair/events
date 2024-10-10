@@ -9,7 +9,7 @@ import config from '#config'
 import mongo from '#mongo'
 import doc from '#doc'
 import { nanoid } from 'nanoid'
-import { session, reqOrigin, httpError } from '@data-fair/lib/express/index.js'
+import { session, reqOrigin, httpError } from '@data-fair/lib-express/index.js'
 import { vapidKeys, push } from './service.ts'
 
 const router = Router()

@@ -1,4 +1,4 @@
-import jsonSchema from '@data-fair/lib/json-schema.js'
+import jsonSchema from '@data-fair/lib-utils/json-schema.js'
 import EventSchema from '#types/event/schema.js'
 
 export default {

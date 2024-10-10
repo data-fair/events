@@ -4,7 +4,7 @@ import type { Notification } from '#types'
 
 import { Router } from 'express'
 import mongo from '#mongo'
-import { session, mongoPagination } from '@data-fair/lib/express/index.js'
+import { session, mongoPagination } from '@data-fair/lib-express/index.js'
 
 const router = Router()
 

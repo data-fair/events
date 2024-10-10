@@ -2,7 +2,7 @@
 // Useful both for functionalities and help respect GDPR rules
 
 import config from '#config'
-import { createIdentitiesRouter } from '@data-fair/lib/express/identities.js'
+import { createIdentitiesRouter } from '@data-fair/lib-express/identities/index.js'
 import mongo from '#mongo'
 
 export default createIdentitiesRouter(

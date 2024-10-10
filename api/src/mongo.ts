@@ -1,7 +1,7 @@
 import type { Subscription, Notification, WebhookSubscription, Webhook, SearchableEvent, DevicesPushSubscription } from '#types'
 import type { Pointer } from './types.ts'
 
-import mongo from '@data-fair/lib/node/mongo.js'
+import mongo from '@data-fair/lib-node/mongo.js'
 import config from './config.ts'
 
 export class EventsMongo {

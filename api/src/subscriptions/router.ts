@@ -1,10 +1,10 @@
 import type { Subscription } from '#types'
 import type { Filter } from 'mongodb'
-import type { User } from '@data-fair/lib/express/index.js'
+import type { User } from '@data-fair/lib-express/index.js'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import { session, mongoSort, mongoPagination, httpError, reqOrigin } from '@data-fair/lib/express/index.js'
+import { session, mongoSort, mongoPagination, httpError, reqOrigin } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
 import doc from '#doc'
 

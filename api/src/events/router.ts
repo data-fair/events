@@ -6,9 +6,8 @@ import { nanoid } from 'nanoid'
 import mongo from '#mongo'
 import config from '#config'
 import doc from '#doc'
-import { session, mongoPagination, mongoProjection, httpError, assertReqInternal, reqOrigin } from '@data-fair/lib/express/index.js'
-import { localizeEvent } from './service.ts'
-import { receiveEvent } from '../notifications/service.ts'
+import { session, mongoPagination, mongoProjection, httpError, assertReqInternal, reqOrigin } from '@data-fair/lib-express/index.js'
+import { receiveEvent, localizeEvent } from './service.ts'
 
 const router = Router()
 export default router

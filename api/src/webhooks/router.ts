@@ -2,7 +2,7 @@ import type { Webhook } from '#types'
 import type { Filter, Sort } from 'mongodb'
 
 import { Router } from 'express'
-import { session, mongoPagination, httpError } from '@data-fair/lib/express/index.js'
+import { session, mongoPagination, httpError } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
 
 const router = Router()

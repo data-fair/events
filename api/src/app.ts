@@ -1,4 +1,4 @@
-import { errorHandler } from '@data-fair/lib/express/index.js'
+import { errorHandler } from '@data-fair/lib-express/index.js'
 import express from 'express'
 import identitiesRouter from './identities/router.ts'
 import eventsRouter from './events/router.ts'
