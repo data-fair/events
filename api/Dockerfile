@@ -41,9 +41,7 @@ COPY --from=builder /app/api /app/api
 COPY --from=installer /app/node_modules /app/node_modules
 COPY --from=installer /app/api/node_modules /app/api/node_modules
 
-ADD README.md .
-ADD package.json .
-ADD LICENSE .
+ADD README.md LICENSE package.json BUILD.json* ./
 
 WORKDIR /app/api
 
