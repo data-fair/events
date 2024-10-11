@@ -13,7 +13,10 @@
         @click="test"
       >
         tester
-        <v-icon end :icon="mdiSend" />
+        <v-icon
+          end
+          :icon="mdiSend"
+        />
       </v-btn>
       <v-spacer />
       <v-btn

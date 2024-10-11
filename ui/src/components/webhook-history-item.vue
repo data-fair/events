@@ -53,7 +53,10 @@
         <v-list density="compact">
           <v-list-item @click="retry">
             <template #append>
-              <v-icon color="primary" :icon="mdiSend" />
+              <v-icon
+                color="primary"
+                :icon="mdiSend"
+              />
             </template>
 
             <v-list-item-title>

@@ -4,7 +4,10 @@
     data-iframe-height
   >
     <div class="text-h6 mb-5">
-      <v-icon class="mt-n1 mr-1" :icon="mdiRssBox" />
+      <v-icon
+        class="mt-n1 mr-1"
+        :icon="mdiRssBox"
+      />
       <span v-if="recipientSubscriptions">
         {{ t('subscriptions', { nb: recipientSubscriptions.count }, { plural: recipientSubscriptions.count }) }}
       </span>
@@ -36,7 +39,10 @@
                     :src="subscription.icon"
                     alt="icon"
                   >
-                  <v-icon v-else :icon="mdiRss" />
+                  <v-icon
+                    v-else
+                    :icon="mdiRss"
+                  />
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div
@@ -55,8 +61,14 @@
                     v-if="subscription.outputs && subscription.outputs.length"
                     style="align-self: start;"
                   >
-                    <v-icon v-if="subscription.outputs.includes('email')" :icon="mdiEmail" />
-                    <v-icon v-if="subscription.outputs.includes('devices')" :icon="mdiDevices" />
+                    <v-icon
+                      v-if="subscription.outputs.includes('email')"
+                      :icon="mdiEmail"
+                    />
+                    <v-icon
+                      v-if="subscription.outputs.includes('devices')"
+                      :icon="mdiDevices"
+                    />
                   </div>
                 </div>
               </div>
@@ -100,7 +112,7 @@ en:
 
 <script lang="ts" setup>
 import type { Subscription } from '#api/types'
-import { mdiRssBox } from '@mdi/js';
+import { mdiRssBox } from '@mdi/js'
 
 const session = useSessionAuthenticated()
 const { t } = useI18n()

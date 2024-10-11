@@ -55,6 +55,7 @@ const {
   topic,
   icon,
   urlTemplate,
+  // eslint-disable-next-line vue/require-valid-default-prop
   outputs = ['email', 'devices'],
   sender,
   noSender
@@ -80,7 +81,6 @@ const fetchSubscriptions = useFetch<{ results: Subscription[] }>($apiPath + '/su
 const subscription = computed(() => fetchSubscriptions.data.value?.results[0])
 watch(subscription, () => {
   if (subscription.value) topicsSubscriptions[topic.key] = subscription.value
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   else delete topicsSubscriptions[topic.key]
 })
 

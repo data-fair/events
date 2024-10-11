@@ -31,7 +31,10 @@
                     :src="event.icon"
                     alt="icon"
                   >
-                  <v-icon v-else :icon="mdiBell" />
+                  <v-icon
+                    v-else
+                    :icon="mdiBell"
+                  />
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div

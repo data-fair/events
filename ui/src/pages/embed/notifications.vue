@@ -4,7 +4,10 @@
     data-iframe-height
   >
     <div class="text-h6 mb-5">
-      <v-icon class="mt-n1 mr-1" :icon="mdiBell" />
+      <v-icon
+        class="mt-n1 mr-1"
+        :icon="mdiBell"
+      />
       <span>{{ t('notifications', { nb: notifications ? notifications.count : 0 }, { plural: notifications ? notifications.count : 0 }) }}</span>
     </div>
     <v-row v-if="notifications">
@@ -36,7 +39,10 @@
                     :src="notification.icon"
                     alt="icon"
                   >
-                  <v-icon v-else :icon="mdiBell" />
+                  <v-icon
+                    v-else
+                    :icon="mdiBell"
+                  />
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div
