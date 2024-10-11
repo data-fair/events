@@ -43,7 +43,7 @@ export const receiveEvent = async (event: Event) => {
     await sendNotification(prepareSubscriptionNotification(event, subscription))
   }
 
-  const webhookSubscriptionsFilter: Filter<WebhookSubscription> = { $and: (subscriptionsFilters.$and as any[]).filter(f => !f['recipient.id']) }
+  const webhookSubscriptionsFilter = subscriptionsFilter as Filter<WebhookSubscription>
   for await (const webhookSubscription of mongo.webhookSubscriptions.find(webhookSubscriptionsFilter)) {
     // TODO: store a locale on webhooks subscription ?
     await createWebhook(localizeEvent(event), webhookSubscription)

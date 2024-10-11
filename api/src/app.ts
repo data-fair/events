@@ -14,6 +14,7 @@ export const app = express()
 
 // no fancy embedded arrays, just string and arrays of strings in req.query
 app.set('query parser', 'simple')
+app.use(express.json())
 
 app.use(createSiteMiddleware('events'))
 
