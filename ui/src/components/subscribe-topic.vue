@@ -76,7 +76,7 @@ const subscriptionsParams = computed(() => ({
   topic: topic.key,
   sender: noSender ? 'none' : serializeSender(sender ?? session.state.account)
 }))
-const fetchSubscriptions = useFetch<{ results: Subscription[] }>('/events/api/v1/subscriptions', { query: subscriptionsParams })
+const fetchSubscriptions = useFetch<{ results: Subscription[] }>($apiPath + '/subscriptions', { query: subscriptionsParams })
 const subscription = computed(() => fetchSubscriptions.data.value?.results[0])
 watch(subscription, () => {
   if (subscription.value) topicsSubscriptions[topic.key] = subscription.value
@@ -108,13 +108,9 @@ const switchSubscription = async () => {
   switching.value = false
 }
 
-const sendSubscription = async (subscription: Partial<Subscription>) => {
-  try {
-    await $fetch('/events/api/v1/subscriptions', { method: 'POST', body: subscription })
-  } catch (err) {
-    throwFatalError(t('sendError'), err)
-  }
-}
+const sendSubscription = withUiNotif(async (subscription: Partial<Subscription>) => {
+  await $fetch('subscriptions', { method: 'POST', body: subscription })
+})
 </script>
 
 <style lang="css" scoped>

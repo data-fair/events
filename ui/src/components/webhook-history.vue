@@ -13,9 +13,7 @@
         @click="test"
       >
         tester
-        <v-icon end>
-          mdi-send
-        </v-icon>
+        <v-icon end :icon="mdiSend" />
       </v-btn>
       <v-spacer />
       <v-btn
@@ -25,12 +23,12 @@
         density="comfortable"
         @click="fetchWebhooks.refresh()"
       >
-        <v-icon>mdi-refresh</v-icon>
+        <v-icon :icon="mdiRefresh" />
       </v-btn>
     </v-row>
     <div style="height:4px;width:100%;">
       <v-progress-linear
-        v-if="fetchWebhooks.status.value === 'pending'"
+        v-if="fetchWebhooks.loading.value"
         stream
         height="4"
         style="margin:0;"
@@ -53,11 +51,11 @@ import type { Webhook, WebhookSubscription } from '#api/types'
 const { subscription } = defineProps<{ subscription: WebhookSubscription }>()
 
 const webhooksParams = computed(() => ({ size: 100, subscription: subscription._id }))
-const fetchWebhooks = useFetch<{ results: Webhook[] }>('/events/api/v1/webhooks', { query: webhooksParams, lazy: true })
+const fetchWebhooks = useFetch<{ results: Webhook[] }>($apiPath + '/webhooks', { query: webhooksParams })
 const webhooks = computed(() => fetchWebhooks.data.value?.results)
 
 const testing = ref(false)
-const test = withFatalError(async () => {
+const test = withUiNotif(async () => {
   testing.value = true
   await $fetch(`api/v1/webhook-subscriptions/${subscription._id}/_test`, { method: 'POST' })
   await fetchWebhooks.refresh()

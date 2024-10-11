@@ -103,17 +103,17 @@ watch(modelValue, () => {
 const previousState = ref(JSON.stringify(subscription))
 
 const saving = ref(false)
-const save = withFatalError(async () => {
+const save = withUiNotif(async () => {
   const valid = (await form.value?.validate())?.valid
   if (!valid) return
   saving.value = true
-  await $fetch<WebhookSubscription>('/events/api/v1/webhook-subscriptions', { method: 'POST', body: subscription })
+  await $fetch<WebhookSubscription>('webhook-subscriptions', { method: 'POST', body: subscription })
   previousState.value = JSON.stringify(subscription)
   emit('saved')
   saving.value = false
 })
 
-const remove = withFatalError(async () => {
+const remove = withUiNotif(async () => {
   await $fetch('api/v1/webhook-subscriptions/' + subscription._id, { method: 'DELETE' })
   emit('deleted')
 })

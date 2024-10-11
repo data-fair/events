@@ -6,13 +6,12 @@
     <v-alert
       v-if="!session.state.user"
       type="error"
-      style="display:inline-block;"
       class="my-1"
     >
       Vous devez être connecté pour pouvoir recevoir des notifications.
     </v-alert>
     <template v-else>
-      <v-row v-if="hasDeviceOutput && reactiveSearchParams.register !== 'false' && fetchRegistrations.data.value && fetchRegistrations.status.value !== 'pending'">
+      <v-row v-if="hasDeviceOutput && reactiveSearchParams.register !== 'false' && fetchRegistrations.data.value && !fetchRegistrations.loading.value">
         <register-device
           :registrations="fetchRegistrations.data.value"
           @registration="fetchRegistrations.refresh()"
@@ -73,7 +72,7 @@ const { topicsSubscriptions } = useSubscriptions()
 
 const hasDeviceOutput = computed(() => !!topics.value.find(t => topicsSubscriptions[t.key]?.outputs.includes('devices')))
 
-const fetchRegistrations = useFetch<DeviceRegistration[]>('/events/api/v1/push/registrations', { lazy: true })
+const fetchRegistrations = useFetch<DeviceRegistration[]>($apiPath + '/push/registrations')
 
 const outputs = computed(() => {
   if (!fetchRegistrations.data.value) return null

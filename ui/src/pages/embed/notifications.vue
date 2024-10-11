@@ -4,9 +4,8 @@
     data-iframe-height
   >
     <div class="text-h6 mb-5">
-      <v-icon class="mt-n1 mr-1">
-        mdi-bell
-      </v-icon><span>{{ t('notifications', { nb: notifications ? notifications.count : 0 }, { plural: notifications ? notifications.count : 0 }) }}</span>
+      <v-icon class="mt-n1 mr-1" :icon="mdiBell" />
+      <span>{{ t('notifications', { nb: notifications ? notifications.count : 0 }, { plural: notifications ? notifications.count : 0 }) }}</span>
     </div>
     <v-row v-if="notifications">
       <v-col
@@ -16,10 +15,10 @@
         cols="12"
       >
         <v-hover
-          v-slot="{ hover }"
+          v-slot="{ isHovering }"
         >
           <v-card
-            :elevation="hover ? 2 : 0"
+            :elevation="isHovering ? 2 : 0"
             height="100%"
             rounded
             :href="notification && notification.url"
@@ -37,9 +36,7 @@
                     :src="notification.icon"
                     alt="icon"
                   >
-                  <v-icon v-else>
-                    mdi-bell
-                  </v-icon>
+                  <v-icon v-else :icon="mdiBell" />
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div
@@ -114,7 +111,7 @@ const page = ref(0)
 const size = 10
 const notifications = ref<NotificationsRes | null>(null)
 
-const fetchNotifications = withFatalError(async (next?: boolean) => {
+const fetchNotifications = withUiNotif(async (next?: boolean) => {
   if (next) page.value += 1
   else page.value = 0
   const newNotifications = await $fetch<NotificationsRes>('/events/api/v1/notifications', { params: { skip: page.value * size, size } })

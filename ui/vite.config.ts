@@ -4,6 +4,7 @@ import Vue from '@vitejs/plugin-vue'
 import VueRouter from 'unplugin-vue-router/vite'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
 import Unfonts from 'unplugin-fonts/vite'
 import Vuetify from 'vite-plugin-vuetify'
 import microTemplate from '@data-fair/lib-utils/micro-template.js'
@@ -29,19 +30,20 @@ export default defineConfig({
     Unfonts({ google: { families: [{ name: 'Nunito', styles: 'ital,wght@0,200..1000;1,200..1000' }] } }),
     AutoImport({
       dts: './dts/auto-imports.d.ts',
+      vueTemplate: true,
       imports: [
         ...(autoImports as any),
         {
           '~/context': ['$uiConfig', '$sitePath', '$apiPath', '$fetch'],
-          '@mdi/js': ['mdiCalendarRange', 'mdiDatabase', 'mdiImageSizeSelectSmall']
+          '@mdi/js': ['mdiBell', 'mdiRefresh', 'mdiSend', 'mdiDelete', 'mdiDevices', 'mdiEmail', 'mdiRss', 'mdiDotsVertical', 'mdiCheckCircle', 'mdiCancel', 'mdiAlertCircle', 'mdiCellphone', 'mdiWeb']
         }
       ],
       dirs: [
         'src/utils',
-        'src/composables',
-        'src/components/**',
+        'src/composables'
       ]
     }),
+    Components(),
     {
       name: 'inject-site-context',
       async transformIndexHtml (html) {

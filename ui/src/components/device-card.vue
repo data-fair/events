@@ -9,15 +9,13 @@
       <v-icon
         v-if="registration.type === 'webpush'"
         :color="color"
-      >
-        mdi-web
-      </v-icon>
+        :icon="mdiWeb"
+      />
       <v-icon
         v-else
         :color="color"
-      >
-        mdi-cellphone
-      </v-icon>
+        :icon="mdiCellphone"
+      />
       &nbsp;
       {{ registration.deviceName }}
       &nbsp;
@@ -29,7 +27,7 @@
         title="supprimer cet appareil"
         @click="emit('delete')"
       >
-        <v-icon>mdi-delete</v-icon>
+        <v-icon :icon="mdiDelete" />
       </v-btn>
     </v-card-title>
     <v-card-text>
@@ -79,7 +77,6 @@ const color = computed(() => {
   if (registration.disabled === 'gone') return 'grey'
   if (registration.disabled === 'errors') return 'error'
   if (temporarilyDisabled.value) return 'warning'
-  return null
 })
 </script>
 

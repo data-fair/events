@@ -9,7 +9,7 @@
     >
       <register-device
         :registrations="registrations"
-        @registration="r => { localRegistration = r; fetchRegistrations() }"
+        @registration="(r: DeviceRegistration) => { localRegistration = r; fetchRegistrations() }"
       />
     </v-row>
     <v-row v-if="registrations">
@@ -37,17 +37,17 @@ import type { DeviceRegistration } from '#api/types'
 
 const loading = ref(false)
 const registrations = ref<DeviceRegistration[] | null>(null)
-const fetchRegistrations = withFatalError(async () => {
+const fetchRegistrations = withUiNotif(async () => {
   loading.value = true
-  registrations.value = await $fetch<DeviceRegistration[]>('/events/api/v1/push/registrations')
+  registrations.value = await $fetch<DeviceRegistration[]>('push/registrations')
   loading.value = false
 })
 fetchRegistrations()
 
 const localRegistration = ref<DeviceRegistration | null>(null)
 
-const save = withFatalError(async () => {
-  await $fetch('/events/api/v1/push/registrations', { body: registrations.value, method: 'PUT' })
+const save = withUiNotif(async () => {
+  await $fetch('push/registrations', { body: registrations.value, method: 'PUT' })
   fetchRegistrations()
 })
 
@@ -56,8 +56,8 @@ const remove = (i: number) => {
   save()
 }
 
-const test = withFatalError(async (i: number) => {
-  await $fetch(`/events/api/v1/push/registrations/${i}/_test`, { method: 'POST' })
+const test = withUiNotif(async (i: number) => {
+  await $fetch(`push/registrations/${i}/_test`, { method: 'POST' })
 })
 </script>
 

@@ -4,9 +4,7 @@
     data-iframe-height
   >
     <div class="text-h6 mb-5">
-      <v-icon class="mt-n1 mr-1">
-        mdi-rss-box
-      </v-icon>
+      <v-icon class="mt-n1 mr-1" :icon="mdiRssBox" />
       <span v-if="recipientSubscriptions">
         {{ t('subscriptions', { nb: recipientSubscriptions.count }, { plural: recipientSubscriptions.count }) }}
       </span>
@@ -19,10 +17,10 @@
         cols="12"
       >
         <v-hover
-          v-slot="{ hover }"
+          v-slot="{ isHovering }"
         >
           <v-card
-            :elevation="hover ? 2 : 0"
+            :elevation="isHovering ? 2 : 0"
             height="100%"
             rounded
             border
@@ -38,9 +36,7 @@
                     :src="subscription.icon"
                     alt="icon"
                   >
-                  <v-icon v-else>
-                    mdi-rss
-                  </v-icon>
+                  <v-icon v-else :icon="mdiRss" />
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div
@@ -59,12 +55,8 @@
                     v-if="subscription.outputs && subscription.outputs.length"
                     style="align-self: start;"
                   >
-                    <v-icon v-if="subscription.outputs.includes('email')">
-                      mdi-email
-                    </v-icon>
-                    <v-icon v-if="subscription.outputs.includes('devices')">
-                      mdi-devices
-                    </v-icon>
+                    <v-icon v-if="subscription.outputs.includes('email')" :icon="mdiEmail" />
+                    <v-icon v-if="subscription.outputs.includes('devices')" :icon="mdiDevices" />
                   </div>
                 </div>
               </div>
@@ -88,7 +80,7 @@
                   size="small"
                   @click="unsubscribe(subscription)"
                 >
-                  <v-icon>mdi-delete</v-icon>
+                  <v-icon :icon="mdiDelete" />
                 </v-btn>
               </div>
             </v-card-text>
@@ -108,49 +100,18 @@ en:
 
 <script lang="ts" setup>
 import type { Subscription } from '#api/types'
+import { mdiRssBox } from '@mdi/js';
 
 const session = useSessionAuthenticated()
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
 
-const fetchSubscriptions = await useFetch<{ results: Subscription[], count: number }>('/events/api/v1/subscriptions', { query: { recipient: session.state.user.id } })
-if (fetchSubscriptions.error.value) throwFatalError(fetchSubscriptions.error.value)
+const fetchSubscriptions = await useFetch<{ results: Subscription[], count: number }>($apiPath + '/subscriptions', { query: { recipient: session.state.user.id } })
 
 const recipientSubscriptions = computed(() => fetchSubscriptions.data.value)
 
-const unsubscribe = async (subscription: Subscription) => {
-  try {
-    await $fetch('api/v1/subscriptions/' + subscription._id, { method: 'DELETE' })
-  } catch (err) {
-    throwFatalError(err)
-  }
+const unsubscribe = withUiNotif(async (subscription: Subscription) => {
+  await $fetch('api/v1/subscriptions/' + subscription._id, { method: 'DELETE' })
   fetchSubscriptions.refresh()
-}
-
-/*
-import { mapGetters, mapState } from 'vuex'
-
-export default {
-  layout: 'embed',
-  data: () => ({
-    recipientSubscriptions: null
-  }),
-  computed: {
-    ...mapState('session', ['user']),
-    ...mapGetters('session', ['activeAccount'])
-  },
-  async mounted () {
-    await this.refresh()
-  },
-  methods: {
-    async refresh () {
-      this.recipientSubscriptions = await this.$axios.$get('api/v1/subscriptions', { params: { recipient: this.user.id } })
-    },
-    async unsubscribe (subscription) {
-      await this.$axios.$delete('api/v1/subscriptions/' + subscription._id)
-      this.refresh()
-    }
-  }
-}
-*/
+})
 </script>

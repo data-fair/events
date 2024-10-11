@@ -11,10 +11,10 @@
         cols="12"
       >
         <v-hover
-          v-slot="{ hover }"
+          v-slot="{ isHovering }"
         >
           <v-card
-            :elevation="hover ? 2 : 0"
+            :elevation="isHovering ? 2 : 0"
             height="100%"
             rounded
             target="_blank"
@@ -31,9 +31,7 @@
                     :src="event.icon"
                     alt="icon"
                   >
-                  <v-icon v-else>
-                    mdi-bell
-                  </v-icon>
+                  <v-icon v-else :icon="mdiBell" />
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div
@@ -99,11 +97,11 @@ const { dayjs } = useLocaleDayjs()
 
 const events = ref<EventsRes | null>(null)
 
-const fetchEvents = withFatalError(async () => {
-  events.value = await $fetch<EventsRes>('/events/api/v1/events')
+const fetchEvents = withUiNotif(async () => {
+  events.value = await $fetch<EventsRes>('events')
 })
 
-const fetchNextEvents = withFatalError(async () => {
+const fetchNextEvents = withUiNotif(async () => {
   if (!events.value?.next) return
   const newEvents = await $fetch<EventsRes>(events.value.next)
   events.value.results = events.value.results.concat(newEvents.results)

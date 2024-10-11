@@ -6,7 +6,6 @@
     <v-alert
       v-if="!session.state.user"
       type="error"
-      style="display:inline-block;"
       class="my-1"
     >
       {{ t('logged') }}
@@ -14,7 +13,6 @@
     <v-alert
       v-else-if="session.state.accountRole !== 'admin'"
       type="error"
-      style="display:inline-block;"
       class="my-1"
     >
       {{ t('admin') }}

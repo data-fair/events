@@ -63,7 +63,7 @@ const prepareServiceWorker = async () => {
   }
 
   try {
-    await navigator.serviceWorker.register('/events/push-sw.js')
+    await navigator.serviceWorker.register($sitePath + '/events/push-sw.js')
     const serviceWorkerRegistration = await navigator.serviceWorker.ready
     pushManagerSubscription.value = await serviceWorkerRegistration.pushManager.getSubscription()
     if (pushManagerSubscription.value) {

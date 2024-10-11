@@ -6,7 +6,7 @@
   >
     <div style="height:4px;width:100%;">
       <v-progress-linear
-        v-if="fetchSubscriptions.status.value === 'pending'"
+        v-if="fetchSubscriptions.loading.value"
         stream
         height="4"
         style="margin:0;"
@@ -27,7 +27,7 @@
           <webhook-history :subscription="subscription" />
         </v-expansion-panel-text>
       </v-expansion-panel>
-      <v-expansion-panel v-if="fetchSubscriptions.status.value !== 'pending'">
+      <v-expansion-panel v-if="!fetchSubscriptions.loading.value">
         <v-expansion-panel-title>{{ t('new') }}</v-expansion-panel-title>
         <v-expansion-panel-text>
           <webhook-subscription-form
@@ -69,10 +69,7 @@ const subscriptionsParams = computed(() => ({
   topic: topic.key,
   sender: noSender ? 'none' : serializeSender(sender ?? session.state.account)
 }))
-const fetchSubscriptions = useFetch<{ results: WebhookSubscription[] }>('/events/api/v1/webhook-subscriptions', { query: subscriptionsParams })
-watch(fetchSubscriptions.error, (error) => {
-  if (error) throwFatalError(error)
-})
+const fetchSubscriptions = useFetch<{ results: WebhookSubscription[] }>($apiPath + '/webhook-subscriptions', { query: subscriptionsParams })
 
 const onDeleted = async () => {
   await fetchSubscriptions.refresh()

@@ -83,7 +83,7 @@ defineProps({
     default: () => ({ color: 'warning', depressed: true })
   },
   alert: {
-    type: String,
+    type: String as () => 'error' | 'warning',
     default: ''
   }
 })

@@ -11,21 +11,18 @@
         <v-icon
           v-if="webhook.status === 'error'"
           color="error"
-        >
-          mdi-alert-circle
-        </v-icon>
+          :icon="mdiAlertCircle"
+        />
         <v-icon
           v-if="webhook.status === 'cancelled'"
           color="error"
-        >
-          mdi-cancel
-        </v-icon>
+          :icon="mdiCancel"
+        />
         <v-icon
           v-if="webhook.status === 'ok'"
           color="success"
-        >
-          mdi-check-circle
-        </v-icon>
+          :icon="mdiCheckCircle"
+        />
       </div>
     </template>
 
@@ -50,15 +47,13 @@
             variant="flat"
             v-bind="props"
           >
-            <v-icon>mdi-dots-vertical</v-icon>
+            <v-icon :icon="mdiDotsVertical" />
           </v-btn>
         </template>
         <v-list density="compact">
           <v-list-item @click="retry">
             <template #append>
-              <v-icon color="primary">
-                mdi-send
-              </v-icon>
+              <v-icon color="primary" :icon="mdiSend" />
             </template>
 
             <v-list-item-title>
@@ -113,13 +108,13 @@ const description = computed(() => {
   return parts.join(' - ')
 })
 
-const retry = withFatalError(async () => {
-  await $fetch(`/events/api/v1/webhooks/${webhook._id}/_retry`, { method: 'POST' })
+const retry = withUiNotif(async () => {
+  await $fetch(`webhooks/${webhook._id}/_retry`, { method: 'POST' })
   emit('refresh')
 })
 
-/* const cancel = withFatalError(async () => {
-  await $fetch(`/events/api/v1/webhooks/${webhook._id}/_cancel`, { method: 'POST' })
+/* const cancel = withUiNotif(async () => {
+  await $fetch(`${webhook._id}/_cancel`, { method: 'POST' })
   emit('refresh')
 }) */
 </script>
