@@ -1,13 +1,13 @@
 import type { SortDirection, Filter } from 'mongodb'
-import type { Event, SearchableEvent } from '#types'
+import type { Event } from '#types'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import mongo from '#mongo'
 import config from '#config'
-import doc from '#doc'
+import * as postReq from '#doc/events/post-req/index.ts'
 import { session, mongoPagination, mongoProjection, httpError, assertReqInternal, reqOrigin } from '@data-fair/lib-express/index.js'
-import { receiveEvent, localizeEvent } from './service.ts'
+import { postEvent, localizeEvent } from './service.ts'
 
 const router = Router()
 export default router
@@ -49,28 +49,16 @@ router.post('', async (req, res, next) => {
   assertReqInternal(req)
   if (!req.query.key || config.secretKeys.events !== req.query.key) throw httpError(401, 'Bad secret key')
 
-  const { body } = doc.events.postReq.returnValid(req, { name: 'req' })
+  const { body } = postReq.returnValid(req, { name: 'req' })
 
-  const event: SearchableEvent = {
+  const event: Event = {
     ...body,
     _id: nanoid(),
     date: new Date().toISOString(),
     visibility: body.visibility ?? 'private'
   }
 
-  // this logic should work much better on a mongodb version that would support multi-language indexing
-  // https://www.mongodb.com/docs/manual/core/indexes/index-types/index-text/specify-language-text-index/create-text-index-multiple-languages/
-  event._search = []
-  for (const locale of config.i18n.locales) {
-    const localizedEvent = localizeEvent(event, locale)
-    const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body]
-    event._search.push({ language: locale, text: searchParts.filter(Boolean).join(' ') })
-  }
-
-  await mongo.events.insertOne(event)
-  delete event._search
-
-  await receiveEvent(event)
+  await postEvent(event)
 
   res.status(201).json(event)
 })

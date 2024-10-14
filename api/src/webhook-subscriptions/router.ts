@@ -5,7 +5,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { session, mongoSort, mongoPagination, httpError } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
-import doc from '#doc'
+import * as postReq from '#doc/webhook-subscriptions/post-req/index.ts'
 import { createWebhook } from '../webhooks/service.ts'
 
 const router = Router()
@@ -44,7 +44,7 @@ router.post('', async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
-  const { body } = doc.webhookSubscriptions.postReq.returnValid(req, { name: 'req' })
+  const { body } = postReq.returnValid(req, { name: 'req' })
   const owner = account
   const date = new Date().toISOString()
 

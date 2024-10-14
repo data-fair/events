@@ -6,7 +6,7 @@ import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { session, mongoSort, mongoPagination, httpError, reqOrigin } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
-import doc from '#doc'
+import * as postReq from '#doc/subscriptions/post-req/index.ts'
 
 const router = Router()
 export default router
@@ -71,7 +71,7 @@ const canSubscribePrivate = (sender: Subscription['sender'], user: User) => {
 router.post('', async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
-  const { body } = doc.subscriptions.postReq.returnValid(req, { name: 'req' })
+  const { body } = postReq.returnValid(req, { name: 'req' })
   const date = new Date().toISOString()
 
   const subscription: Subscription = {

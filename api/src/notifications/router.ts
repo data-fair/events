@@ -43,72 +43,58 @@ router.get('', async (req, res, next) => {
 })
 
 // push a notification
-// TODO: do we still support posting a notification to send directly to a user without going through an event ?
-/*
-router.post('', async (req, res, next) => {
-  const db = req.app.get('db')
-  const notification = req.body
+// TODO: estimate if this can be totally replaced with the POST events or if we still need to send a notification explicitly to a user
+// router.post('', async (req, res, next) => {
+//   assertReqInternal(req)
+//   if (!req.query.key || config.secretKeys.events !== req.query.key) throw httpError(401, 'Bad secret key')
+//   if (req.query.subscribedOnly) internalError('deprecated-param', '"subscribedOnly" parameter is depecrated when pushing a notification')
 
-  if (req.query.key) {
-    if (req.query.key !== config.secretKeys.notifications) return res.status(401).send()
-  } else {
-    await auth(false)(req, res, () => {})
-    if (!req.user) return res.status(401).send()
-    notification.sender = req.user.accountOwner
-    notification.recipient = notification.recipient || { id: req.user.id, name: req.user.name }
-    if (!req.user.adminMode && (!notification.recipient || notification.recipient.id !== req.user.id)) {
-      return res.status(403).send()
-    }
-  }
-  prometheus.receivedNotifications.inc()
+//   notification.visibility = notification.visibility ?? 'private'
+//   notification.date = new Date().toISOString()
+//   const valid = validate(notification)
+//   if (!valid) return res.status(400).send(validate.errors)
 
-  notification.visibility = notification.visibility ?? 'private'
-  notification.date = new Date().toISOString()
-  const valid = validate(notification)
-  if (!valid) return res.status(400).send(validate.errors)
+//   // prepare the filter to find the topics matching this subscription
+//   const topicParts = notification.topic.key.split(':')
+//   const topicKeys = topicParts.map((part, i) => topicParts.slice(0, i + 1).join(':'))
+//   const subscriptionsFilter = { 'topic.key': { $in: topicKeys } }
+//   if (notification.visibility === 'private') subscriptionsFilter.visibility = 'private'
+//   if (notification.sender) {
+//     subscriptionsFilter['sender.type'] = notification.sender.type
+//     subscriptionsFilter['sender.id'] = notification.sender.id
+//     if (notification.sender.role) subscriptionsFilter['sender.role'] = notification.sender.role
+//     if (notification.sender.department) {
+//       if (notification.sender.department !== '*') {
+//         subscriptionsFilter['sender.department'] = notification.sender.department
+//       }
+//     } else {
+//       subscriptionsFilter['sender.department'] = { $exists: false }
+//     }
+//   } else {
+//     subscriptionsFilter.sender = { $exists: false }
+//   }
+//   if (notification.recipient) {
+//     subscriptionsFilter['recipient.id'] = notification.recipient.id
+//   }
+//   let nbSent = 0
+//   for await (const subscription of db.collection('subscriptions').find(subscriptionsFilter)) {
+//     await sendNotification(req, prepareSubscriptionNotification(notification, subscription))
+//     nbSent += 1
+//   }
 
-  // prepare the filter to find the topics matching this subscription
-  const topicParts = notification.topic.key.split(':')
-  const topicKeys = topicParts.map((part, i) => topicParts.slice(0, i + 1).join(':'))
-  const subscriptionsFilter = { 'topic.key': { $in: topicKeys } }
-  if (notification.visibility === 'private') subscriptionsFilter.visibility = 'private'
-  if (notification.sender) {
-    subscriptionsFilter['sender.type'] = notification.sender.type
-    subscriptionsFilter['sender.id'] = notification.sender.id
-    if (notification.sender.role) subscriptionsFilter['sender.role'] = notification.sender.role
-    if (notification.sender.department) {
-      if (notification.sender.department !== '*') {
-        subscriptionsFilter['sender.department'] = notification.sender.department
-      }
-    } else {
-      subscriptionsFilter['sender.department'] = { $exists: false }
-    }
-  } else {
-    subscriptionsFilter.sender = { $exists: false }
-  }
-  if (notification.recipient) {
-    subscriptionsFilter['recipient.id'] = notification.recipient.id
-  }
-  let nbSent = 0
-  for await (const subscription of db.collection('subscriptions').find(subscriptionsFilter)) {
-    await sendNotification(req, prepareSubscriptionNotification(notification, subscription))
-    nbSent += 1
-  }
+//   // if the notification was directly targetted to the user, no need for a subscription
+//   // the subscription might still have been used to customize locale, outputs, etc.. but it is not required
+//   if (notification.recipient && !nbSent && req.query.subscribedOnly !== 'true') {
+//     await sendNotification(req, notification)
+//   }
 
-  // if the notification was directly targetted to the user, no need for a subscription
-  // the subscription might still have been used to customize locale, outputs, etc.. but it is not required
-  if (notification.recipient && !nbSent && req.query.subscribedOnly !== 'true') {
-    await sendNotification(req, notification)
-  }
+//   const webhookSubscriptionssFilter = { ...subscriptionsFilter }
+//   delete webhookSubscriptionssFilter['recipient.id']
+//   for await (const webhookSubscription of db.collection('webhook-subscriptions').find(webhookSubscriptionssFilter)) {
+//     await createWebhook(req, notification, webhookSubscription)
+//   }
 
-  const webhookSubscriptionssFilter = { ...subscriptionsFilter }
-  delete webhookSubscriptionssFilter['recipient.id']
-  for await (const webhookSubscription of db.collection('webhook-subscriptions').find(webhookSubscriptionssFilter)) {
-    await createWebhook(req, notification, webhookSubscription)
-  }
+//   res.status(200).json(notification)
+// })
 
-  res.status(200).json(notification)
-})
-  */
-
-export default router
+// export default router

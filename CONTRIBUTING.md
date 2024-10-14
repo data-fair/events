@@ -50,6 +50,5 @@ npm run build-types
 Build images:
 
 ```
-docker build -f api/Dockerfile -t data-fair/events/api:dev .
-docker build -f ui/Dockerfile -t data-fair/events/ui:dev .
+docker build --progress=plain --target=main -t data-fair/events:dev .
 ```

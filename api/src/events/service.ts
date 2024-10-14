@@ -1,5 +1,5 @@
 import type { Filter } from 'mongodb'
-import type { Event, LocalizedEvent, Subscription, WebhookSubscription } from '#types'
+import type { Event, SearchableEvent, LocalizedEvent, Subscription, WebhookSubscription } from '#types'
 import config from '#config'
 import mongo from '#mongo'
 import { sendNotification, prepareSubscriptionNotification } from '../notifications/service.ts'
@@ -19,7 +19,19 @@ export const localizeEvent = (event: Event, locale: string = config.i18n.default
   }
 }
 
-export const receiveEvent = async (event: Event) => {
+export const postEvent = async (event: Event) => {
+  const searchableEvent: SearchableEvent = { ...event }
+
+  // this logic should work much better on a mongodb version that would support multi-language indexing
+  // https://www.mongodb.com/docs/manual/core/indexes/index-types/index-text/specify-language-text-index/create-text-index-multiple-languages/
+  searchableEvent._search = []
+  for (const locale of config.i18n.locales) {
+    const localizedEvent = localizeEvent(searchableEvent, locale)
+    const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body]
+    searchableEvent._search.push({ language: locale, text: searchParts.filter(Boolean).join(' ') })
+  }
+  await mongo.events.insertOne(searchableEvent)
+
   // prepare the filter to find the topics matching this subscription
   const topicParts = event.topic.key.split(':')
   const topicKeys = topicParts.map((part, i) => topicParts.slice(0, i + 1).join(':'))

@@ -7,7 +7,8 @@ import { Router } from 'express'
 import useragent from 'useragent'
 import config from '#config'
 import mongo from '#mongo'
-import doc from '#doc'
+import * as putRegistrationsReq from '#doc/push/put-registrations-req/index.ts'
+import * as postRegistrationReq from '#doc/push/post-registration-req/index.ts'
 import { nanoid } from 'nanoid'
 import { session, reqOrigin, httpError } from '@data-fair/lib-express/index.js'
 import { vapidKeys, push } from './service.ts'
@@ -37,7 +38,7 @@ router.get('/registrations', async (req, res) => {
 
 router.put('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
-  const { body } = doc.push.putRegistrationsReq.returnValid(req, { name: 'req' })
+  const { body } = putRegistrationsReq.returnValid(req, { name: 'req' })
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
   await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: body } })
   res.send(req.body)
@@ -46,7 +47,7 @@ router.put('/registrations', async (req, res) => {
 // a shortcut to register current device
 router.post('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
-  const { body } = doc.push.postRegistrationReq.returnValid(req, { name: 'req' })
+  const { body } = postRegistrationReq.returnValid(req, { name: 'req' })
   const agent = useragent.parse(req.headers['user-agent'])
   const date = new Date().toISOString()
   const newRegistration: DeviceRegistration = {
