@@ -8,10 +8,10 @@
     <p>
       <ul>
         <li
-          v-for="link in links"
-          :key="link"
+          v-for="(link,i) in links"
+          :key="i"
         >
-          <a :href="link">{{ link }}</a>
+          <a :href="link[0]">{{ link[1] }}</a>
         </li>
       </ul>
     </p>
@@ -27,13 +27,14 @@ import personalMenu from '@data-fair/lib-vuetify/personal-menu.vue'
 const session = useSession()
 
 const links = [
-  '/simple-directory',
-  '/events/embed/events',
-  '/events/embed/subscribe?key=topic1,topic2&title=Topic 1,Topic 2&sender=organization:orga1',
-  '/events/embed/subscriptions',
-  '/events/embed/subscribe-webhooks?key=topic&title=Topic',
-  '/events/embed/notifications',
-  '/events/embed/devices'
+  ['/simple-directory', 'User management'],
+  ['/events/embed/events', 'Account events'],
+  ['/events/embed/subscribe?key=topic1,topic2&title=Topic 1,Topic 2&sender=organization:orga1', 'Subscribe to a topic'],
+  ['/events/embed/subscriptions', 'User subscriptions'],
+  ['/events/embed/subscribe-webhooks?key=topic&title=Topic', 'Subscribe webhooks to a topic'],
+  ['/events/embed/notifications', 'User notifications'],
+  ['/events/embed/devices', 'User devices'],
+  ['/built/events/embed/devices', 'Built version']
 ]
 </script>
 

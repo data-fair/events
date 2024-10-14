@@ -1,5 +1,5 @@
 <template>
-  <v-alert
+  <v-card
     :elevation="isLocal ? 8 : 0"
     :color="color"
     :variant="isLocal ? 'elevated' : 'outlined'"
@@ -42,7 +42,7 @@
         tester
       </v-btn>
     </v-card-action>
-  </v-alert>
+  </v-card>
 </template>
 
 <script lang="ts" setup>
