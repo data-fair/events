@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 dts/typed-router.d.ts
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
