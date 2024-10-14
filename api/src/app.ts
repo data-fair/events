@@ -9,6 +9,7 @@ import subscriptionsRouter from './subscriptions/router.ts'
 import webhooksRouter from './webhooks/router.ts'
 import webhookSubscriptionsRouter from './webhook-subscriptions/router.ts'
 import { uiConfig } from '#config'
+import { internalError } from '@data-fair/lib-node/observer.js'
 
 export const app = express()
 
@@ -26,8 +27,13 @@ app.use('/api/notifications', notificationsRouter)
 app.use('/api/push', pushRouter)
 app.use('/api/identities', identitiesRouter)
 
-app.use('/api/v1/notifications', notificationsRouter) // retro-compatibility with notify
-app.use('/api/v1/subscriptions', subscriptionsRouter) // retro-compatibility with notify
+// retro-compatibility with notify
+app.use('api/v1', (req, res, next) => {
+  internalError('deprecated', '"/api/v1" prefix is deprecated')
+  next()
+})
+app.use('/api/v1/notifications', notificationsRouter)
+app.use('/api/v1/subscriptions', subscriptionsRouter)
 
 app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig))
 
