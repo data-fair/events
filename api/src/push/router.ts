@@ -11,7 +11,7 @@ import * as putRegistrationsReq from '#doc/push/put-registrations-req/index.ts'
 import * as postRegistrationReq from '#doc/push/post-registration-req/index.ts'
 import { nanoid } from 'nanoid'
 import { session, reqOrigin, httpError } from '@data-fair/lib-express/index.js'
-import { vapidKeys, push } from './service.ts'
+import { getPushState, push } from './service.ts'
 
 const router = Router()
 export default router
@@ -24,7 +24,7 @@ export function equalDeviceRegistrations (regId1: DeviceRegistration['id'] | nul
 }
 
 router.get('/vapidkey', async (req, res) => {
-  res.send({ publicKey: vapidKeys.publicKey })
+  res.send({ publicKey: getPushState().vapidKeys.publicKey })
 })
 
 router.get('/registrations', async (req, res) => {

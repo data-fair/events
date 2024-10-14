@@ -1,5 +1,4 @@
 data/
-security/
 node_modules/
 api/config/local-*
 .type/

@@ -1,8 +1,6 @@
-import { resolve } from 'node:path'
 import type { DeviceRegistration, Notification } from '#types'
 import type { RegistrationId } from 'node-pushnotifications'
 
-import fs from 'fs-extra'
 import webpush from 'web-push'
 import PushNotifications from 'node-pushnotifications'
 import dayjs from 'dayjs'
@@ -13,38 +11,39 @@ import * as notificationsMetrics from '../notifications/metrics.js'
 import * as metrics from './metrics.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 
-const debug = Debug('notifications')
+const debug = Debug('push')
 
-const securityDir = resolve(import.meta.dirname, '../../../security')
-
-fs.ensureDirSync(securityDir)
-let _vapidKeys
-if (!fs.existsSync(securityDir + '/vapid.json')) {
-  _vapidKeys = webpush.generateVAPIDKeys()
-  fs.writeJsonSync(securityDir + '/vapid.json', _vapidKeys)
-} else {
-  _vapidKeys = fs.readJsonSync(securityDir + '/vapid.json')
-}
-
-export const vapidKeys = _vapidKeys
-
-const settings: PushNotifications.Settings = {
-  web: {
-    vapidDetails: {
-      subject: 'mailto:Koumoul <contact@koumoul.com>',
-      publicKey: vapidKeys.publicKey,
-      privateKey: vapidKeys.privateKey
-    },
-    gcmAPIKey: config.gcmAPIKey
+let pushState: undefined | { vapidKeys: webpush.VapidKeys, pushNotifications: PushNotifications }
+export const init = async () => {
+  let vapidKeys = (await mongo.secrets.findOne({ _id: 'vapid-keys' }))?.data as webpush.VapidKeys | undefined
+  if (!vapidKeys) {
+    vapidKeys = webpush.generateVAPIDKeys()
+    await mongo.secrets.insertOne({ _id: 'vapid-keys', data: vapidKeys })
   }
+
+  const settings: PushNotifications.Settings = {
+    web: {
+      vapidDetails: {
+        subject: 'mailto:Koumoul <contact@koumoul.com>',
+        publicKey: vapidKeys.publicKey,
+        privateKey: vapidKeys.privateKey
+      },
+      gcmAPIKey: config.gcmAPIKey
+    }
+  }
+  if (config.apn.token.key) {
+    settings.apn = config.apn
+  }
+  const pushNotifications = new PushNotifications(settings)
+  pushState = { vapidKeys, pushNotifications }
 }
-if (config.apn.token.key) {
-  settings.apn = config.apn
+export const getPushState = () => {
+  if (!pushState) throw new Error('missing pushService.init call ?')
+  return pushState
 }
-const pushNotifications = new PushNotifications(settings)
 
 export const push = async (notification: Notification, pushSub: { registrations: DeviceRegistration[] } | null = null) => {
-  if (!pushNotifications) throw new Error('pushNotifications was not initialized')
+  const pushNotifications = getPushState().pushNotifications
 
   const ownerFilter = { 'owner.type': 'user', 'owner.id': notification.recipient.id }
   pushSub = pushSub ?? await mongo.pushSubscriptions.findOne(ownerFilter)

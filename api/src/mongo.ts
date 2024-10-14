@@ -41,6 +41,10 @@ export class EventsMongo {
     return mongo.db.collection<Pointer>('pointers')
   }
 
+  get secrets () {
+    return mongo.db.collection<{ _id: string, data: any } >('secret')
+  }
+
   init = async () => {
     await mongo.connect(config.mongoUrl)
     await mongo.configure({
