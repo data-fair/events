@@ -20,11 +20,12 @@ export const localizeEvent = (event: Event, locale: string = config.i18n.default
 }
 
 export const postEvent = async (event: Event) => {
-  const searchableEvent: SearchableEvent = { ...event }
-
   // this logic should work much better on a mongodb version that would support multi-language indexing
   // https://www.mongodb.com/docs/manual/core/indexes/index-types/index-text/specify-language-text-index/create-text-index-multiple-languages/
-  searchableEvent._search = []
+  const searchableEvent: SearchableEvent = {
+    ...event,
+    _search: []
+  }
   for (const locale of config.i18n.locales) {
     const localizedEvent = localizeEvent(searchableEvent, locale)
     const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body]

@@ -26,6 +26,9 @@ app.use('/api/notifications', notificationsRouter)
 app.use('/api/push', pushRouter)
 app.use('/api/identities', identitiesRouter)
 
+app.use('/api/v1/notifications', notificationsRouter) // retro-compatibility with notify
+app.use('/api/v1/subscriptions', subscriptionsRouter) // retro-compatibility with notify
+
 app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig))
 
 app.use(errorHandler)
