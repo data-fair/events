@@ -36,19 +36,23 @@ export default {
     },
     date: {
       type: 'string',
-      format: 'date-time'
+      format: 'date-time',
+      readOnly: true
     },
     lastSuccess: {
       type: 'string',
-      format: 'date-time'
+      format: 'date-time',
+      readOnly: true
     },
     disabledUntil: {
       type: 'string',
-      format: 'date-time'
+      format: 'date-time',
+      readOnly: true
     },
     disabled: {
       type: 'string',
-      enum: ['gone', 'errors']
+      enum: ['gone', 'errors'],
+      readOnly: true
     },
     lastErrors: {
       type: 'array',
@@ -59,7 +63,8 @@ export default {
             type: 'integer'
           }
         }
-      }
+      },
+      readOnly: true
     }
   }
 }
