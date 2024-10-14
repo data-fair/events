@@ -35,6 +35,8 @@ app.use('api/v1', (req, res, next) => {
 app.use('/api/v1/notifications', notificationsRouter)
 app.use('/api/v1/subscriptions', subscriptionsRouter)
 
+app.use('/api', (req, res) => res.status(404).send('unknown api endpoint'))
+
 app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig))
 
 app.use(errorHandler)
