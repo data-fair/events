@@ -42,34 +42,41 @@ export const getPushState = () => {
   return pushState
 }
 
-export const push = async (notification: Notification, pushSub: { registrations: DeviceRegistration[] } | null = null) => {
+export const pushToDevice = async (notification: Notification, registration: DeviceRegistration) => {
   const pushNotifications = getPushState().pushNotifications
+  const defaultPushNotif = config.defaultPushNotif[registration.type || 'webpush']
+  const pushNotif: any = {
+    ...notification,
+    badge: config.theme.notificationBadge || (notification.origin + '/events/badge-72x72.png'),
+    ...defaultPushNotif
+  }
+  delete pushNotif.recipient
+  const res = await pushNotifications.send([registration.id as RegistrationId], pushNotif)
+  debug('Send push notif', notification.recipient.id, registration, pushNotif, res[0])
+  return res[0].message.find(m => !!m.error)?.error
+}
 
+export const push = async (notification: Notification, forceRegistrationIndex: number = -1) => {
   const ownerFilter = { 'owner.type': 'user', 'owner.id': notification.recipient.id }
-  pushSub = pushSub ?? await mongo.pushSubscriptions.findOne(ownerFilter)
+  const pushSub = await mongo.pushSubscriptions.findOne(ownerFilter)
   if (!pushSub) return []
   const errors = []
-  for (const registration of pushSub.registrations) {
-    if (registration.disabled) continue
-    if (registration.disabledUntil) {
-      if (registration.disabledUntil > dayjs().toISOString()) continue
-      delete registration.disabledUntil
+  for (let i = 0; i < pushSub.registrations.length; i++) {
+    const registration = pushSub.registrations[i]
+    if (forceRegistrationIndex !== -1) {
+      if (i !== forceRegistrationIndex) continue
+    } else {
+      if (registration.disabled) continue
+      if (registration.disabledUntil) {
+        if (registration.disabledUntil > dayjs().toISOString()) continue
+      }
     }
+    delete registration.disabledUntil
     notificationsMetrics.sentNotifications.inc({ output: 'device-' + registration.type })
 
-    const defaultPushNotif = config.defaultPushNotif[registration.type || 'webpush']
-    const pushNotif: any = {
-      ...notification,
-      badge: config.theme.notificationBadge || (notification.origin + '/events/badge-72x72.png'),
-      ...defaultPushNotif
-    }
-    delete pushNotif.recipient
     try {
-      const res = await pushNotifications.send([registration.id as RegistrationId], pushNotif)
-      debug('Send push notif', notification.recipient.id, registration, pushNotif, res[0])
-      const errorMessage = res[0].message.find(m => !!m.error)
-      if (errorMessage) {
-        const error = errorMessage.error as any
+      const error = await pushToDevice(notification, registration) as any
+      if (error) {
         metrics.pushDeviceErrors.inc({ output: 'device-' + registration.type, statusCode: error.statusCode })
         errors.push(error)
         if (error.statusCode === 410) {
@@ -83,6 +90,7 @@ export const push = async (notification: Notification, pushSub: { registrations:
             registration.disabled = 'errors'
             console.warn('registration returned too many errors, disable it', error, JSON.stringify(registration))
           } else {
+            delete registration.disabled
             registration.disabledUntil = dayjs().add(Math.ceil(Math.pow(registration.lastErrors.length, 2.5)), 'minute').toISOString()
             console.warn('registration returned an error, progressively backoff', error, JSON.stringify(registration))
           }

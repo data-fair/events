@@ -52,6 +52,7 @@
     "typescript": "^5.5.4"
   },
   "relativeDependencies": {
+    "@data-fair/lib-express": "../lib/packages/express",
     "@data-fair/lib-vue": "../lib/packages/vue"
   }
 }

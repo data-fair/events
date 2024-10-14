@@ -58,6 +58,7 @@ const remove = (i: number) => {
 
 const test = withUiNotif(async (i: number) => {
   await $fetch(`push/registrations/${i}/_test`, { method: 'POST' })
+  await fetchRegistrations()
 })
 </script>
 

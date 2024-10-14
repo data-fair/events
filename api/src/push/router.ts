@@ -11,7 +11,7 @@ import * as putRegistrationsReq from '#doc/push/put-registrations-req/index.ts'
 import * as postRegistrationReq from '#doc/push/post-registration-req/index.ts'
 import { nanoid } from 'nanoid'
 import { session, reqOrigin, httpError } from '@data-fair/lib-express/index.js'
-import { getPushState, push } from './service.ts'
+import { getPushState, push, pushToDevice } from './service.ts'
 
 const router = Router()
 export default router
@@ -75,9 +75,8 @@ router.post('/registrations', async (req, res) => {
     await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
     res.send(existingRegistration)
   } else {
-    sub.registrations.push(newRegistration)
     const origin = reqOrigin(req)
-    const errors = await push({
+    const error = await pushToDevice({
       _id: 'new-device',
       origin,
       topic: { key: 'new-device' },
@@ -87,10 +86,9 @@ router.post('/registrations', async (req, res) => {
       body: `L'appareil ${newRegistration.deviceName} est confirmé comme destinataire de vos notifications.`,
       date,
       icon: config.theme.notificationIcon || config.theme.logo || (origin + '/events/logo-192x192.png')
-    }, { registrations: [newRegistration] })
-    if (errors.length) {
-      return res.status(500).send(errors[0])
-    }
+    }, newRegistration)
+    if (error) return res.status(500).send(error)
+    sub.registrations.push(newRegistration)
     await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
     res.send(newRegistration)
   }
@@ -116,6 +114,6 @@ router.post('/registrations/:i/_test', async (req, res) => {
     title: 'Cet appareil est correctement configuré pour recevoir vos notifications',
     date: new Date().toISOString(),
     icon: config.theme.notificationIcon || config.theme.logo || (origin + '/events/logo-192x192.png')
-  }, { registrations: [registration] })
+  }, i)
   res.send({ error: errors[0] })
 })

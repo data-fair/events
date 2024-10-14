@@ -12,6 +12,7 @@ import { createHttpTerminator } from 'http-terminator'
 import { app } from './app.ts'
 import config from '#config'
 import * as webhooksWorker from './webhooks/worker.ts'
+import * as pushService from './push/service.ts'
 
 const server = createServer(app)
 const httpTerminator = createHttpTerminator({ server })
@@ -38,6 +39,7 @@ export const start = async () => {
     return ownerType === 'user' && ownerId === sessionState.user.id
   })
   await wsEmitter.init(mongo.db)
+  await pushService.init()
   await webhooksWorker.start()
 
   server.listen(config.port)
