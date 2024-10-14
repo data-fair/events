@@ -123,7 +123,7 @@ const fetchSubscriptions = await useFetch<{ results: Subscription[], count: numb
 const recipientSubscriptions = computed(() => fetchSubscriptions.data.value)
 
 const unsubscribe = withUiNotif(async (subscription: Subscription) => {
-  await $fetch('api/v1/subscriptions/' + subscription._id, { method: 'DELETE' })
+  await $fetch('subscriptions/' + subscription._id, { method: 'DELETE' })
   fetchSubscriptions.refresh()
 })
 </script>

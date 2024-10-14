@@ -110,7 +110,7 @@ export default {
       } else {
         params.sender = this.activeAccount.type + ':' + this.activeAccount.id
       }
-      this.subscriptions = (await this.$axios.$get('api/v1/webhook-subscriptions', { params })).results
+      this.subscriptions = (await this.$axios.$get('webhook-subscriptions', { params })).results
 
       this.loading = false
 
@@ -121,7 +121,7 @@ export default {
       }
     },
     async saveSubscription (subscription) {
-      await this.$axios.$post('api/v1/webhook-subscriptions', subscription)
+      await this.$axios.$post('webhook-subscriptions', subscription)
     }
   }
 } */

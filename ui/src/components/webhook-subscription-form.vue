@@ -114,7 +114,7 @@ const save = withUiNotif(async () => {
 })
 
 const remove = withUiNotif(async () => {
-  await $fetch('api/v1/webhook-subscriptions/' + subscription._id, { method: 'DELETE' })
+  await $fetch('webhook-subscriptions/' + subscription._id, { method: 'DELETE' })
   emit('deleted')
 })
 </script>

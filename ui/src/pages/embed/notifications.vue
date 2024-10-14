@@ -120,7 +120,7 @@ const notifications = ref<NotificationsRes | null>(null)
 const fetchNotifications = withUiNotif(async (next?: boolean) => {
   if (next) page.value += 1
   else page.value = 0
-  const newNotifications = await $fetch<NotificationsRes>('/events/api/v1/notifications', { params: { skip: page.value * size, size } })
+  const newNotifications = await $fetch<NotificationsRes>('notifications', { params: { skip: page.value * size, size } })
   if (next && notifications.value) {
     notifications.value.results = notifications.value.results.concat(newNotifications.results)
   } else {

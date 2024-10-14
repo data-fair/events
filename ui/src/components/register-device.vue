@@ -74,7 +74,7 @@ const prepareServiceWorker = async () => {
         pushManagerSubscription.value = null
       } else {
         // refresh the registration so that it is identified as active
-        const refreshedRegistration = await $fetch<DeviceRegistration>('api/v1/push/registrations', { body: registration, method: 'POST' })
+        const refreshedRegistration = await $fetch<DeviceRegistration>('push/registrations', { body: registration, method: 'POST' })
         emit('registration', refreshedRegistration)
       }
     } else {
@@ -90,13 +90,13 @@ prepareServiceWorker()
 const register = async () => {
   try {
     const serviceWorkerRegistration = await navigator.serviceWorker.ready
-    const vapidKey = await $fetch<{ publicKey: string }>('api/v1/push/vapidkey')
+    const vapidKey = await $fetch<{ publicKey: string }>('push/vapidkey')
     pushManagerSubscription.value = await serviceWorkerRegistration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(vapidKey.publicKey)
     })
     const registration: Partial<DeviceRegistration> = { id: pushManagerSubscription.value }
-    const createdRegistration = await $fetch<DeviceRegistration>('api/v1/push/registrations', { body: registration, method: 'POST' })
+    const createdRegistration = await $fetch<DeviceRegistration>('push/registrations', { body: registration, method: 'POST' })
     emit('registration', createdRegistration)
   } catch (err) {
     if (Notification.permission === 'denied') {

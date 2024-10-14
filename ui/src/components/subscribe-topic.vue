@@ -102,7 +102,7 @@ const switchSubscription = async () => {
     await sendSubscription(subscription)
     await fetchSubscriptions.refresh()
   } else {
-    await $fetch('api/v1/subscriptions/' + subscription.value._id, { method: 'DELETE' })
+    await $fetch('subscriptions/' + subscription.value._id, { method: 'DELETE' })
     await fetchSubscriptions.refresh()
   }
   switching.value = false
