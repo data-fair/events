@@ -10,7 +10,7 @@ import mongo from '#mongo'
 import * as putRegistrationsReq from '#doc/push/put-registrations-req/index.ts'
 import * as postRegistrationReq from '#doc/push/post-registration-req/index.ts'
 import { nanoid } from 'nanoid'
-import { session, reqOrigin, httpError } from '@data-fair/lib-express/index.js'
+import { session, reqSiteUrl, httpError } from '@data-fair/lib-express/index.js'
 import { getPushState, push, pushToDevice } from './service.ts'
 
 const router = Router()
@@ -75,7 +75,7 @@ router.post('/registrations', async (req, res) => {
     await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
     res.send(existingRegistration)
   } else {
-    const origin = reqOrigin(req)
+    const origin = reqSiteUrl(req)
     const error = await pushToDevice({
       _id: 'new-device',
       origin,
@@ -104,7 +104,7 @@ router.post('/registrations/:i/_test', async (req, res) => {
   const registration = sub.registrations[i]
   if (!registration) throw httpError(404)
 
-  const origin = reqOrigin(req)
+  const origin = reqSiteUrl(req)
   const errors = await push({
     _id: 'test-device',
     origin,

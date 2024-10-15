@@ -4,7 +4,7 @@ import type { User } from '@data-fair/lib-express/index.js'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
-import { session, mongoSort, mongoPagination, httpError, reqOrigin } from '@data-fair/lib-express/index.js'
+import { session, mongoSort, mongoPagination, httpError, reqSiteUrl } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
 import * as postReq from '#doc/subscriptions/post-req/index.ts'
 
@@ -81,7 +81,7 @@ router.post('', async (req, res, next) => {
     title: `${body.topic.title} (${body.recipient?.name ?? user.name})`,
     visibility: 'private',
     ...body,
-    origin: reqOrigin(req),
+    origin: reqSiteUrl(req),
     created: { id: user.id, name: user.name, date },
     updated: { id: user.id, name: user.name, date }
   }
