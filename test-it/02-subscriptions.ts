@@ -33,13 +33,14 @@ describe('subscriptions', () => {
     assert.equal(res.data.count, 1)
     assert.equal(res.data.results[0].origin, 'http://localhost:5600')
 
-    res = await axPush.post('/api/events', {
+    res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
       body: 'a notification from host {hostname}',
-      sender: { type: 'user', id: 'user1' },
+      sender: { type: 'user', id: 'user1', name: 'User 1' },
       visibility: 'public'
-    })
+    }])
     res = await admin1.get('/api/notifications')
     assert.equal(res.data.count, 1)
     assert.equal(res.data.results[0].body, 'a notification from host localhost')
@@ -61,11 +62,12 @@ describe('subscriptions', () => {
     res = await user2.post('/api/subscriptions', subscription)
     assert.equal(res.data.visibility, 'public')
 
-    res = await axPush.post('/api/events', {
+    res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga1' }
-    })
+      sender: { type: 'organization', id: 'orga1', name: 'Orga 1' }
+    }])
     res = await admin1.get('/api/notifications')
     assert.equal(res.data.count, 1)
     res = await user1.get('/api/notifications')
@@ -84,11 +86,12 @@ describe('subscriptions', () => {
     res = await user1.post('/api/subscriptions', subscription)
     assert.equal(res.data.visibility, 'public')
 
-    res = await axPush.post('/api/events', {
+    res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga1', role: 'admin' }
-    })
+      sender: { type: 'organization', id: 'orga1', role: 'admin', name: 'Orga 1' }
+    }])
     res = await admin1.get('/api/notifications')
     assert.equal(res.data.count, 1)
     res = await user1.get('/api/notifications')
@@ -104,11 +107,12 @@ describe('subscriptions', () => {
     // user2 is in a department, he only as access to public notification on the root of the org
     assert.equal(res.data.visibility, 'public')
 
-    res = await axPush.post('/api/events', {
+    res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga2' }
-    })
+      sender: { type: 'organization', id: 'orga2', name: 'Orga 2' }
+    }])
     res = await user2.get('/api/notifications')
     assert.equal(res.data.count, 0)
   })
@@ -116,20 +120,21 @@ describe('subscriptions', () => {
   it('should send a notification to any department', async () => {
     let res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga2', department: 'dep1' }
+      sender: { type: 'organization', id: 'orga2', department: 'dep1', name: 'Orga 2' }
     })
     assert.equal(res.data.visibility, 'private')
     res = await user2.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga2', department: 'dep2' }
+      sender: { type: 'organization', id: 'orga2', department: 'dep2', name: 'Orga 2' }
     })
     assert.equal(res.data.visibility, 'private')
 
-    res = await axPush.post('/api/events', {
+    res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga2', department: '*' }
-    })
+      sender: { type: 'organization', id: 'orga2', department: '*', name: 'Orga 2' }
+    }])
 
     res = await user2.get('/api/notifications')
     assert.equal(res.data.count, 1)
@@ -149,11 +154,12 @@ describe('subscriptions', () => {
     })
     assert.equal(res.data.visibility, 'private')
 
-    res = await axPush.post('/api/events', {
+    res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga2', department: 'dep2' }
-    })
+      sender: { type: 'organization', id: 'orga2', department: 'dep2', name: 'Orga 2' }
+    }])
     res = await user2.get('/api/notifications')
     assert.equal(res.data.count, 1)
     res = await user1.get('/api/notifications')

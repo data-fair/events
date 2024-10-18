@@ -6,7 +6,7 @@ import mongo from '#mongo'
 export const createWebhook = async (event: LocalizedEvent, webhookSubscription: WebhookSubscription) => {
   const webhook: Webhook = {
     _id: nanoid(),
-    sender: webhookSubscription.sender,
+    sender: event.sender,
     owner: webhookSubscription.owner,
     subscription: {
       _id: webhookSubscription._id,

@@ -11,7 +11,8 @@ import webhookSubscriptionsRouter from './webhook-subscriptions/router.ts'
 import { uiConfig } from '#config'
 import { internalError } from '@data-fair/lib-node/observer.js'
 
-export const app = express()
+const app = express()
+export default app
 
 // no fancy embedded arrays, just string and arrays of strings in req.query
 app.set('query parser', 'simple')

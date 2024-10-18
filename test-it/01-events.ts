@@ -25,12 +25,12 @@ describe('events', () => {
   })
 
   it('should send an event', async () => {
-    let res = await axPush.post('/api/events', {
+    let res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'user', id: 'user1' }
-    })
-    assert.ok(res.data.date)
+      sender: { type: 'user', id: 'user1', name: 'User 1' }
+    }])
     res = await admin1.get('/api/events')
     assert.equal(res.data.results.length, 0)
     res = await user1.get('/api/events')
@@ -42,12 +42,12 @@ describe('events', () => {
   })
 
   it('should send an internationalized event', async () => {
-    let res = await axPush.post('/api/events', {
+    let res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: { en: 'an english notification', fr: 'une notification française' },
-      sender: { type: 'user', id: 'user1' }
-    })
-    assert.ok(res.data.date)
+      sender: { type: 'user', id: 'user1', name: 'User 1' }
+    }])
     res = await admin1.get('/api/events')
     assert.equal(res.data.results.length, 0)
     res = await user1.get('/api/events')

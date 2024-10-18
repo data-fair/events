@@ -42,7 +42,7 @@ export class EventsMongo {
   }
 
   get secrets () {
-    return mongo.db.collection<{ _id: string, data: any } >('secret')
+    return mongo.db.collection<{ _id: string, data: any } >('secrets')
   }
 
   init = async () => {

@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/data-fair/events#readme",
   "dependencies": {
-    "@data-fair/lib-types-builder": "^1.0.2"
+    "@data-fair/lib-types-builder": "^1.2.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.2.2",

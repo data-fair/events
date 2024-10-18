@@ -11,7 +11,7 @@ export default {
       title: 'Identifiant',
       readOnly: true
     },
-    owner: { $ref: 'https://github.com/data-fair/events/partial#/$defs/owner' },
+    owner: { $ref: 'https://github.com/data-fair/lib/session-state#/$defs/account' },
     registrations: {
       type: 'array',
       items: {

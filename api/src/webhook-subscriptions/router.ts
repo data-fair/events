@@ -100,7 +100,7 @@ router.post('/:id/_test', async (req, res, next) => {
   if (!subscription) return res.status(404).send()
   await createWebhook({
     _id: 'test-webhook',
-    sender: subscription.sender,
+    sender: { ...subscription.sender, name: 'Test' },
     visibility: 'private',
     title: 'Test webhook',
     topic: { key: 'test', title: 'Test' },

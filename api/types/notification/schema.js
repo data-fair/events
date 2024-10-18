@@ -38,8 +38,8 @@ export default {
       title: 'URL de l\'icone de la notification'
     },
     // sender is the owner of the topic
-    sender: { $ref: 'https://github.com/data-fair/events/partial#/$defs/owner', title: 'Émetteur' },
-    topic: { $ref: 'https://github.com/data-fair/events/partial#/$defs/topicRef' },
+    sender: { $ref: 'https://github.com/data-fair/lib/event#/$defs/sender' },
+    topic: { $ref: 'https://github.com/data-fair/lib/event#/$defs/topicRef' },
     // the recipient of the matched subscription
     recipient: { $ref: 'https://github.com/data-fair/events/partial#/$defs/recipient' },
     outputs: {

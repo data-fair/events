@@ -11,8 +11,8 @@ export default {
       title: 'Identifiant'
     },
     // the sender is the owner of the topic
-    sender: { $ref: 'https://github.com/data-fair/events/partial#/$defs/owner', title: 'Émetteur' },
-    owner: { $ref: 'https://github.com/data-fair/events/partial#/$defs/owner' },
+    sender: { $ref: 'https://github.com/data-fair/lib/event#/$defs/sender', title: 'Émetteur' },
+    owner: { $ref: 'https://github.com/data-fair/lib/session-state#/$defs/account' },
     subscription: {
       type: 'object',
       additionalProperties: false,
@@ -33,7 +33,7 @@ export default {
       properties: {
         title: { type: 'string' },
         body: { type: 'string' },
-        topic: { $ref: 'https://github.com/data-fair/events/partial#/$defs/topicRef' },
+        topic: { $ref: 'https://github.com/data-fair/lib/event#/$defs/topicRef' },
         url: { type: 'string' },
         date: { type: 'string', format: 'date-time' },
         extra: { type: 'object' }

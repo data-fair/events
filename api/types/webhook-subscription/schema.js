@@ -16,9 +16,9 @@ export default {
       title: 'Libellé de la souscription'
     },
     // the sender is the owner of the topic
-    sender: { $ref: 'https://github.com/data-fair/events/partial#/$defs/owner', title: 'Émetteur' },
-    owner: { $ref: 'https://github.com/data-fair/events/partial#/$defs/owner' },
-    topic: { $ref: 'https://github.com/data-fair/events/partial#/$defs/topicRef' },
+    sender: { $ref: 'https://github.com/data-fair/events/partial#/$defs/senderSubscribe' },
+    owner: { $ref: 'https://github.com/data-fair/lib/session-state#/$defs/account' },
+    topic: { $ref: 'https://github.com/data-fair/lib/event#/$defs/topicRef' },
     url: { title: 'URL du webhook', type: 'string' },
     header: {
       title: 'Header HTTP de sécurisation du webhook',

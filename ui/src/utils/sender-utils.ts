@@ -1,11 +1,11 @@
-import type { Event } from '#api/types'
+import type { Subscription } from '#api/types'
 
 export const parseSender = (senderStr: string) => {
   if (senderStr === 'none') return senderStr
 
   const senderParts = senderStr.split(':')
   if (senderParts[0] !== 'user' && senderParts[0] !== 'organization') throw new Error('unsupported sender type ' + senderStr)
-  const sender: Event['sender'] = {
+  const sender: Subscription['sender'] = {
     type: senderParts[0],
     id: senderParts[1]
   }
@@ -14,7 +14,7 @@ export const parseSender = (senderStr: string) => {
   return sender
 }
 
-export const serializeSender = (sender: Event['sender']) => {
+export const serializeSender = (sender: Subscription['sender']) => {
   let str = `${sender.type}:${sender.id}:${sender.department || ''}`
   if (sender.role) str += `:${sender.role}`
   return str

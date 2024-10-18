@@ -1,6 +1,6 @@
 import type { SortDirection } from 'mongodb'
 import type { Pointer } from '../types.ts'
-import type { Notification, Event } from '#types'
+import type { Notification } from '#types'
 
 import { nanoid } from 'nanoid'
 import { Router } from 'express'
@@ -8,9 +8,9 @@ import mongo from '#mongo'
 import config from '#config'
 import { session, mongoPagination, httpError, assertReqInternal } from '@data-fair/lib-express/index.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
-import * as eventsPostReq from '#doc/events/post-req/index.ts'
+import * as eventsPostSingleReq from '#doc/events/post-single-req/index.ts'
 import * as notificationsPostReq from '#doc/notifications/post-req/index.ts'
-import { postEvent } from '../events/service.ts'
+import { postEvents } from '../events/service.ts'
 import { sendNotification } from './service.ts'
 
 const router = Router()
@@ -57,15 +57,9 @@ router.post('', async (req, res, next) => {
 
   if (!req.body.recipient) {
     if (req.query.subscribedOnly) internalError('deprecated', 'pushing an event through the POST notifications endpoint is deprecated')
-    const { body } = eventsPostReq.returnValid(req, { name: 'req' })
-    const event: Event = {
-      ...body,
-      _id: nanoid(),
-      date: new Date().toISOString(),
-      visibility: body.visibility ?? 'private'
-    }
-    await postEvent(event)
-    res.status(201).json(event)
+    const { body } = eventsPostSingleReq.returnValid(req, { name: 'req' })
+    await postEvents([body])
+    res.status(201).json(body)
   } else {
     const { body } = notificationsPostReq.returnValid(req, { name: 'req' })
     const notification: Notification = {

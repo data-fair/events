@@ -1,4 +1,4 @@
-import type { Event, Notification, Subscription } from '#types'
+import type { FullEvent, Notification, Subscription } from '#types'
 
 import { parseTemplate } from 'url-template'
 import { nanoid } from 'nanoid'
@@ -18,7 +18,7 @@ const debug = Debug('notifications')
 
 const directoryUrl = config.privateDirectoryUrl
 
-export const prepareSubscriptionNotification = (event: Event, subscription: Subscription): Notification => {
+export const prepareSubscriptionNotification = (event: FullEvent, subscription: Subscription): Notification => {
   const localizedEvent = localizeEvent(event, subscription.locale)
   delete localizedEvent.urlParams
   const notification: Notification = {
@@ -46,9 +46,9 @@ export const prepareSubscriptionNotification = (event: Event, subscription: Subs
   return notification
 }
 
-export const sendNotification = async (notification: Notification) => {
+export const sendNotification = async (notification: Notification, skipInsert = false) => {
   // global.events.emit('saveNotification', notification)
-  await mongo.notifications.insertOne(notification)
+  if (!skipInsert) await mongo.notifications.insertOne(notification)
   debug('Send WS notif', notification.recipient, notification)
   await wsEmitter.emit(`user:${notification.recipient.id}:notifications`, notification)
   if (notification.outputs && notification.outputs.includes('devices')) {

@@ -1,13 +1,12 @@
 import type { SortDirection, Filter } from 'mongodb'
-import type { Event } from '#types'
+import type { FullEvent } from '#types'
 
 import { Router } from 'express'
-import { nanoid } from 'nanoid'
 import mongo from '#mongo'
 import config from '#config'
 import * as postReq from '#doc/events/post-req/index.ts'
 import { session, mongoPagination, mongoProjection, httpError, assertReqInternal, reqOrigin } from '@data-fair/lib-express/index.js'
-import { postEvent, localizeEvent } from './service.ts'
+import { postEvents, localizeEvent } from './service.ts'
 
 const router = Router()
 export default router
@@ -15,7 +14,7 @@ export default router
 router.get('', async (req, res, next) => {
   const { account, lang } = await session.reqAuthenticated(req)
 
-  const query: Filter<Event> = { 'sender.type': account.type, 'sender.id': account.id }
+  const query: Filter<FullEvent> = { 'sender.type': account.type, 'sender.id': account.id }
   if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q, $language: lang || config.i18n.defaultLocale }
 
   const project = mongoProjection(req.query.select, ['_search', 'htmlBody'])
@@ -30,7 +29,7 @@ router.get('', async (req, res, next) => {
     query._id = { $ne: beforeId }
   }
 
-  const events = (await mongo.events.find(query).project(project).limit(size).sort(sort).toArray()) as Event[]
+  const events = (await mongo.events.find(query).project(project).limit(size).sort(sort).toArray()) as FullEvent[]
 
   const results = events.map(event => localizeEvent(event, lang))
 
@@ -51,14 +50,7 @@ router.post('', async (req, res, next) => {
 
   const { body } = postReq.returnValid(req, { name: 'req' })
 
-  const event: Event = {
-    ...body,
-    _id: nanoid(),
-    date: new Date().toISOString(),
-    visibility: body.visibility ?? 'private'
-  }
+  await postEvents(body)
 
-  await postEvent(event)
-
-  res.status(201).json(event)
+  res.status(201).json(body)
 })
