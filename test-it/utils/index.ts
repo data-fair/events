@@ -6,7 +6,9 @@ import mongo from '@data-fair/lib-node/mongo.js'
 
 const directoryUrl = 'http://localhost:5600/simple-directory'
 
-const axiosOpts = { baseURL: 'http://localhost:5600/events' }
+export const baseURL = 'http://localhost:5600/events'
+
+const axiosOpts = { baseURL }
 
 export const axios = (opts = {}) => axiosBuilder({ ...axiosOpts, ...opts })
 

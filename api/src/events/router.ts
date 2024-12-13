@@ -5,7 +5,7 @@ import { Router } from 'express'
 import mongo from '#mongo'
 import config from '#config'
 import * as postReq from '#doc/events/post-req/index.ts'
-import { session, mongoPagination, mongoProjection, httpError, assertReqInternal, reqOrigin } from '@data-fair/lib-express/index.js'
+import { session, mongoPagination, mongoProjection, httpError, assertReqInternalSecret, reqOrigin } from '@data-fair/lib-express/index.js'
 import { postEvents, localizeEvent } from './service.ts'
 
 const router = Router()
@@ -45,9 +45,7 @@ router.get('', async (req, res, next) => {
 })
 
 router.post('', async (req, res, next) => {
-  assertReqInternal(req)
-  if (!req.query.key || config.secretKeys.events !== req.query.key) throw httpError(401, 'Bad secret key')
-
+  assertReqInternalSecret(req, config.secretKeys.events)
   const { body } = postReq.returnValid(req, { name: 'req' })
 
   await postEvents(body)

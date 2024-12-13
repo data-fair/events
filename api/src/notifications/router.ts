@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid'
 import { Router } from 'express'
 import mongo from '#mongo'
 import config from '#config'
-import { session, mongoPagination, httpError, assertReqInternal } from '@data-fair/lib-express/index.js'
+import { session, mongoPagination, assertReqInternalSecret } from '@data-fair/lib-express/index.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import * as eventsPostSingleReq from '#doc/events/post-single-req/index.ts'
 import * as notificationsPostReq from '#doc/notifications/post-req/index.ts'
@@ -51,12 +51,12 @@ router.get('', async (req, res, next) => {
 
 // push a notification directly to users, not through the events/subscriptions system
 router.post('', async (req, res, next) => {
-  assertReqInternal(req)
-  if (!req.query.key || config.secretKeys.events !== req.query.key) throw httpError(401, 'Bad secret key')
+  assertReqInternalSecret(req, config.secretKeys.events)
   if (req.query.subscribedOnly) internalError('deprecated', '"subscribedOnly" parameter is depecrated when pushing a notification')
 
   if (!req.body.recipient) {
     if (req.query.subscribedOnly) internalError('deprecated', 'pushing an event through the POST notifications endpoint is deprecated')
+    req.body.date = req.body.date ?? new Date().toISOString()
     const { body } = eventsPostSingleReq.returnValid(req, { name: 'req' })
     await postEvents([body])
     res.status(201).json(body)

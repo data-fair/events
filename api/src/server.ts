@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import i18n from 'i18n'
 import { session } from '@data-fair/lib-express/index.js'
 import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
-import * as locks from '@data-fair/lib-node/locks.js'
+import locks from '@data-fair/lib-node/locks.js'
 import * as wsServer from '@data-fair/lib-express/ws-server.js'
 import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
 // import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
@@ -29,7 +29,7 @@ export const start = async () => {
   if (config.observer.active) await startObserver(config.observer.port)
   session.init(config.privateDirectoryUrl)
   await mongo.init()
-  await locks.init(mongo.db)
+  await locks.start(mongo.db)
   // await upgradeScripts(mongo.db, resolve(import.meta.dirname, '../..'))
 
   await wsServer.start(server, mongo.db, async (channel, sessionState) => {

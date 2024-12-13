@@ -8,7 +8,7 @@ import type { Webhook } from '#types'
 import mongo from '#mongo'
 import axios from '@data-fair/lib-node/axios.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
-import * as locks from '@data-fair/lib-node/locks.js'
+import locks from '@data-fair/lib-node/locks.js'
 
 const debug = Debug('webhooks-worker')
 

@@ -36,15 +36,16 @@
     "secretKeys": {
       "type": "object",
       "additionalProperties": false,
+      "required": ["identities", "events", "sendMails"],
       "properties": {
         "identities": {
-          "type": ["string", "null"]
+          "type": "string"
         },
         "events": {
-          "type": ["string", "null"]
+          "type": "string"
         },
         "sendMails": {
-          "type": ["string", "null"]
+          "type": "string"
         }
       }
     },

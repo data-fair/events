@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { it, describe, before, beforeEach, after } from 'node:test'
-import { axios, axiosAuth, clean, startApiServer, stopApiServer } from './utils/index.ts'
+import { axios, axiosAuth, clean, startApiServer, stopApiServer, baseURL } from './utils/index.ts'
 
 const axAno = axios()
 const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082/events' })
@@ -55,7 +55,8 @@ describe('events', () => {
     assert.equal(res.data.results[0].title, 'une notification française')
     res = await user1.get('/api/events?q=française')
     assert.equal(res.data.results.length, 1)
-    res = await user1.get('/api/events', { headers: { Cookie: `${user1.defaults.headers.common.Cookie};i18n_lang=en` } })
+    user1.cookieJar.setCookie('i18n_lang=en', baseURL)
+    res = await user1.get('/api/events')
     assert.equal(res.data.results.length, 1)
     assert.equal(res.data.results[0].title, 'an english notification')
   })
