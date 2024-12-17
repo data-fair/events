@@ -11,13 +11,16 @@ import { createSession } from '@data-fair/lib-vue/session.js'
 import { createUiNotif } from '@data-fair/lib-vue/ui-notif.js'
 import { createI18n } from 'vue-i18n'
 import App from './App.vue'
+// TODO: remove v-iframe and iframe-resizer when d-frame is fully integrated
 import '@koumoul/v-iframe/content-window'
 import 'iframe-resizer/js/iframeResizer.contentWindow.js'
+import dFrameContent from '@data-fair/frame/lib/vue-router/d-frame-content.js'
 
 (window as any).iFrameResizer = { heightCalculationMethod: 'taggedElement' };
 
 (async function () {
   const router = createRouter({ history: createWebHistory($sitePath + '/events/'), routes })
+  dFrameContent(router)
   const reactiveSearchParams = createReactiveSearchParams(router)
   const session = await createSession({ directoryUrl: $sitePath + '/simple-directory' })
   const localeDayjs = createLocaleDayjs(session.state.lang)
