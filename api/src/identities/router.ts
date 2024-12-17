@@ -53,6 +53,9 @@ export default createIdentitiesRouter(
       mongo.notifications.deleteMany({ 'recipient.id': identity.id })
       mongo.subscriptions.deleteMany({ 'recipient.id': identity.id })
     }
+    await mongo.subscriptions.deleteMany({ 'sender.type': identity.type, 'sender.id': identity.id })
     await mongo.pushSubscriptions.deleteMany({ 'owner.type': identity.type, 'owner.id': identity.id })
+    await mongo.webhookSubscriptions.deleteMany({ 'owner.type': identity.type, 'owner.id': identity.id })
+    await mongo.webhookSubscriptions.deleteMany({ 'sender.type': identity.type, 'sender.id': identity.id })
   }
 )
