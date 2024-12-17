@@ -75,7 +75,7 @@ router.post('', async (req, res, next) => {
   const date = new Date().toISOString()
 
   const subscription: Subscription = {
-    _id: nanoid(),
+    _id: body._id ?? nanoid(),
     outputs: [],
     recipient: { id: user.id, name: user.name },
     title: `${body.topic.title} (${body.recipient?.name ?? user.name})`,
