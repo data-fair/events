@@ -14,8 +14,8 @@
     "dev-send-notifications": "NODE_ENV=development node --experimental-strip-types dev/scripts/send-notifications.ts",
     "lint": "eslint . && npm -w ui run lint",
     "lint-fix": "eslint --fix . && npm -w ui run lint-fix",
-    "test": "NODE_ENV=test node --experimental-strip-types --test-force-exit --test-concurrency=1 --test test-it/*.ts",
-    "test-only": "NODE_ENV=test node --experimental-strip-types --test-force-exit --test-only --test-concurrency=1 --test test-it/*.ts",
+    "test": "npm run test-base -- test-it/*.ts",
+    "test-base": "NODE_ENV=test node --experimental-strip-types --test-force-exit --test-concurrency=1 --test",
     "check-types": "tsc && npm -w ui run check-types",
     "prepare": "husky || true",
     "quality": "npm run dev-deps && npm run lint && npm run build-types && npm run check-types && npm -w ui run build && npm run test && npm audit --omit=dev --audit-level=critical"

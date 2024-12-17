@@ -27,6 +27,7 @@ describe('subscriptions', () => {
       visibility: 'public'
     }
     await admin1.post('/api/subscriptions', subscription)
+    await assert.rejects(admin1.post('/api/subscriptions', subscription), { status: 409 })
     await user1.post('/api/subscriptions', subscription)
     await user2.post('/api/subscriptions', subscription)
     let res = await admin1.get('/api/subscriptions')
