@@ -3,8 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 import { createVuetify } from 'vuetify'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
-import { defaultOptions } from '@data-fair/lib-vuetify'
-import '@data-fair/lib-vuetify/default.scss'
+import { vuetifySessionOptions } from '@data-fair/lib-vuetify'
+import './vuetify-settings.scss'
 import { createReactiveSearchParams } from '@data-fair/lib-vue/reactive-search-params.js'
 import { createLocaleDayjs } from '@data-fair/lib-vue/locale-dayjs.js'
 import { createSession } from '@data-fair/lib-vue/session.js'
@@ -22,11 +22,11 @@ import dFrameContent from '@data-fair/frame/lib/vue-router/d-frame-content.js'
   const router = createRouter({ history: createWebHistory($sitePath + '/events/'), routes })
   dFrameContent(router)
   const reactiveSearchParams = createReactiveSearchParams(router)
-  const session = await createSession({ directoryUrl: $sitePath + '/simple-directory' })
+  const session = await createSession({ directoryUrl: $sitePath + '/simple-directory', siteInfo: true })
   const localeDayjs = createLocaleDayjs(session.state.lang)
   const uiNotif = createUiNotif()
   const vuetify = createVuetify({
-    ...defaultOptions(reactiveSearchParams.state, session.state.dark),
+    ...vuetifySessionOptions(session),
     icons: { defaultSet: 'mdi', aliases, sets: { mdi, } }
   })
   const i18n = createI18n({ locale: session.state.lang });
