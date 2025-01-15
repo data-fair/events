@@ -38,6 +38,9 @@ export const prepareSubscriptionNotification = (event: FullEvent, subscription: 
   if (!notification.topic.title && subscription.topic.title) {
     notification.topic.title = subscription.topic.title
   }
+  if (!notification.title && notification.topic.title) {
+    notification.title = notification.topic.title
+  }
 
   const templateParams = { origin: subscription.origin, hostname: new URL(subscription.origin).hostname }
   if (notification.body) notification.body = microTemplate(notification.body, templateParams)
