@@ -56,9 +56,9 @@ router.post('', async (req, res, next) => {
   assertReqInternalSecret(req, config.secretKeys.events)
   if (!req.body.recipient) {
     internalError('deprecated', 'pushing an event through the POST notifications endpoint is deprecated')
+    debug('pusing and event through the POST notifications', req.body)
     req.body.date = req.body.date ?? new Date().toISOString()
     const { body } = eventsPostSingleReq.returnValid(req, { name: 'req' })
-    debug('pusing and event through the POST notifications', body)
     await postEvents([body])
     res.status(201).json(body)
   } else {
