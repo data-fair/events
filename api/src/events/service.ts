@@ -5,6 +5,9 @@ import mongo from '#mongo'
 import { sendNotification, prepareSubscriptionNotification } from '../notifications/service.ts'
 import { createWebhook } from '../webhooks/service.ts'
 import { nanoid } from 'nanoid'
+import debugModule from 'debug'
+
+const debug = debugModule('events')
 
 const localizeProp = (prop: Event['title'], locale: string): string => {
   if (prop && typeof prop === 'object') return prop[locale] || prop[config.i18n.defaultLocale]
@@ -26,6 +29,7 @@ export const postEvents = async (events: Event[]) => {
   const notifications: Notification[] = []
 
   for (const rawEvent of events) {
+    debug('post event', rawEvent)
     // this logic should work much better on a mongodb version that would support multi-language indexing
     // https://www.mongodb.com/docs/manual/core/indexes/index-types/index-text/specify-language-text-index/create-text-index-multiple-languages/
     const event: SearchableEvent = {
@@ -60,8 +64,10 @@ export const postEvents = async (events: Event[]) => {
     } else {
       subscriptionsFilter.sender = { $exists: false }
     }
+    debug('find matching subscriptions', subscriptionsFilter)
     for await (const subscription of mongo.subscriptions.find(subscriptionsFilter)) {
       const notification = prepareSubscriptionNotification(event, subscription)
+      debug('send notification to', notification.recipient.id)
       notifsBulkOp.insert(notification)
       notifications.push(notification)
     }
