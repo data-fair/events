@@ -23,7 +23,29 @@ export const localizeEvent = (event: FullEvent, locale: string = config.i18n.def
   }
 }
 
-export const postEvents = async (events: Event[]) => {
+export const getSubscriptionsFilter = (event: Event): Filter<Subscription> => {
+  const topicParts = event.topic.key.split(':')
+  const topicKeys = topicParts.map((part, i) => topicParts.slice(0, i + 1).join(':'))
+  const subscriptionsFilter: Filter<Subscription> = { 'topic.key': { $in: topicKeys } }
+  if (event.visibility === 'private') subscriptionsFilter.visibility = 'private'
+  if (event.sender) {
+    subscriptionsFilter['sender.type'] = event.sender.type
+    subscriptionsFilter['sender.id'] = event.sender.id
+    if (event.sender.role) subscriptionsFilter['sender.role'] = event.sender.role
+    if (event.sender.department) {
+      if (event.sender.department !== '*') {
+        subscriptionsFilter['sender.department'] = event.sender.department
+      }
+    } else {
+      subscriptionsFilter['sender.department'] = { $exists: false }
+    }
+  } else {
+    subscriptionsFilter.sender = { $exists: false }
+  }
+  return subscriptionsFilter
+}
+
+export const postEvents = async (events: Event[], extraSubscriptionsFilter?: Filter<Subscription>) => {
   const eventsBulkOp = mongo.events.initializeUnorderedBulkOp()
   const notifsBulkOp = mongo.notifications.initializeUnorderedBulkOp()
   const notifications: Notification[] = []
@@ -46,24 +68,11 @@ export const postEvents = async (events: Event[]) => {
     eventsBulkOp.insert(event)
 
     // prepare the filter to find the topics matching this subscription
-    const topicParts = event.topic.key.split(':')
-    const topicKeys = topicParts.map((part, i) => topicParts.slice(0, i + 1).join(':'))
-    const subscriptionsFilter: Filter<Subscription> = { 'topic.key': { $in: topicKeys } }
-    if (event.visibility === 'private') subscriptionsFilter.visibility = 'private'
-    if (event.sender) {
-      subscriptionsFilter['sender.type'] = event.sender.type
-      subscriptionsFilter['sender.id'] = event.sender.id
-      if (event.sender.role) subscriptionsFilter['sender.role'] = event.sender.role
-      if (event.sender.department) {
-        if (event.sender.department !== '*') {
-          subscriptionsFilter['sender.department'] = event.sender.department
-        }
-      } else {
-        subscriptionsFilter['sender.department'] = { $exists: false }
-      }
-    } else {
-      subscriptionsFilter.sender = { $exists: false }
+    const subscriptionsFilter = getSubscriptionsFilter(event)
+    if (extraSubscriptionsFilter) {
+      Object.assign(subscriptionsFilter, extraSubscriptionsFilter)
     }
+
     debug('find matching subscriptions', subscriptionsFilter)
     for await (const subscription of mongo.subscriptions.find(subscriptionsFilter)) {
       const notification = prepareSubscriptionNotification(event, subscription)

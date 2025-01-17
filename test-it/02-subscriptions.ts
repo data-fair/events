@@ -166,4 +166,30 @@ describe('subscriptions', () => {
     res = await user1.get('/api/notifications')
     assert.equal(res.data.count, 0)
   })
+
+  it('should send a notification with subscribedOnly option', async () => {
+    const notif = {
+      topic: { key: 'topic1' },
+      title: 'a notification',
+      body: 'a notification from host {hostname}',
+      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      visibility: 'public',
+      recipient: { id: 'admin1' }
+    }
+    let res = await axPush.post('/api/notifications', notif, { params: { subscribedOnly: 'true' } })
+    res = await admin1.get('/api/notifications')
+    assert.equal(res.data.count, 0)
+
+    const subscription = {
+      topic: { key: 'topic1' },
+      sender: { type: 'user', id: 'user1' },
+      visibility: 'public'
+    }
+    await admin1.post('/api/subscriptions', subscription)
+
+    res = await axPush.post('/api/notifications', notif, { params: { subscribedOnly: 'true' } })
+    res = await admin1.get('/api/notifications')
+    assert.equal(res.data.count, 1)
+    assert.equal(res.data.results[0].body, 'a notification from host localhost')
+  })
 })

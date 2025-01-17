@@ -1,6 +1,7 @@
 import type { SortDirection } from 'mongodb'
 import type { Pointer } from '../types.ts'
-import type { Notification } from '#types'
+import type { Notification, Subscription } from '#types'
+import type { Filter } from 'mongodb'
 import { nanoid } from 'nanoid'
 import { Router } from 'express'
 import debugModule from 'debug'
@@ -54,15 +55,20 @@ router.get('', async (req, res, next) => {
 // push a notification directly to users, not through the events/subscriptions system
 router.post('', async (req, res, next) => {
   assertReqInternalSecret(req, config.secretKeys.events)
-  if (!req.body.recipient) {
+  if (!req.body.recipient || req.query.subscribedOnly === 'true') {
     internalError('deprecated', 'pushing an event through the POST notifications endpoint is deprecated')
-    debug('pusing and event through the POST notifications', req.body)
+    debug('pushing an event through the POST notifications', req.body)
     req.body.date = req.body.date ?? new Date().toISOString()
+    const extraSubscriptionsFilter: Filter<Subscription> = {}
+    if (req.query.subscribedOnly === 'true' && req.body.recipient) {
+      extraSubscriptionsFilter['recipient.id'] = req.body.recipient.id
+      delete req.body.recipient
+    }
     const { body } = eventsPostSingleReq.returnValid(req, { name: 'req' })
-    await postEvents([body])
+    await postEvents([body], extraSubscriptionsFilter)
     res.status(201).json(body)
   } else {
-    if (req.query.subscribedOnly) internalError('deprecated', '"subscribedOnly" parameter is deprecated when pushing a notification')
+    debug('pushing a notification with a recipient', req.body)
     const { body } = notificationsPostReq.returnValid(req, { name: 'req' })
     const notification: Notification = {
       ...body,
