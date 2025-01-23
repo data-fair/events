@@ -2,6 +2,7 @@
   <v-container
     fluid
     data-iframe-height
+    class="bg-surface"
   >
     <v-row
       v-if="registrations"

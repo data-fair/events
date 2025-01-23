@@ -17,7 +17,7 @@ services:
   #####
 
   simple-directory:
-    image: ghcr.io/data-fair/simple-directory:next
+    image: ghcr.io/data-fair/simple-directory:8
     network_mode: host
     # ports:
     #   - 6221:8080

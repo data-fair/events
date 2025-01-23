@@ -7,7 +7,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Vuetify from 'vite-plugin-vuetify'
 import microTemplate from '@data-fair/lib-utils/micro-template.js'
-import { autoImports } from '@data-fair/lib-vuetify/vite.js'
+import { autoImports, settingsPath } from '@data-fair/lib-vuetify/vite.js'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -25,7 +25,7 @@ export default defineConfig({
     }),
     Vue(),
     VueI18nPlugin(),
-    Vuetify(),
+    Vuetify({ styles: { configFile: settingsPath } }),
     AutoImport({
       dts: './dts/auto-imports.d.ts',
       vueTemplate: true,

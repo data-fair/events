@@ -2,6 +2,7 @@
   <v-container
     fluid
     data-iframe-height
+    class="bg-surface"
   >
     <div class="text-h6 mb-5">
       <v-icon
