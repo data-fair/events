@@ -23,7 +23,7 @@ router.get('', async (req, res, next) => {
 
   // implement a special pagination based on the fact that we always sort by date
   const sort: Sort = { date: -1, _id: -1 }
-  const { skip, size } = mongoPagination(req.query)
+  const { skip, size } = mongoPagination(req.query, 20)
   if (skip) throw httpError(400, 'skip is not supported, use "before" parameter with the date of the last event of the previous page')
   if (req.query.before && typeof req.query.before === 'string') {
     const [beforeDate, beforeId] = req.query.before.split('/')

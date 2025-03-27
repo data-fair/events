@@ -1,81 +1,93 @@
 <template>
   <v-container
-    fluid
+    v-if="events"
     data-iframe-height
-    class="bg-surface"
   >
-    <v-row v-if="events">
-      <v-col
+    <v-navigation-drawer
+      v-if="$vuetify.display.lgAndUp"
+      class="pl-2"
+      permanent
+      floating
+      location="right"
+      position="fixed"
+      style="padding-top: 60px; background-color: transparent;"
+    >
+      <events-actions v-model:search="search" />
+    </v-navigation-drawer>
+    <v-menu
+      v-else
+      location="bottom left"
+      :close-on-content-click="false"
+    >
+      <template #activator="{ props }">
+        <v-btn
+          v-bind="props"
+          size="small"
+          color="primary"
+          :icon="mdiDotsVertical"
+          style="z-index: 1000; position: fixed; right: 20px;"
+        />
+      </template>
+      <events-actions v-model:search="search" />
+    </v-menu>
+    <v-progress-linear
+      v-if="fetchEvents.loading.value"
+      indeterminate
+      color="primary"
+      class="mb-4"
+    />
+
+    <v-expansion-panels
+      v-else
+      variant="accordion"
+    >
+      <v-expansion-panel
         v-for="(event, i) of events.results"
-        :key="`notification_${i}`"
-        class="pt-0 pb-2"
-        cols="12"
+        :key="i"
       >
-        <v-hover
-          v-slot="{ isHovering }"
-        >
-          <v-card
-            :elevation="isHovering ? 2 : 0"
-            height="100%"
-            rounded
-            target="_blank"
-            border
-          >
-            <v-card-text class="d-flex justify-space-between pt-1 pb-1">
-              <div class="d-flex align-center">
-                <v-avatar
-                  size="40"
-                  class="mr-3 mt-1"
-                >
-                  <img
-                    v-if="event.icon && event.icon.toString().trim().startsWith('http')"
-                    :src="event.icon"
-                    alt="icon"
-                  >
-                  <v-icon
-                    v-else
-                    :icon="mdiBell"
-                  />
-                </v-avatar>
-                <div class="d-flex align-center flex-column">
-                  <div
-                    class="text-black text-subtitle-1"
-                    style="align-self: start;"
-                  >
-                    {{ event.title }}
-                  </div>
-                  <div
-                    v-if="event.body"
-                    style="align-self: start;"
-                  >
-                    {{ event.body }}
-                  </div>
-                </div>
-              </div>
-              <div
-                class="d-flex align-center justify-end"
-                style="flex-shrink: 0;"
-              >
-                <v-tooltip location="top">
-                  <template #activator="{ props }">
-                    <span v-bind="props">{{ dayjs(event.date).fromNow() }}</span>
-                  </template>
-                  <span>{{ dayjs(event.date).format('LLL') }}</span>
-                </v-tooltip>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-hover>
-      </v-col>
-    </v-row>
+        <v-expansion-panel-title>
+          <span class="mr-4">
+            <owner-avatar
+              v-if="event.originator?.organization && (event.sender.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
+              :owner="{type: 'organization', ...event.originator.organization}"
+            />
+            <owner-avatar
+              v-else-if="event.originator?.user"
+              :owner="{type: 'user', ...event.originator.user}"
+            />
+          </span>
+          {{ event.title }}
+          <v-spacer />
+          <span class="mr-4">{{ dayjs(event.date).fromNow() }}</span>
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <span class="mr-4">{{ dayjs(event.date).format('LLL') }}</span>
+          <template v-if="event.originator">
+            <span
+              v-if="event.originator.user"
+              class="mr-4"
+            >{{ event.originator.user.name }} ({{ event.originator.user.email || event.originator.user.id }})</span>
+            <span
+              v-if="event.originator?.organization && (event.sender.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
+              class="mr-4"
+            >{{ event.originator.organization.name }} ({{ event.originator.organization.id }})</span>
+          </template>
+          <v-row v-if="event.body">
+            <v-col cols="12">
+              {{ event.body }}
+            </v-col>
+          </v-row>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
     <div
-      v-if="events && events.next"
+      v-if="events && events.next && !fetchEvents.loading.value && !fetchNextEvents.loading.value"
       class="mt-3"
     >
       <v-btn
         variant="flat"
         block
-        @click="fetchNextEvents"
+        @click="fetchNextEvents.execute()"
       >
         {{ t('seeMore') }}
       </v-btn>
@@ -92,6 +104,8 @@
 
 <script lang="ts" setup>
 import type { LocalizedEvent } from '#api/types'
+import { mdiDotsVertical } from '@mdi/js'
+import OwnerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 
 type EventsRes = { results: LocalizedEvent[], next?: string }
 
@@ -99,17 +113,24 @@ const { t } = useI18n()
 useSessionAuthenticated()
 const { dayjs } = useLocaleDayjs()
 
+const search = useStringSearchParam('q')
+
 const events = ref<EventsRes | null>(null)
 
-const fetchEvents = withUiNotif(async () => {
-  events.value = await $fetch<EventsRes>('events')
+watch(search, () => {
+  window.scrollTo({ top: 0 })
+  fetchEvents.execute()
 })
 
-const fetchNextEvents = withUiNotif(async () => {
+const fetchEvents = useAsyncAction(async () => {
+  events.value = await $fetch<EventsRes>('events', { query: { q: search.value } })
+})
+
+const fetchNextEvents = useAsyncAction(async () => {
   if (!events.value?.next) return
   const newEvents = await $fetch<EventsRes>(events.value.next)
   events.value.results = events.value.results.concat(newEvents.results)
   events.value.next = newEvents.next
 })
-fetchEvents()
+fetchEvents.execute()
 </script>
