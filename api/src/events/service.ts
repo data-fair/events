@@ -63,8 +63,17 @@ export const postEvents = async (events: Event[], extraSubscriptionsFilter?: Fil
     }
     for (const locale of config.i18n.locales) {
       const localizedEvent = localizeEvent(event, locale)
-      const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body]
-      event._search.push({ language: locale, text: searchParts.filter(Boolean).join(' ') })
+      const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body, event.sender.id, event.sender.name]
+      if (event.originator) {
+        if (event.originator.organization) {
+          searchParts.push(event.originator.organization.name, event.originator.organization.id)
+        }
+        if (event.originator.user && (!event.originator.organization || (event.sender.type === 'organization' && event.sender.id === event.originator.organization.id))) {
+          // do not add the user name if the originator is another organization
+          searchParts.push(event.originator.user.name, event.originator.user.id)
+        }
+      }
+      if (event) { event._search.push({ language: locale, text: searchParts.filter(Boolean).join(' ') }) }
     }
     eventsBulkOp.insert(event)
 

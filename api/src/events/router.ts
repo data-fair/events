@@ -17,6 +17,7 @@ router.get('', async (req, res, next) => {
 
   const query: Filter<FullEvent> = { 'sender.type': account.type, 'sender.id': account.id }
   if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q, $language: lang || config.i18n.defaultLocale }
+  if (typeof req.query.resource === 'string') query['resource.id'] = req.query.resource
 
   const project = mongoProjection(req.query.select, ['_search', 'htmlBody'])
 
@@ -25,7 +26,6 @@ router.get('', async (req, res, next) => {
   const { skip, size } = mongoPagination(req.query)
   if (skip) throw httpError(400, 'skip is not supported, use "before" parameter with the date of the last event of the previous page')
   if (req.query.before && typeof req.query.before === 'string') {
-    console.log(req.query.before)
     const [beforeDate, beforeId] = req.query.before.split('/')
     query.date = { $lte: beforeDate }
     // optional beforeId as a tie-breaker
