@@ -37,6 +37,10 @@
       class="mb-4"
     />
 
+    <p v-else-if="events.results.length === 0">
+      Aucun résultat
+    </p>
+
     <v-expansion-panels
       v-else
       variant="accordion"
@@ -114,6 +118,7 @@ useSessionAuthenticated()
 const { dayjs } = useLocaleDayjs()
 
 const search = useStringSearchParam('q')
+const resourceId = useStringSearchParam('resource')
 
 const events = ref<EventsRes | null>(null)
 
@@ -123,7 +128,7 @@ watch(search, () => {
 })
 
 const fetchEvents = useAsyncAction(async () => {
-  events.value = await $fetch<EventsRes>('events', { query: { q: search.value } })
+  events.value = await $fetch<EventsRes>('events', { query: { q: search.value, resource: resourceId.value || undefined } })
 })
 
 const fetchNextEvents = useAsyncAction(async () => {
