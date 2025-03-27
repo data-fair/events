@@ -20,6 +20,8 @@ const directoryUrl = config.privateDirectoryUrl
 
 export const prepareSubscriptionNotification = (event: FullEvent, subscription: Subscription): Notification => {
   const localizedEvent = localizeEvent(event, subscription.locale)
+  delete localizedEvent.resource
+  delete localizedEvent.originator
   delete localizedEvent.urlParams
   const notification: Notification = {
     icon: subscription.icon || config.theme.notificationIcon || config.theme.logo || (subscription.origin + '/events/logo-192x192.png'),
