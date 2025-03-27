@@ -14,9 +14,9 @@
     "#types/*": "./types/*"
   },
   "dependencies": {
-    "@data-fair/lib-common-types": "^1.5.4",
-    "@data-fair/lib-express": "^1.12.3",
-    "@data-fair/lib-node": "^2.2.0",
+    "@data-fair/lib-common-types": "^1.8.0",
+    "@data-fair/lib-express": "^1.16.0",
+    "@data-fair/lib-node": "^2.5.1",
     "ajv-formats": "^3.0.1",
     "ajv-i18n": "^4.2.0",
     "config": "^3.3.11",
