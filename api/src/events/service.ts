@@ -6,6 +6,7 @@ import { sendNotification, prepareSubscriptionNotification } from '../notificati
 import { createWebhook } from '../webhooks/service.ts'
 import { nanoid } from 'nanoid'
 import debugModule from 'debug'
+import { type SessionStateAuthenticated } from '@data-fair/lib-express'
 
 const debug = debugModule('events')
 
@@ -94,4 +95,18 @@ export const postEvents = async (events: Event[], extraSubscriptionsFilter?: Fil
   for (const notification of notifications) {
     await sendNotification(notification, true)
   }
+}
+
+export const cleanEvent = (event: LocalizedEvent, sessionState: SessionStateAuthenticated) => {
+  if (event.originator) {
+    if (sessionState.account.type === event.sender.type && sessionState.account.id === event.sender.id) {
+      if (event.originator.organization) {
+        // hide the user if the event is sent from another organization
+        if (sessionState.organization?.id !== event.originator.organization.id) {
+          delete event.originator.user
+        }
+      }
+    }
+  }
+  return event
 }
