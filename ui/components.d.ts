@@ -10,6 +10,7 @@ declare module 'vue' {
     ConfirmMenu: typeof import('./src/components/confirm-menu.vue')['default']
     DeviceCard: typeof import('./src/components/device-card.vue')['default']
     ErrorAlert: typeof import('./src/components/error-alert.vue')['default']
+    EventsActions: typeof import('./src/components/events-actions.vue')['default']
     RegisterDevice: typeof import('./src/components/register-device.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

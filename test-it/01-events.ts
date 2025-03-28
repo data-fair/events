@@ -30,15 +30,33 @@ describe('events', () => {
       topic: { key: 'topic1' },
       title: 'a notification',
       sender: { type: 'user', id: 'user1', name: 'User 1' }
+    }, {
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'another notification',
+      sender: { type: 'user', id: 'user1', name: 'User 1' }
+    }, {
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'anotherone',
+      sender: { type: 'user', id: 'user1', name: 'User 1' }
     }])
     res = await admin1.get('/api/events')
     assert.equal(res.data.results.length, 0)
     res = await user1.get('/api/events')
-    assert.equal(res.data.results.length, 1)
+    assert.equal(res.data.results.length, 3)
     res = await user1.get('/api/events?q=notification')
-    assert.equal(res.data.results.length, 1)
+    assert.equal(res.data.results.length, 2)
     res = await user1.get('/api/events?q=test')
     assert.equal(res.data.results.length, 0)
+    res = await user1.get('/api/events', { params: { size: 2 } })
+    assert.equal(res.data.results.length, 2)
+    assert.ok(res.data.next)
+    const id1 = res.data.results[0]._id
+    res = await user1.get(res.data.next)
+    assert.equal(res.data.results.length, 1)
+    assert.notEqual(res.data.results[0]._id, id1)
+    assert.ok(!res.data.next)
   })
 
   it('should send an internationalized event', async () => {
