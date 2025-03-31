@@ -17,7 +17,11 @@ router.get('', async (req, res, next) => {
 
   const query: Filter<FullEvent> = { 'sender.type': account.type, 'sender.id': account.id }
   if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q, $language: lang || config.i18n.defaultLocale }
-  if (typeof req.query.resource === 'string') query['resource.id'] = req.query.resource
+  if (typeof req.query.resource === 'string') {
+    const [type, id] = req.query.resource.split('/')
+    query['resource.type'] = type
+    query['resource.id'] = id
+  }
 
   const project = mongoProjection(req.query.select, ['_search', 'htmlBody'])
 
