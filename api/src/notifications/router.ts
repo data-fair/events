@@ -1,7 +1,6 @@
 import type { SortDirection } from 'mongodb'
 import type { Pointer } from '../types.ts'
-import type { Notification, Subscription } from '#types'
-import type { Filter } from 'mongodb'
+import type { Notification } from '#types'
 import { nanoid } from 'nanoid'
 import { Router } from 'express'
 import debugModule from 'debug'
@@ -59,13 +58,15 @@ router.post('', async (req, res, next) => {
     internalError('deprecated', 'pushing an event through the POST notifications endpoint is deprecated')
     debug('pushing an event through the POST notifications', req.body)
     req.body.date = req.body.date ?? new Date().toISOString()
-    const extraSubscriptionsFilter: Filter<Subscription> = {}
-    if (req.query.subscribedOnly === 'true' && req.body.recipient) {
-      extraSubscriptionsFilter['recipient.id'] = req.body.recipient.id
+    if (req.body.recipient && req.query.subscribedOnly === 'true') {
+      req.body.subscribedRecipient = {
+        id: req.body.recipient.id,
+        name: req.body.recipient.name
+      }
       delete req.body.recipient
     }
     const { body } = eventsPostSingleReq.returnValid(req, { name: 'req' })
-    await postEvents([body], extraSubscriptionsFilter)
+    await postEvents([body])
     res.status(201).json(body)
   } else {
     debug('pushing a notification with a recipient', req.body)

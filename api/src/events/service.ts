@@ -28,7 +28,11 @@ export const getSubscriptionsFilter = (event: Event): Filter<Subscription> => {
   const topicParts = event.topic.key.split(':')
   const topicKeys = topicParts.map((part, i) => topicParts.slice(0, i + 1).join(':'))
   const subscriptionsFilter: Filter<Subscription> = { 'topic.key': { $in: topicKeys } }
-  if (event.visibility === 'private') subscriptionsFilter.visibility = 'private'
+  if (event.subscribedRecipient) {
+    subscriptionsFilter['recipient.id'] = event.subscribedRecipient.id
+  } else if (event.visibility === 'private') {
+    subscriptionsFilter.visibility = 'private'
+  }
   if (event.sender) {
     subscriptionsFilter['sender.type'] = event.sender.type
     subscriptionsFilter['sender.id'] = event.sender.id
@@ -43,10 +47,11 @@ export const getSubscriptionsFilter = (event: Event): Filter<Subscription> => {
   } else {
     subscriptionsFilter.sender = { $exists: false }
   }
+
   return subscriptionsFilter
 }
 
-export const postEvents = async (events: Event[], extraSubscriptionsFilter?: Filter<Subscription>) => {
+export const postEvents = async (events: Event[]) => {
   const eventsBulkOp = mongo.events.initializeUnorderedBulkOp()
   const notifsBulkOp = mongo.notifications.initializeUnorderedBulkOp()
   const notifications: Notification[] = []
@@ -77,11 +82,7 @@ export const postEvents = async (events: Event[], extraSubscriptionsFilter?: Fil
     }
     eventsBulkOp.insert(event)
 
-    // prepare the filter to find the topics matching this subscription
     const subscriptionsFilter = getSubscriptionsFilter(event)
-    if (extraSubscriptionsFilter) {
-      Object.assign(subscriptionsFilter, extraSubscriptionsFilter)
-    }
 
     debug('find matching subscriptions', subscriptionsFilter)
     for await (const subscription of mongo.subscriptions.find(subscriptionsFilter)) {
