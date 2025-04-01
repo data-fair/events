@@ -44,6 +44,8 @@
     <v-expansion-panels
       v-else
       variant="accordion"
+      elevation="0"
+      class="border"
     >
       <v-expansion-panel
         v-for="(event, i) of events.results"
@@ -97,20 +99,22 @@
               class="mr-4"
             >{{ event.originator.organization.name }} ({{ event.originator.organization.id }})</span>
           </template>
-          <br>
-          <span v-if="event.body">{{ event.body }}</span>
-          <br>
           <template v-if="event.resource">
+            <br>
             <a
               v-if="event.resource.type === 'dataset'"
               :href="`/data-fair/datasets/${event.resource.id}`"
             >{{ event.resource.title }}</a>
             <a
-              v-if="event.resource.type === 'processing'"
+              v-else-if="event.resource.type === 'processing'"
               :href="`/data-fair/extra/processings?p=.%2F${event.resource.id}`"
             >{{ event.resource.title }}</a>
             <span v-else-if="event.resource.title">{{ event.resource.type }} / {{ event.resource.title }} ({{ event.resource.id }})</span>
             <span v-else>{{ event.resource.type }} / {{ event.resource.id }}</span>
+          </template>
+          <template v-if="event.body">
+            <br>
+            <span>{{ event.body }}</span>
           </template>
         </v-expansion-panel-text>
       </v-expansion-panel>
