@@ -8,6 +8,7 @@ import notificationsRouter from './notifications/router.ts'
 import subscriptionsRouter from './subscriptions/router.ts'
 import webhooksRouter from './webhooks/router.ts'
 import webhookSubscriptionsRouter from './webhook-subscriptions/router.ts'
+import adminRouter from './admin/router.ts'
 import { uiConfig } from '#config'
 import { internalError } from '@data-fair/lib-node/observer.js'
 
@@ -27,6 +28,7 @@ app.use('/api/webhooks', webhooksRouter)
 app.use('/api/notifications', notificationsRouter)
 app.use('/api/push', pushRouter)
 app.use('/api/identities', identitiesRouter)
+app.use('/api/admin', adminRouter)
 
 // retro-compatibility with notify
 app.use('api/v1', (req, res, next) => {
