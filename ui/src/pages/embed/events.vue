@@ -57,11 +57,13 @@
               v-if="event.originator?.internalProcess"
               v-tooltip="'Processus interne'"
               :icon="mdiCogRefresh"
+              :size="28"
             />
             <v-avatar
               v-else-if="event.originator?.apiKey"
               v-tooltip="'Clé d\'API'"
               :icon="mdiApi"
+              :size="28"
             />
             <owner-avatar
               v-else-if="event.originator?.organization && (event.sender.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
