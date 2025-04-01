@@ -51,8 +51,18 @@
       >
         <v-expansion-panel-title>
           <span class="mr-4">
+            <v-avatar
+              v-if="event.originator?.internalProcess"
+              v-tooltip="'Processus interne'"
+              :icon="mdiCogRefresh"
+            />
+            <v-avatar
+              v-else-if="event.originator?.apiKey"
+              v-tooltip="'Clé d\'API'"
+              :icon="mdiApi"
+            />
             <owner-avatar
-              v-if="event.originator?.organization && (event.sender.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
+              v-else-if="event.originator?.organization && (event.sender.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
               :owner="{type: 'organization', ...event.originator.organization}"
             />
             <owner-avatar
@@ -66,7 +76,18 @@
         </v-expansion-panel-title>
         <v-expansion-panel-text>
           <span class="mr-4">{{ dayjs(event.date).format('LLL') }}</span>
+          <br>
           <template v-if="event.originator">
+            <span
+              v-if="event.originator.internalProcess"
+              class="mr-4"
+            >{{ event.originator.internalProcess.title || 'processus interne' }} <template v-if="event.originator.internalProcess.id">({{ event.originator.internalProcess.id }})</template>
+            </span>
+            <span
+              v-if="event.originator.apiKey"
+              class="mr-4"
+            >{{ event.originator.apiKey.title || 'clé d\'API' }} <template v-if="event.originator.apiKey.id">({{ event.originator.apiKey.id }})</template>
+            </span>
             <span
               v-if="event.originator.user"
               class="mr-4"
@@ -76,11 +97,21 @@
               class="mr-4"
             >{{ event.originator.organization.name }} ({{ event.originator.organization.id }})</span>
           </template>
-          <v-row v-if="event.body">
-            <v-col cols="12">
-              {{ event.body }}
-            </v-col>
-          </v-row>
+          <br>
+          <span v-if="event.body">{{ event.body }}</span>
+          <br>
+          <template v-if="event.resource">
+            <a
+              v-if="event.resource.type === 'dataset'"
+              :href="`/data-fair/datasets/${event.resource.id}`"
+            >{{ event.resource.title }}</a>
+            <a
+              v-if="event.resource.type === 'processing'"
+              :href="`/data-fair/extra/processings?p=.%2F${event.resource.id}`"
+            >{{ event.resource.title }}</a>
+            <span v-else-if="event.resource.title">{{ event.resource.type }} / {{ event.resource.title }} ({{ event.resource.id }})</span>
+            <span v-else>{{ event.resource.type }} / {{ event.resource.id }}</span>
+          </template>
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
@@ -108,7 +139,7 @@
 
 <script lang="ts" setup>
 import type { LocalizedEvent } from '#api/types'
-import { mdiDotsVertical } from '@mdi/js'
+import { mdiDotsVertical, mdiApi, mdiCogRefresh } from '@mdi/js'
 import OwnerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 
 type EventsRes = { results: LocalizedEvent[], next?: string }
