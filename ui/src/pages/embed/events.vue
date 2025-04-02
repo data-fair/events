@@ -54,16 +54,25 @@
         <v-expansion-panel-title>
           <span class="mr-4">
             <v-avatar
-              v-if="event.originator?.internalProcess"
+              v-if="event.originator?.user?.admin"
+              v-tooltip="'Administrateur'"
+              :icon="mdiShieldAlert"
+              :size="28"
+              color="admin"
+            />
+            <v-avatar
+              v-else-if="event.originator?.internalProcess"
               v-tooltip="'Processus interne'"
               :icon="mdiCogRefresh"
               :size="28"
+              color="primary"
             />
             <v-avatar
               v-else-if="event.originator?.apiKey"
               v-tooltip="'Clé d\'API'"
               :icon="mdiApi"
               :size="28"
+              color="primary"
             />
             <owner-avatar
               v-else-if="event.originator?.organization && (event.sender.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
@@ -93,7 +102,13 @@
             >{{ event.originator.apiKey.title || 'clé d\'API' }} <template v-if="event.originator.apiKey.id">({{ event.originator.apiKey.id }})</template>
             </span>
             <span
-              v-if="event.originator.user"
+              v-if="event.originator.user?.admin"
+              class="text-admin"
+            >
+              Administrateur
+            </span>
+            <span
+              v-if="event.originator.user?.name"
               class="mr-4"
             >{{ event.originator.user.name }} ({{ event.originator.user.email || event.originator.user.id }})</span>
             <span
@@ -145,7 +160,7 @@
 
 <script lang="ts" setup>
 import type { LocalizedEvent } from '#api/types'
-import { mdiDotsVertical, mdiApi, mdiCogRefresh } from '@mdi/js'
+import { mdiDotsVertical, mdiApi, mdiCogRefresh, mdiShieldAlert } from '@mdi/js'
 import OwnerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 
 type EventsRes = { results: LocalizedEvent[], next?: string }

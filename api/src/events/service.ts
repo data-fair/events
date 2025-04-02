@@ -108,15 +108,20 @@ export const postEvents = async (events: Event[]) => {
 }
 
 export const cleanEvent = (event: LocalizedEvent, sessionState: SessionStateAuthenticated) => {
+  // hide the user if the event is sent from another organization
   if (event.originator) {
     if (sessionState.account.type === event.sender.type && sessionState.account.id === event.sender.id) {
       if (event.originator.organization) {
-        // hide the user if the event is sent from another organization
         if (sessionState.organization?.id !== event.originator.organization.id) {
           delete event.originator.user
         }
       }
     }
+  }
+
+  // anonymize the user if the event is sent from a super admin
+  if (event.originator?.user?.admin && !sessionState.user?.adminMode) {
+    event.originator.user = { admin: true }
   }
   return event
 }
