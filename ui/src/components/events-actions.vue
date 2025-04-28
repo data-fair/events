@@ -2,7 +2,7 @@
   <v-list
     density="compact"
     class="px-4"
-    style="min-width: 240px;"
+    style="min-width: 240px; background-color: transparent;"
   >
     <v-text-field
       v-model="searchEdit"
