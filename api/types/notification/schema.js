@@ -58,8 +58,7 @@ export default {
     },
     url: {
       type: 'string',
-      title: 'calculé à partir de subscription.urlTemplate et event.urlParams',
-      readOnly: true
+      title: 'défini explicitement ou calculé à partir de subscription.urlTemplate et event.urlParams',
     },
     date: {
       readOnly: true,
