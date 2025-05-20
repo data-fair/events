@@ -4,7 +4,7 @@ export default {
   'x-exports': ['types', 'validate'],
   type: 'object',
   additionalProperties: false,
-  required: ['_id', 'subscription', 'sender', 'owner', 'notification', 'status', 'nbAttempts'],
+  required: ['_id', 'subscription', 'owner', 'notification', 'status', 'nbAttempts'],
   properties: {
     _id: {
       type: 'string',

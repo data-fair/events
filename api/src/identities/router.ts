@@ -33,11 +33,11 @@ export default createIdentitiesRouter(
         'sender.type': 'organization'
       }
       for await (const privateSubscription of mongo.subscriptions.find(privateSubscriptionFilter)) {
-        let userOrg = identity.organizations.find(o => o.id === privateSubscription.sender.id && !o.department)
-        if (privateSubscription.sender.department) {
-          userOrg = userOrg || identity.organizations.find(o => o.id === privateSubscription.sender.id && o.department === privateSubscription.sender.department)
+        let userOrg = identity.organizations.find(o => o.id === privateSubscription.sender?.id && !o.department)
+        if (privateSubscription.sender?.department) {
+          userOrg = userOrg || identity.organizations.find(o => o.id === privateSubscription.sender?.id && o.department === privateSubscription.sender.department)
         }
-        if (userOrg && privateSubscription.sender.role && userOrg.role !== privateSubscription.sender.role && userOrg.role !== 'admin') {
+        if (userOrg && privateSubscription.sender?.role && userOrg.role !== privateSubscription.sender.role && userOrg.role !== 'admin') {
           userOrg = undefined
         }
         if (!userOrg) {

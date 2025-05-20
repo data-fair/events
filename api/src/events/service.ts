@@ -68,12 +68,12 @@ export const postEvents = async (events: Event[]) => {
     }
     for (const locale of config.i18n.locales) {
       const localizedEvent = localizeEvent(event, locale)
-      const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body, event.sender.id, event.sender.name]
+      const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body, event.sender?.id, event.sender?.name]
       if (event.originator) {
         if (event.originator.organization) {
           searchParts.push(event.originator.organization.name, event.originator.organization.id)
         }
-        if (event.originator.user && (!event.originator.organization || (event.sender.type === 'organization' && event.sender.id === event.originator.organization.id))) {
+        if (event.originator.user && (!event.originator.organization || (event.sender?.type === 'organization' && event.sender.id === event.originator.organization.id))) {
           // do not add the user name if the originator is another organization
           searchParts.push(event.originator.user.name, event.originator.user.id)
         }
@@ -110,7 +110,7 @@ export const postEvents = async (events: Event[]) => {
 export const cleanEvent = (event: LocalizedEvent, sessionState: SessionStateAuthenticated) => {
   // hide the user if the event is sent from another organization
   if (event.originator) {
-    if (sessionState.account.type === event.sender.type && sessionState.account.id === event.sender.id) {
+    if (sessionState.account.type === event.sender?.type && sessionState.account.id === event.sender.id) {
       if (event.originator.organization) {
         if (sessionState.organization?.id !== event.originator.organization.id) {
           delete event.originator.user

@@ -25,11 +25,15 @@ router.get('', async (req, res, next) => {
 
   const query: Filter<Subscription> = {}
   query['recipient.id'] = recipient
-  // noSender/senderType/senderId are kept for compatibility but shoud be replace by simply sender
+  // noSender/senderType/senderId are deprecated and shoud be replaced by simply sender
   if (req.query.noSender) {
     throw httpError(400, 'noSender was deprecated')
   } else if (req.query.senderType && req.query.senderId) {
     throw httpError(400, 'senderType and senderId were deprecated')
+  }
+
+  if (req.query.sender === 'none') {
+    query.sender = { $exists: false }
   } else if (req.query.sender && typeof req.query.sender === 'string') {
     const senderParts = req.query.sender.split(':')
     query['sender.type'] = senderParts[0]
@@ -37,6 +41,7 @@ router.get('', async (req, res, next) => {
     if (senderParts[2]) query['sender.department'] = senderParts[2]
     if (senderParts[3]) query['sender.role'] = senderParts[3]
   }
+
   if (req.query.topic) {
     query['topic.key'] = req.query.topic
   }

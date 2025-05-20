@@ -4,7 +4,7 @@ export default {
   title: 'Notification',
   type: 'object',
   additionalProperties: false,
-  required: ['_id', 'title', 'topic', 'sender', 'recipient', 'date'],
+  required: ['_id', 'title', 'topic', 'recipient', 'date'],
   properties: {
     _id: {
       type: 'string',

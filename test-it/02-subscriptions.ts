@@ -192,4 +192,33 @@ describe('subscriptions', () => {
     assert.equal(res.data.count, 1)
     assert.equal(res.data.results[0].body, 'a notification from host localhost')
   })
+
+  it('should send a global public notification to any subscribed user', async () => {
+    const subscription = {
+      topic: { key: 'global-topic1' },
+      visibility: 'public'
+    }
+    await admin1.post('/api/subscriptions', subscription)
+    await assert.rejects(admin1.post('/api/subscriptions', subscription), { status: 409 })
+    await user1.post('/api/subscriptions', subscription)
+    await user2.post('/api/subscriptions', subscription)
+    let res = await admin1.get('/api/subscriptions')
+    assert.equal(res.data.count, 1)
+    assert.equal(res.data.results[0].origin, 'http://localhost:5600')
+
+    res = await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
+      topic: { key: 'global-topic1' },
+      title: 'a notification',
+      body: 'a global notification from host {hostname}',
+      visibility: 'public'
+    }])
+    res = await admin1.get('/api/notifications')
+    assert.equal(res.data.count, 1)
+    assert.equal(res.data.results[0].body, 'a global notification from host localhost')
+    res = await user1.get('/api/notifications')
+    assert.equal(res.data.count, 1)
+    res = await user2.get('/api/notifications')
+    assert.equal(res.data.count, 1)
+  })
 })

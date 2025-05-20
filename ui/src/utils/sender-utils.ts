@@ -14,7 +14,7 @@ export const parseSender = (senderStr: string) => {
   return sender
 }
 
-export const serializeSender = (sender: Subscription['sender']) => {
+export const serializeSender = (sender: Required<Subscription>['sender']) => {
   let str = `${sender.type}:${sender.id}:${sender.department || ''}`
   if (sender.role) str += `:${sender.role}`
   return str

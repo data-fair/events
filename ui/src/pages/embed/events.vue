@@ -75,7 +75,7 @@
               color="primary"
             />
             <owner-avatar
-              v-else-if="event.originator?.organization && (event.sender.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
+              v-else-if="event.originator?.organization && (event.sender?.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
               :owner="{type: 'organization', ...event.originator.organization}"
             />
             <owner-avatar
@@ -112,7 +112,7 @@
               class="mr-4"
             >{{ event.originator.user.name }} ({{ event.originator.user.email || event.originator.user.id }})</span>
             <span
-              v-if="event.originator?.organization && (event.sender.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
+              v-if="event.originator?.organization && (event.sender?.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
               class="mr-4"
             >{{ event.originator.organization.name }} ({{ event.originator.organization.id }})</span>
           </template>
