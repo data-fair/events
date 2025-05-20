@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@data-fair/lib-common-types": "^1.8.4",
-    "@data-fair/lib-express": "^1.16.1",
+    "@data-fair/lib-express": "^1.18.0",
     "@data-fair/lib-node": "^2.7.0",
     "ajv-formats": "^3.0.1",
     "ajv-i18n": "^4.2.0",
@@ -23,6 +23,7 @@
     "dayjs": "^1.11.13",
     "express": "^5.0.0",
     "fs-extra": "^11.2.0",
+    "helmet": "^8.1.0",
     "http-terminator": "^3.2.0",
     "i18n": "^0.15.1",
     "jsonwebtoken": "9",

@@ -18,6 +18,9 @@ export default defineConfig({
       '~': path.resolve(__dirname, 'src/')
     },
   },
+  html: {
+    cspNonce: '{CSP_NONCE}'
+  },
   plugins: [
     VueRouter({
       dts: './dts/typed-router.d.ts',
@@ -32,7 +35,7 @@ export default defineConfig({
       imports: [
         ...(autoImports as any),
         {
-          '~/context': ['$uiConfig', '$sitePath', '$apiPath', '$fetch'],
+          '~/context': ['$uiConfig', '$sitePath', '$cspNonce', '$apiPath', '$fetch'],
           '@mdi/js': ['mdiBell', 'mdiRefresh', 'mdiSend', 'mdiDelete', 'mdiDevices', 'mdiEmail', 'mdiRss', 'mdiDotsVertical', 'mdiCheckCircle', 'mdiCancel', 'mdiAlertCircle', 'mdiCellphone', 'mdiWeb']
         }
       ],

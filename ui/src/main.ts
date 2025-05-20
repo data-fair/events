@@ -26,7 +26,7 @@ import dFrameContent from '@data-fair/frame/lib/vue-router/d-frame-content.js'
   const localeDayjs = createLocaleDayjs(session.state.lang)
   const uiNotif = createUiNotif()
   const vuetify = createVuetify({
-    ...vuetifySessionOptions(session),
+    ...vuetifySessionOptions(session, $cspNonce),
     icons: { defaultSet: 'mdi', aliases, sets: { mdi, } }
   })
   const i18n = createI18n({ locale: session.state.lang });

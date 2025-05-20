@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import { errorHandler, createSiteMiddleware, createSpaMiddleware } from '@data-fair/lib-express/index.js'
 import express from 'express'
+import helmet from 'helmet'
 import identitiesRouter from './identities/router.ts'
 import eventsRouter from './events/router.ts'
 import pushRouter from './push/router.ts'
@@ -14,6 +15,18 @@ import { internalError } from '@data-fair/lib-node/observer.js'
 
 const app = express()
 export default app
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      // very restrictive by default, index.html of the UI will have custom rules defined in createSpaMiddleware
+      // https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html#security-headers
+      'frame-ancestors': ["'none'"],
+      'default-src': ["'none'"]
+    }
+  }
+}))
 
 // no fancy embedded arrays, just string and arrays of strings in req.query
 app.set('query parser', 'simple')
@@ -40,6 +53,9 @@ app.use('/api/v1/subscriptions', subscriptionsRouter)
 
 app.use('/api', (req, res) => res.status(404).send('unknown api endpoint'))
 
-app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig))
+// app.use(helmet())
+app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig, {
+  csp: { nonce: true, header: true }
+}))
 
 app.use(errorHandler)
