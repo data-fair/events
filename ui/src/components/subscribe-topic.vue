@@ -78,7 +78,10 @@ const subscriptionsParams = computed(() => ({
   sender: noSender ? 'none' : serializeSender(sender ?? session.state.account)
 }))
 const fetchSubscriptions = useFetch<{ results: Subscription[] }>($apiPath + '/subscriptions', { query: subscriptionsParams })
-const subscription = computed(() => fetchSubscriptions.data.value?.results[0])
+const subscription = ref<Subscription>()
+watch(fetchSubscriptions.data, () => {
+  subscription.value = fetchSubscriptions.data.value?.results[0]
+})
 watch(subscription, () => {
   if (subscription.value) topicsSubscriptions[topic.key] = subscription.value
   else delete topicsSubscriptions[topic.key]
