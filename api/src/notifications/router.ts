@@ -70,6 +70,15 @@ router.post('', async (req, res, next) => {
     res.status(201).json(body)
   } else {
     debug('pushing a notification with a recipient', req.body)
+
+    // small cleanup of deprecated stuff for retro-compatibility with notify
+    // TODO should we manage more properly i18n of notification object ?
+    // the problem is that locale is defined on a subscription and we don't have one here.. user level setting ?
+    if (typeof req.body.title === 'object') req.body.title = req.body.title[config.i18n.defaultLocale]
+    if (typeof req.body.body === 'object') req.body.body = req.body.body[config.i18n.defaultLocale]
+    if (typeof req.body.htmlBody === 'object') req.body.htmlBody = req.body.htmlBody[config.i18n.defaultLocale]
+    if (req.body.visibility) delete req.body.visibility
+
     const { body } = notificationsPostReq.returnValid(req, { name: 'req' })
     const notification: Notification = {
       ...body,
