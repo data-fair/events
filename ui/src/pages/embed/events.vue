@@ -83,7 +83,7 @@
               :owner="{type: 'user', ...event.originator.user}"
             />
           </span>
-          {{ event.title }}
+          {{ event.title || event.topic.title }}
           <v-spacer />
           <span class="mr-4">{{ dayjs(event.date).fromNow() }}</span>
         </v-expansion-panel-title>
