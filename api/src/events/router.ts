@@ -13,7 +13,8 @@ export default router
 
 router.get('', async (req, res, next) => {
   const sessionState = await session.reqAuthenticated(req)
-  const { account, lang } = sessionState
+  const { account, lang, accountRole } = sessionState
+  if (accountRole !== 'admin') throw httpError(403, 'admin only')
 
   const query: Filter<FullEvent> = { 'sender.type': account.type, 'sender.id': account.id }
   if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q, $language: lang || config.i18n.defaultLocale }
