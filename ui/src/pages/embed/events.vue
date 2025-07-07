@@ -124,7 +124,7 @@
               target="_blank"
             >{{ event.resource.title }}</a>
             <a
-              v-if="event.resource.type === 'application'"
+              v-else-if="event.resource.type === 'application'"
               :href="`/data-fair/application/${event.resource.id}`"
               target="_blank"
             >{{ event.resource.title }}</a>
@@ -134,7 +134,7 @@
               target="_blank"
             >{{ event.resource.title }}</a>
             <a
-              v-if="event.resource.type === 'catalog'"
+              v-else-if="event.resource.type === 'catalog'"
               :href="`/data-fair/extra/catalogs?p=.%2F${event.resource.id}`"
               target="_blank"
             >{{ event.resource.title }}</a>
