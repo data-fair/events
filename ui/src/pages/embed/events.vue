@@ -120,11 +120,18 @@
             <br>
             <a
               v-if="event.resource.type === 'dataset'"
-              :href="`/data-fair/datasets/${event.resource.id}`"
+              :href="`/data-fair/dataset/${event.resource.id}`"
+              target="_blank"
+            >{{ event.resource.title }}</a>
+            <a
+              v-if="event.resource.type === 'application'"
+              :href="`/data-fair/application/${event.resource.id}`"
+              target="_blank"
             >{{ event.resource.title }}</a>
             <a
               v-else-if="event.resource.type === 'processing'"
               :href="`/data-fair/extra/processings?p=.%2F${event.resource.id}`"
+              target="_blank"
             >{{ event.resource.title }}</a>
             <span v-else-if="event.resource.title">{{ event.resource.type }} / {{ event.resource.title }} ({{ event.resource.id }})</span>
             <span v-else>{{ event.resource.type }} / {{ event.resource.id }}</span>
