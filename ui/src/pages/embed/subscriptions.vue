@@ -119,7 +119,7 @@ const session = useSessionAuthenticated()
 const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
 
-const fetchSubscriptions = await useFetch<{ results: Subscription[], count: number }>($apiPath + '/subscriptions', { query: { recipient: session.state.user.id } })
+const fetchSubscriptions = useFetch<{ results: Subscription[], count: number }>($apiPath + '/subscriptions', { query: { recipient: session.state.user.id } })
 
 const recipientSubscriptions = computed(() => fetchSubscriptions.data.value)
 
