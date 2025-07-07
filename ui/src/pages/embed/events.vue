@@ -133,6 +133,11 @@
               :href="`/data-fair/extra/processings?p=.%2F${event.resource.id}`"
               target="_blank"
             >{{ event.resource.title }}</a>
+            <a
+              v-if="event.resource.type === 'catalog'"
+              :href="`/data-fair/extra/catalogs?p=.%2F${event.resource.id}`"
+              target="_blank"
+            >{{ event.resource.title }}</a>
             <span v-else-if="event.resource.title">{{ event.resource.type }} / {{ event.resource.title }} ({{ event.resource.id }})</span>
             <span v-else>{{ event.resource.type }} / {{ event.resource.id }}</span>
           </template>
