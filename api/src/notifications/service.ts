@@ -63,8 +63,8 @@ export const sendNotification = async (notification: Notification, skipInsert = 
   if (notification.outputs && notification.outputs.includes('email')) {
     // global.events.emit('sentNotification', { output: 'email', notification })
     debug('Send notif to email address')
-    let text = notification.body || ''
-    let simpleHtml = `<p>${notification.body || ''}</p>`
+    let text = notification.body || notification.title || ''
+    let simpleHtml = `<p>${notification.body || notification.title || ''}</p>`
     if (notification.url) {
       text += '\n\n' + notification.url
       simpleHtml += `<p>${i18n.__({ phrase: 'seeAt', locale: notification.locale })} <a href="${notification.url}">${new URL(notification.url).host}</a></p>`
