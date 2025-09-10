@@ -16,8 +16,15 @@ router.get('', async (req, res, next) => {
   const { account, lang, accountRole } = sessionState
   if (accountRole !== 'admin') throw httpError(403, 'admin only')
 
-  const query: Filter<FullEvent> = { 'sender.type': account.type, 'sender.id': account.id }
+  const query: Filter<FullEvent> = { }
+  if (req.query.showAll === 'true') {
+    if (!sessionState.user.adminMode) throw httpError(400, 'Only super admins can override permissions filter with showAll parameter')
+  } else {
+    query['sender.type'] = account.type
+    query['sender.id'] = account.id
+  }
   if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q, $language: lang || config.i18n.defaultLocale }
+  if (typeof req.query.topics === 'string') query['topic.key'] = { $in: req.query.topics.split(',') }
   if (typeof req.query.resource === 'string') {
     const [type, id] = req.query.resource.split('/')
     query['resource.type'] = type
