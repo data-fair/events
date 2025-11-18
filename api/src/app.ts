@@ -9,6 +9,7 @@ import notificationsRouter from './notifications/router.ts'
 import subscriptionsRouter from './subscriptions/router.ts'
 import webhooksRouter from './webhooks/router.ts'
 import webhookSubscriptionsRouter from './webhook-subscriptions/router.ts'
+import uiLogsRouter from './ui-logs/router.ts'
 import adminRouter from './admin/router.ts'
 import { uiConfig } from '#config'
 import { internalError } from '@data-fair/lib-node/observer.js'
@@ -31,6 +32,7 @@ app.use(helmet({
 // no fancy embedded arrays, just string and arrays of strings in req.query
 app.set('query parser', 'simple')
 app.use(express.json())
+app.use(express.text({ limit: 1000 })) // used by POST /api/ui-logs
 
 app.use(createSiteMiddleware('events'))
 
@@ -42,6 +44,7 @@ app.use('/api/notifications', notificationsRouter)
 app.use('/api/push', pushRouter)
 app.use('/api/identities', identitiesRouter)
 app.use('/api/admin', adminRouter)
+app.use('/api/ui-logs', uiLogsRouter)
 
 // retro-compatibility with notify
 app.use('api/v1', (req, res, next) => {

@@ -50,3 +50,9 @@ self.addEventListener('notificationclick', function (event) {
       })
   )
 })
+
+self.addEventListener('pushsubscriptionchange', function (event) {
+  // see https://stackoverflow.com/a/65773670
+  // not really clear if this event needs to be managed
+  fetch('/events/api/ui-logs', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: 'unhandled pushsubscriptionchange event in service worker' })
+})
