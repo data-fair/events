@@ -56,7 +56,10 @@ app.use('/api/v1/subscriptions', subscriptionsRouter)
 
 app.use('/api', (req, res) => res.status(404).send('unknown api endpoint'))
 
-// app.use(helmet())
+app.use('/push-sw.js', (req, res, next) => {
+  res.set('Content-Security-Policy', "default-src 'self';")
+  next()
+})
 app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig, {
   csp: { nonce: true, header: true }
 }))
