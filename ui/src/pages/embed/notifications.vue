@@ -83,7 +83,7 @@
       <v-btn
         variant="flat"
         block
-        @click="fetchNotifications(true)"
+        @click="fetchNotifications.execute(true)"
       >
         {{ t('seeMore') }}
       </v-btn>
@@ -111,14 +111,14 @@ const session = useSessionAuthenticated()
 const { dayjs } = useLocaleDayjs()
 
 useWS('/events/api/')?.subscribe<Notification>(`user:${session.state.user.id}:notifications`, () => {
-  fetchNotifications()
+  fetchNotifications.execute()
 })
 
 const page = ref(0)
 const size = 10
 const notifications = ref<NotificationsRes | null>(null)
 
-const fetchNotifications = withUiNotif(async (next?: boolean) => {
+const fetchNotifications = useAsyncAction(async (next?: boolean) => {
   if (next) page.value += 1
   else page.value = 0
   const newNotifications = await $fetch<NotificationsRes>('notifications', { params: { skip: page.value * size, size } })
@@ -128,5 +128,5 @@ const fetchNotifications = withUiNotif(async (next?: boolean) => {
     notifications.value = newNotifications
   }
 })
-fetchNotifications()
+fetchNotifications.execute()
 </script>

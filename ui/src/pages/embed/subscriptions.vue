@@ -91,7 +91,7 @@
                   color="error"
                   icon
                   size="small"
-                  @click="unsubscribe(subscription)"
+                  @click="unsubscribe.execute(subscription)"
                 >
                   <v-icon :icon="mdiDelete" />
                 </v-btn>
@@ -123,7 +123,7 @@ const fetchSubscriptions = useFetch<{ results: Subscription[], count: number }>(
 
 const recipientSubscriptions = computed(() => fetchSubscriptions.data.value)
 
-const unsubscribe = withUiNotif(async (subscription: Subscription) => {
+const unsubscribe = useAsyncAction(async (subscription: Subscription) => {
   await $fetch('subscriptions/' + subscription._id, { method: 'DELETE' })
   fetchSubscriptions.refresh()
 })

@@ -22,7 +22,7 @@
         class="ml-10 mt-0"
         :label="t('devices')"
         value="devices"
-        @update:model-value="sendSubscription(subscription)"
+        @update:model-value="sendSubscription.execute(subscription)"
       />
       <v-checkbox
         v-if="outputs.includes('email')"
@@ -33,7 +33,7 @@
         class="ml-10 mt-0"
         :label="t('email')"
         value="email"
-        @update:model-value="sendSubscription(subscription)"
+        @update:model-value="sendSubscription.execute(subscription)"
       />
     </template>
   </v-col>
@@ -102,7 +102,7 @@ const switchSubscription = async () => {
     if (!noSender) subscription.sender = sender || session.state.account
     if (icon) subscription.icon = icon
     if (urlTemplate) subscription.urlTemplate = urlTemplate
-    await sendSubscription(subscription)
+    await sendSubscription.execute(subscription)
     await fetchSubscriptions.refresh()
   } else {
     await $fetch('subscriptions/' + subscription.value._id, { method: 'DELETE' })
@@ -111,7 +111,7 @@ const switchSubscription = async () => {
   switching.value = false
 }
 
-const sendSubscription = withUiNotif(async (subscription: Partial<Subscription>) => {
+const sendSubscription = useAsyncAction(async (subscription: Partial<Subscription>) => {
   await $fetch('subscriptions', { method: 'POST', body: subscription })
 })
 </script>

@@ -9,8 +9,8 @@
         v-if="webhooks"
         color="primary"
         variant="flat"
-        :loading="testing"
-        @click="test"
+        :loading="test.loading.value"
+        @click="test.execute()"
       >
         tester
         <v-icon
@@ -57,12 +57,9 @@ const webhooksParams = computed(() => ({ size: 100, subscription: subscription._
 const fetchWebhooks = useFetch<{ results: Webhook[] }>($apiPath + '/webhooks', { query: webhooksParams })
 const webhooks = computed(() => fetchWebhooks.data.value?.results)
 
-const testing = ref(false)
-const test = withUiNotif(async () => {
-  testing.value = true
+const test = useAsyncAction(async () => {
   await $fetch(`api/v1/webhook-subscriptions/${subscription._id}/_test`, { method: 'POST' })
   await fetchWebhooks.refresh()
-  testing.value = false
 })
 </script>
 

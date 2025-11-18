@@ -51,7 +51,7 @@
           </v-btn>
         </template>
         <v-list density="compact">
-          <v-list-item @click="retry">
+          <v-list-item @click="retry.execute()">
             <template #append>
               <v-icon
                 color="primary"
@@ -111,12 +111,12 @@ const description = computed(() => {
   return parts.join(' - ')
 })
 
-const retry = withUiNotif(async () => {
+const retry = useAsyncAction(async () => {
   await $fetch(`webhooks/${webhook._id}/_retry`, { method: 'POST' })
   emit('refresh')
 })
 
-/* const cancel = withUiNotif(async () => {
+/* const cancel = useAsyncAction(async () => {
   await $fetch(`${webhook._id}/_cancel`, { method: 'POST' })
   emit('refresh')
 }) */

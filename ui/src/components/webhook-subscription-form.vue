@@ -2,7 +2,7 @@
   <v-form
     ref="form"
     lazy
-    @submit="save"
+    @submit="save.execute()"
   >
     <v-row>
       <v-col cols="12">
@@ -61,15 +61,15 @@
       <v-spacer />
       <confirm-menu
         v-if="modelValue._id"
-        @confirm="remove"
+        @confirm="remove.execute()"
       />
       <v-btn
         color="primary"
         variant="flat"
-        :loading="saving"
+        :loading="save.loading.value"
         class="ml-2"
-        :disabled="JSON.stringify(subscription) === previousState || saving"
-        @click="save"
+        :disabled="JSON.stringify(subscription) === previousState || save.loading.value"
+        @click="save.execute()"
       >
         Enregistrer
       </v-btn>
@@ -102,18 +102,15 @@ watch(modelValue, () => {
 
 const previousState = ref(JSON.stringify(subscription))
 
-const saving = ref(false)
-const save = withUiNotif(async () => {
+const save = useAsyncAction(async () => {
   const valid = (await form.value?.validate())?.valid
   if (!valid) return
-  saving.value = true
   await $fetch<WebhookSubscription>('webhook-subscriptions', { method: 'POST', body: subscription })
   previousState.value = JSON.stringify(subscription)
   emit('saved')
-  saving.value = false
 })
 
-const remove = withUiNotif(async () => {
+const remove = useAsyncAction(async () => {
   await $fetch('webhook-subscriptions/' + subscription._id, { method: 'DELETE' })
   emit('deleted')
 })

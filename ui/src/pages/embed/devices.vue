@@ -10,7 +10,7 @@
     >
       <register-device
         :registrations="registrations"
-        @registration="(r: DeviceRegistration) => { localRegistration = r; fetchRegistrations() }"
+        @registration="(r: DeviceRegistration) => { localRegistration = r; fetchRegistrations.execute() }"
       />
     </v-row>
     <v-row v-if="registrations">
@@ -26,7 +26,7 @@
           :registration="registration"
           :is-local="equalDeviceRegistrations(localRegistration?.id, registration.id)"
           @delete="remove(i)"
-          @test="test(i)"
+          @test="test.execute(i)"
         />
       </v-col>
     </v-row>
@@ -36,30 +36,27 @@
 <script lang="ts" setup>
 import type { DeviceRegistration } from '#api/types'
 
-const loading = ref(false)
 const registrations = ref<DeviceRegistration[] | null>(null)
-const fetchRegistrations = withUiNotif(async () => {
-  loading.value = true
+const fetchRegistrations = useAsyncAction(async () => {
   registrations.value = await $fetch<DeviceRegistration[]>('push/registrations')
-  loading.value = false
 })
-fetchRegistrations()
+fetchRegistrations.execute()
 
 const localRegistration = ref<DeviceRegistration | null>(null)
 
-const save = withUiNotif(async () => {
+const save = useAsyncAction(async () => {
   await $fetch('push/registrations', { body: registrations.value, method: 'PUT' })
-  fetchRegistrations()
+  fetchRegistrations.execute()
 })
 
 const remove = (i: number) => {
   registrations.value?.splice(i, 1)
-  save()
+  save.execute()
 }
 
-const test = withUiNotif(async (i: number) => {
+const test = useAsyncAction(async (i: number) => {
   await $fetch(`push/registrations/${i}/_test`, { method: 'POST' })
-  await fetchRegistrations()
+  fetchRegistrations.execute()
 })
 </script>
 
