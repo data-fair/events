@@ -1,5 +1,5 @@
 ##########################
-FROM node:22.9.0-alpine3.19 AS base
+FROM node:24.11.1-alpine3.22 AS base
 
 WORKDIR /app
 ENV NODE_ENV=production
@@ -22,9 +22,9 @@ COPY --from=package-strip /app/package.json package.json
 COPY --from=package-strip /app/package-lock.json package-lock.json
 ADD ui/package.json ui/package.json
 ADD api/package.json api/package.json
-# full deps install used for types and ui building
+# full deps install used for building
 # also used to fill the npm cache for faster install of api deps
-RUN npm ci --omit=dev --omit=optional --omit=peer --no-audit --no-fund
+RUN npm ci --omit=peer --no-audit --no-fund
 
 ##########################
 FROM installer AS types
@@ -37,7 +37,6 @@ RUN npm run build-types
 ##########################
 FROM installer AS ui
 
-RUN npm i --no-save @rollup/rollup-linux-x64-musl
 COPY --from=types /app/api/config api/config
 COPY --from=types /app/api/types api/types
 ADD /api/src/config.ts api/src/config.ts
