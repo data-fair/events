@@ -7,11 +7,14 @@ import { Router } from 'express'
 import useragent from 'useragent'
 import config from '#config'
 import mongo from '#mongo'
+import Debug from 'debug'
 import * as putRegistrationsReq from '#doc/push/put-registrations-req/index.ts'
 import * as postRegistrationReq from '#doc/push/post-registration-req/index.ts'
 import { nanoid } from 'nanoid'
 import { session, reqSiteUrl, httpError } from '@data-fair/lib-express/index.js'
 import { getPushState, push, pushToDevice } from './service.ts'
+
+const debug = Debug('webpush')
 
 const router = Router()
 export default router
@@ -69,12 +72,14 @@ router.post('/registrations', async (req, res) => {
 
   const existingRegistration = sub.registrations.find((r) => equalDeviceRegistrations(r.id, newRegistration.id))
   if (existingRegistration) {
+    debug('post was used to refresh an existing registration')
     delete existingRegistration.disabled
     delete existingRegistration.disabledUntil
     delete existingRegistration.lastErrors
     await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
     res.send(existingRegistration)
   } else {
+    debug('post was used to create a new regitration')
     const origin = reqSiteUrl(req)
     const error = await pushToDevice({
       _id: 'new-device',

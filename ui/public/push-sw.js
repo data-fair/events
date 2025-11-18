@@ -5,12 +5,12 @@
 // https://github.com/alex-friedl/webpush-example/blob/master/client/service-worker.js
 
 self.addEventListener('install', function () {
-  console.log('data-fair/notify - installed service worker')
+  console.log('data-fair/events - installed service worker')
   self.skipWaiting()
 })
 
 self.addEventListener('push', function (event) {
-  console.log('data-fair/notify - received a push message', event)
+  console.log('data-fair/events - received a push message', event)
   const data = event.data.json()
   event.waitUntil(
     self.registration.showNotification(data.title, {

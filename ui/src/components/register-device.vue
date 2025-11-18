@@ -36,6 +36,9 @@ fr:
 
 <script lang="ts" setup>
 import type { DeviceRegistration } from '#api/types'
+import debugModule from 'debug'
+
+const debug = debugModule('webpush')
 
 const { registrations } = defineProps<{ registrations: DeviceRegistration[] }>()
 
@@ -52,14 +55,16 @@ const prepareServiceWorker = async () => {
   // see web-push client example
   // https://github.com/alex-friedl/webpush-example/blob/master/client/main.js
 
+  debug('prepare service worker')
+
   if (!('showNotification' in ServiceWorkerRegistration.prototype)) {
-    return console.log('Notifications are not supported')
+    return console.warn('Notifications are not supported')
   }
   if (Notification.permission === 'denied') {
-    return console.log('The user has blocked permissions')
+    return console.warn('The user has blocked permissions')
   }
   if (!('serviceWorker' in navigator)) {
-    return console.log('Service workers are not supported')
+    return console.warn('Service workers are not supported')
   }
 
   try {
@@ -69,16 +74,20 @@ const prepareServiceWorker = async () => {
     if (pushManagerSubscription.value) {
       const registration = registrations.find(r => equalDeviceRegistrations(r.id, pushManagerSubscription.value))
       if (!registration) {
-        console.log('Local subscription is not matched by remote, unsubscribe')
+        debug('local subscription is not matched by remote, unsubscribe')
         await pushManagerSubscription.value.unsubscribe()
         pushManagerSubscription.value = null
       } else {
-        // refresh the registration so that it is identified as active
-        const refreshedRegistration = await $fetch<DeviceRegistration>('push/registrations', { body: registration, method: 'POST' })
+        debug('refresh the registration so that it is identified as active')
+        const refreshedRegistration = await $fetch<DeviceRegistration>('push/registrations', {
+          body: { id: registration.id, type: registration.type, deviceName: registration.deviceName },
+          method: 'POST'
+        })
+        debug('refreshedRegistration', refreshedRegistration)
         emit('registration', refreshedRegistration)
       }
     } else {
-      console.log('no existing subscription')
+      debug('no existing subscription')
     }
     ready.value = true
   } catch (err) {
@@ -89,6 +98,7 @@ prepareServiceWorker()
 
 const register = async () => {
   try {
+    debug('register current device')
     const serviceWorkerRegistration = await navigator.serviceWorker.ready
     const vapidKey = await $fetch<{ publicKey: string }>('push/vapidkey')
     pushManagerSubscription.value = await serviceWorkerRegistration.pushManager.subscribe({
@@ -97,11 +107,12 @@ const register = async () => {
     })
     const registration: Partial<DeviceRegistration> = { id: pushManagerSubscription.value }
     const createdRegistration = await $fetch<DeviceRegistration>('push/registrations', { body: registration, method: 'POST' })
+    debug('createdRegistration', createdRegistration)
     emit('registration', createdRegistration)
   } catch (err) {
     if (Notification.permission === 'denied') {
       ready.value = false
-      console.log('The user has blocked permissions')
+      console.warn('The user has blocked permissions')
       error.value = 'Les notifications sont bloquées sur cet appareil pour cette application.'
     } else {
       console.error('Error while subscribing to service worker', err)

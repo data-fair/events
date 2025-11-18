@@ -11,16 +11,20 @@ import * as notificationsMetrics from '../notifications/metrics.js'
 import * as metrics from './metrics.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 
-const debug = Debug('push')
+const debug = Debug('webpush')
 
 let pushState: undefined | { vapidKeys: webpush.VapidKeys, pushNotifications: PushNotifications }
 export const init = async () => {
   let vapidKeys = (await mongo.secrets.findOne({ _id: 'vapid-keys' }))?.data as webpush.VapidKeys | undefined
   if (!vapidKeys) {
+    console.log('create new vapid keys for webpush notifications')
     vapidKeys = webpush.generateVAPIDKeys()
     await mongo.secrets.insertOne({ _id: 'vapid-keys', data: vapidKeys })
+  } else {
+    console.log('use existing vapid keys for webpush notifications')
   }
 
+  console.log(`with gcmAPIKey ? ${!!config.gcmAPIKey}, with APN ${!!config.apn.token.key}`)
   const settings: PushNotifications.Settings = {
     web: {
       vapidDetails: {
@@ -28,7 +32,8 @@ export const init = async () => {
         publicKey: vapidKeys.publicKey,
         privateKey: vapidKeys.privateKey
       },
-      gcmAPIKey: config.gcmAPIKey
+      gcmAPIKey: config.gcmAPIKey,
+      TTL: 60 * 60 * 24 * 4 // push service should store the message for 4 days
     }
   }
   if (config.apn.token.key) {
@@ -80,7 +85,7 @@ export const push = async (notification: Notification, forceRegistrationIndex: n
         metrics.pushDeviceErrors.inc({ output: 'device-' + registration.type, statusCode: error.statusCode })
         errors.push(error)
         if (error.statusCode === 410) {
-          console.log('registration has unsubscribed or expired, disable it', error.body || error.response || error.statusCode, JSON.stringify(registration))
+          console.warn('registration has unsubscribed or expired, disable it', error.body || error.response || error.statusCode, JSON.stringify(registration))
           registration.disabled = 'gone' // cf https://developer.mozilla.org/fr/docs/Web/HTTP/Status/410
           delete registration.lastErrors
         } else {

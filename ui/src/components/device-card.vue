@@ -33,7 +33,7 @@
     <v-card-text>
       {{ infos }}
     </v-card-text>
-    <v-card-action>
+    <v-card-actions>
       <v-btn
         color="primary"
         variant="text"
@@ -41,7 +41,7 @@
       >
         tester
       </v-btn>
-    </v-card-action>
+    </v-card-actions>
   </v-card>
 </template>
 
