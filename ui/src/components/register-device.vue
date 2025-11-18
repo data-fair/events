@@ -20,7 +20,8 @@
       <v-btn
         variant="text"
         class="ml-1"
-        @click="register"
+        :disabled="register.loading.value"
+        @click="register.execute()"
       >
         {{ t('ok') }}
       </v-btn>
@@ -75,7 +76,7 @@ const prepareServiceWorker = async () => {
       const registration = registrations.find(r => equalDeviceRegistrations(r.id, pushManagerSubscription.value))
       if (!registration) {
         debug('local subscription is not matched by remote, unsubscribe')
-        await $fetch('ui-logs', { method: 'POST', body: 'webpush - service worker subscription was not matched by remote info and was unsubscribed. This means that either the user manually deleted the remote registration or something changed.', headers: { 'content-type': 'text/plain' } })
+        await $fetch('ui-logs', { method: 'POST', body: 'webpush - service worker subscription was not matched by remote info and was unsubscribed.', headers: { 'content-type': 'text/plain' } })
         await pushManagerSubscription.value.unsubscribe()
         pushManagerSubscription.value = null
       } else {
@@ -97,7 +98,18 @@ const prepareServiceWorker = async () => {
 }
 prepareServiceWorker()
 
-const register = async () => {
+watch(() => registrations, async () => {
+  if (pushManagerSubscription.value) {
+    const registration = registrations.find(r => equalDeviceRegistrations(r.id, pushManagerSubscription.value))
+    if (!registration) {
+      debug('local subscription was deleted, unsubscribe')
+      await pushManagerSubscription.value.unsubscribe()
+      pushManagerSubscription.value = null
+    }
+  }
+})
+
+const register = useAsyncAction(async () => {
   try {
     debug('register current device')
     const serviceWorkerRegistration = await navigator.serviceWorker.ready
@@ -120,7 +132,7 @@ const register = async () => {
       error.value = 'Échec lors de l\'envoi d\'une notification à cet appareil. Votre navigateur n\'est peut-être pas compatible avec la fonctionnalité "push messaging".'
     }
   }
-}
+})
 </script>
 
 <style lang="css" scoped>
