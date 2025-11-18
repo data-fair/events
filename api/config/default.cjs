@@ -29,9 +29,8 @@ module.exports = {
     loopInterval: 4000
   },
   theme: {
-    logo: null,
-    notificationIcon: null,
-    notificationBadge: null
+    // notificationIcon: '',
+    // notificationBadge: ''
   },
   i18n: {
     locales: ['fr', 'en'],

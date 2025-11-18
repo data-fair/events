@@ -31,7 +31,6 @@ module.exports = {
     port: 'OBSERVER_PORT'
   },
   theme: {
-    logo: 'THEME_LOGO',
     notificationIcon: 'THEME_NOTIFICATION_ICON',
     notificationBadge: 'THEME_NOTIFICATION_BADGE'
   },

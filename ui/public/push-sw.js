@@ -15,8 +15,7 @@ self.addEventListener('push', function (event) {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      // temporarily comment sending icon as I can't make it work with CSP rules for some unknown reason
-      // icon: data.icon,
+      icon: data.icon,
       // badge: data.badge,
       timestamp: new Date(data.date).getTime(),
       vibrate: [300, 100, 400],

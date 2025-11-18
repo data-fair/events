@@ -111,16 +111,12 @@
     "theme": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["logo", "notificationIcon", "notificationBadge"],
       "properties": {
-        "logo": {
-          "type": ["string", "null"]
-        },
         "notificationIcon": {
-          "type": ["string", "null"]
+          "type": "string"
         },
         "notificationBadge": {
-          "type": ["string", "null"]
+          "type": "string"
         }
       }
     },

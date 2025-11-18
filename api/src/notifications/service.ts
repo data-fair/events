@@ -24,7 +24,7 @@ export const prepareSubscriptionNotification = (event: FullEvent, subscription: 
   delete localizedEvent.originator
   delete localizedEvent.urlParams
   const notification: Notification = {
-    icon: subscription.icon || config.theme.notificationIcon || config.theme.logo || (subscription.origin + '/events/logo-192x192.png'),
+    icon: subscription.icon || config.theme.notificationIcon || (subscription.origin + '/events/logo-192x192.png'),
     locale: subscription.locale,
     ...localizedEvent,
     _id: nanoid(),

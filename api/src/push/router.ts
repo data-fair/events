@@ -90,7 +90,7 @@ router.post('/registrations', async (req, res) => {
       title: 'Un nouvel appareil recevra vos notifications',
       body: `L'appareil ${newRegistration.deviceName} est confirmé comme destinataire de vos notifications.`,
       date,
-      icon: config.theme.notificationIcon || config.theme.logo || (origin + '/events/logo-192x192.png')
+      icon: config.theme.notificationIcon || (origin + '/events/logo-192x192.png')
     }, newRegistration)
     if (error) return res.status(500).send(error)
     sub.registrations.push(newRegistration)
@@ -118,7 +118,7 @@ router.post('/registrations/:i/_test', async (req, res) => {
     recipient: { id: user.id, name: user.name },
     title: 'Cet appareil est correctement configuré pour recevoir vos notifications',
     date: new Date().toISOString(),
-    icon: config.theme.notificationIcon || config.theme.logo || (origin + '/events/logo-192x192.png')
+    icon: config.theme.notificationIcon || (origin + '/events/logo-192x192.png')
   }, i)
   res.send({ error: errors[0] })
 })
