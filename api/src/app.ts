@@ -57,7 +57,8 @@ app.use('/api/v1/subscriptions', subscriptionsRouter)
 app.use('/api', (req, res) => res.status(404).send('unknown api endpoint'))
 
 app.use('/push-sw.js', (req, res, next) => {
-  res.set('Content-Security-Policy', "default-src 'self';")
+  // helmet prevents the service worker from displaying notification properly
+  res.set('Content-Security-Policy', "default-src 'self';style-src 'unsafe-inline';")
   next()
 })
 app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig, {
