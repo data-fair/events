@@ -28,6 +28,7 @@ self.addEventListener('push', function (event) {
 self.addEventListener('notificationclick', function (event) {
   const url = event.notification.data.url || '/'
   console.log('data-fair/events - notification click', event.notification.tag, url)
+  fetch('/events/api/ui-logs', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: 'try to push to ui-log from the service worker itself' })
 
   // Android doesn’t close the notification when you click on it
   // See: http://crbug.com/463146

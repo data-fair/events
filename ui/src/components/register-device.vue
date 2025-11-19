@@ -68,6 +68,8 @@ const prepareServiceWorker = async () => {
     return console.warn('Service workers are not supported')
   }
 
+  await $fetch('ui-logs', { method: 'POST', body: 'webpush - service worker subscription initialization, is it working ?????????????????????????.', headers: { 'content-type': 'text/plain' } })
+
   try {
     await navigator.serviceWorker.register($sitePath + '/events/push-sw.js')
     const serviceWorkerRegistration = await navigator.serviceWorker.ready
