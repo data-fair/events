@@ -32,7 +32,6 @@ app.use(helmet({
 // no fancy embedded arrays, just string and arrays of strings in req.query
 app.set('query parser', 'simple')
 app.use(express.json())
-app.use(express.text({ limit: 1000 })) // used by POST /api/ui-logs
 
 app.use(createSiteMiddleware('events'))
 

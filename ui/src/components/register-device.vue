@@ -76,7 +76,7 @@ const prepareServiceWorker = async () => {
       const registration = registrations.find(r => equalDeviceRegistrations(r.id, pushManagerSubscription.value))
       if (!registration) {
         debug('local subscription is not matched by remote, unsubscribe')
-        await $fetch('ui-logs', { method: 'POST', body: 'webpush - service worker subscription was not matched by remote info and was unsubscribed.', headers: { 'content-type': 'text/plain' } })
+        await $fetch('ui-logs', { method: 'POST', body: { message: 'webpush - service worker subscription was not matched by remote info and was unsubscribed.' } })
         await pushManagerSubscription.value.unsubscribe()
         pushManagerSubscription.value = null
       } else {

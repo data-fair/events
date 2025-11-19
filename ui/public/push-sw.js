@@ -9,6 +9,14 @@ self.addEventListener('install', function () {
   self.skipWaiting()
 })
 
+function uiLog (message) {
+  fetch('/events/api/ui-logs', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ message })
+  })
+}
+
 self.addEventListener('push', function (event) {
   console.log('data-fair/events - received a push message', event)
   const data = event.data.json()
@@ -54,5 +62,5 @@ self.addEventListener('notificationclick', function (event) {
 self.addEventListener('pushsubscriptionchange', function (event) {
   // see https://stackoverflow.com/a/65773670
   // not really clear if this event needs to be managed
-  fetch('/events/api/ui-logs', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: 'unhandled pushsubscriptionchange event in service worker' })
+  uiLog('unhandled pushsubscriptionchange event in service worker')
 })
