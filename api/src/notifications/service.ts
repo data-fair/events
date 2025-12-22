@@ -66,8 +66,16 @@ export const sendNotification = async (notification: Notification, skipInsert = 
     let text = notification.body || notification.title || ''
     let simpleHtml = `<p>${notification.body || notification.title || ''}</p>`
     if (notification.url) {
-      text += '\n\n' + notification.url
-      simpleHtml += `<p>${i18n.__({ phrase: 'seeAt', locale: notification.locale })} <a href="${notification.url}">${new URL(notification.url).host}</a></p>`
+      let parsedUrl
+      try {
+        parsedUrl = new URL(notification.url)
+      } catch (err) {
+        internalError('bad-notif-url', `notif ${notification._id} has badly formatted url ${notification.url}`)
+      }
+      if (parsedUrl) {
+        text += '\n\n' + notification.url
+        simpleHtml += `<p>${i18n.__({ phrase: 'seeAt', locale: notification.locale })} <a href="${notification.url}">${parsedUrl.host}</a></p>`
+      }
     }
     const mail = {
       to: [{ type: 'user', ...notification.recipient }],
