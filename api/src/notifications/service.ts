@@ -36,6 +36,7 @@ export const prepareSubscriptionNotification = (event: FullEvent, subscription: 
   }
   if (subscription.urlTemplate) {
     notification.url = parseTemplate(subscription.urlTemplate).expand(event.urlParams || {})
+    if (notification.url.startsWith('/') && subscription.origin) notification.url = subscription.origin + notification.url
   }
   if (!notification.topic.title && subscription.topic.title) {
     notification.topic.title = subscription.topic.title
