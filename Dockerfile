@@ -1,5 +1,5 @@
 ##########################
-FROM node:24.11.1-alpine3.22 AS base
+FROM node:24.12.0-alpine3.23 AS base
 
 WORKDIR /app
 ENV NODE_ENV=production
@@ -24,7 +24,7 @@ ADD ui/package.json ui/package.json
 ADD api/package.json api/package.json
 # full deps install used for building
 # also used to fill the npm cache for faster install of api deps
-RUN npm ci --omit=peer --no-audit --no-fund
+RUN npm ci --omit=optional --no-audit --no-fund
 
 ##########################
 FROM installer AS types
@@ -47,7 +47,7 @@ RUN npm -w ui run build
 FROM installer AS api-installer
 
 # remove other workspaces and reinstall, otherwise we can get rig have some peer dependencies from other workspaces
-RUN npm ci -w api --prefer-offline --omit=dev --omit=optional --omit=peer --no-audit --no-fund && \
+RUN npm ci -w api --prefer-offline --omit=dev --omit=optional --no-audit --no-fund && \
     npx clean-modules --yes "!ramda/src/test.js"
 RUN mkdir -p /app/api/node_modules
 
