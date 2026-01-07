@@ -12,16 +12,15 @@
     "lint-fix": "eslint --fix ."
   },
   "dependencies": {
-    "@data-fair/frame": "^0.12.0",
+    "@data-fair/frame": "^0.17.7",
     "@data-fair/lib-vue": "^1.19.0",
     "@data-fair/lib-vuetify": "^1.9.2",
     "@intlify/unplugin-vue-i18n": "^5.2.0",
-    "@koumoul/v-iframe": "^2.4.4",
+    "@koumoul/v-iframe": "^2.4.5",
     "@mdi/js": "^7.4.47",
     "@types/config": "^3.3.5",
     "@types/debug": "^4.1.12",
     "@vitejs/plugin-vue": "^5.1.2",
-    "chart.js": "^4.4.4",
     "debug": "^4.4.3",
     "iframe-resizer": "^4.4.5",
     "ofetch": "^1.5.1",

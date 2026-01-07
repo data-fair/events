@@ -96,7 +96,9 @@ const prepareServiceWorker = async () => {
     console.error('Error while preparing for subscription', err)
   }
 }
-prepareServiceWorker()
+onMounted(() => {
+  prepareServiceWorker()
+})
 
 watch(() => registrations, async () => {
   if (pushManagerSubscription.value) {

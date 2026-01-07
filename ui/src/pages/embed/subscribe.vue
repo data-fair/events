@@ -12,7 +12,7 @@
       Vous devez être connecté pour pouvoir recevoir des notifications.
     </v-alert>
     <template v-else>
-      <v-row v-if="hasDeviceOutput && reactiveSearchParams.register !== 'false' && fetchRegistrations.data.value && !fetchRegistrations.loading.value">
+      <v-row v-if="hasDeviceOutput && reactiveSearchParams.register !== 'false' && fetchRegistrations.data.value">
         <register-device
           :registrations="fetchRegistrations.data.value"
           @registration="fetchRegistrations.refresh()"
