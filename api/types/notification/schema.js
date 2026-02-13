@@ -11,6 +11,10 @@ export default {
       title: 'Identifiant',
       readOnly: true
     },
+    eventId: {
+      type: 'string',
+      title: 'Globally unique id of the event source of this notification'
+    },
     origin: {
       type: 'string',
       title: 'Site d\'origine de la souscription',
@@ -61,7 +65,6 @@ export default {
       title: 'défini explicitement ou calculé à partir de subscription.urlTemplate et event.urlParams',
     },
     date: {
-      readOnly: true,
       type: 'string',
       description: 'reception date',
       format: 'date-time'

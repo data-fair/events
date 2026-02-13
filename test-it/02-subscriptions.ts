@@ -221,4 +221,64 @@ describe('subscriptions', () => {
     res = await user2.get('/api/notifications')
     assert.equal(res.data.count, 1)
   })
+
+  it('should send notificationss of de-duplicated events', async () => {
+    // user1 is subscribed in 2 different manners
+    let res = await user1.post('/api/subscriptions', {
+      topic: { key: 'topic1' },
+      sender: { type: 'organization', id: 'orga1' }
+    })
+    res = await user1.post('/api/subscriptions', {
+      topic: { key: 'topic2' },
+      sender: { type: 'organization', id: 'orga1' }
+    })
+
+    // admin is subscribed in the second manner only
+    res = await admin1.post('/api/subscriptions', {
+      topic: { key: 'topic2' },
+      sender: { type: 'organization', id: 'orga1' }
+    })
+
+    res = await axPush.post('/api/events', [{
+      _id: 'test',
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'notif 1',
+      sender: { type: 'organization', id: 'orga1', name: 'Orga 1' }
+    }])
+    res = await axPush.post('/api/events', [{
+      _id: 'test',
+      date: new Date().toISOString(),
+      topic: { key: 'topic2' },
+      title: 'notif 2',
+      sender: { type: 'organization', id: 'orga1', name: 'Orga 1' }
+    }])
+    res = await admin1.get('/api/notifications')
+    assert.equal(res.data.count, 1)
+    // no duplicate created
+    res = await user1.get('/api/notifications')
+    assert.equal(res.data.count, 1)
+
+    // another notification sent straight to the user
+    res = await axPush.post('/api/notifications', {
+      // eventId: 'test',
+      date: new Date().toISOString(),
+      topic: { key: 'topic2' },
+      title: 'notif 2',
+      recipient: { id: 'user1' }
+    })
+    res = await user1.get('/api/notifications')
+    assert.equal(res.data.count, 2)
+
+    // a duplicate not saved
+    res = await axPush.post('/api/notifications', {
+      eventId: 'test',
+      date: new Date().toISOString(),
+      topic: { key: 'topic2' },
+      title: 'notif 2',
+      recipient: { id: 'user1' }
+    })
+    res = await user1.get('/api/notifications')
+    assert.equal(res.data.count, 2)
+  })
 })

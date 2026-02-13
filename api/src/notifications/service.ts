@@ -13,6 +13,7 @@ import config from '#config'
 import * as metrics from './metrics.js'
 import { localizeEvent } from '../events/service.ts'
 import * as pushService from '../push/service.ts'
+import { MongoError } from 'mongodb'
 
 const debug = Debug('notifications')
 
@@ -24,6 +25,7 @@ export const prepareSubscriptionNotification = (event: FullEvent, subscription: 
   delete localizedEvent.originator
   delete localizedEvent.urlParams
   const notification: Notification = {
+    eventId: event._id,
     icon: subscription.icon || config.theme.notificationIcon || (subscription.origin + '/events/logo-192x192.png'),
     locale: subscription.locale,
     ...localizedEvent,
@@ -54,7 +56,18 @@ export const prepareSubscriptionNotification = (event: FullEvent, subscription: 
 
 export const sendNotification = async (notification: Notification, skipInsert = false) => {
   // global.events.emit('saveNotification', notification)
-  if (!skipInsert) await mongo.notifications.insertOne(notification)
+  if (!skipInsert) {
+    try {
+      await mongo.notifications.insertOne(notification)
+      return
+    } catch (err) {
+      if (err instanceof MongoError && err.code === 11000) {
+        // conflict error, simply ignore this duplicate notification
+      } else {
+        throw err
+      }
+    }
+  }
   debug('Send WS notif', notification.recipient, notification)
   await wsEmitter.emit(`user:${notification.recipient.id}:notifications`, notification)
   if (notification.outputs && notification.outputs.includes('devices')) {
