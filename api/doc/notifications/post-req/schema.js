@@ -1,5 +1,5 @@
 import jsonSchema from '@data-fair/lib-utils/json-schema.js'
-import NotificationSchema from '#types/notification/schema.js'
+import NotificationSchema from '@data-fair/lib-common-types/notification/schema.js'
 
 export default {
   $id: 'https://github.com/data-fair/events/notifications/post-req',
@@ -11,7 +11,7 @@ export default {
     body:
       jsonSchema(NotificationSchema)
         .removeReadonlyProperties()
-        .removeFromRequired(['visibility'])
+        .removeFromRequired(['date'])
         .removeId()
         .appendTitle(' post')
         .schema

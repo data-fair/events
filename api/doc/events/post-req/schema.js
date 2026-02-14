@@ -1,3 +1,5 @@
+import PostSingleReqSchema from '../post-single-req/schema.js'
+
 export default {
   $id: 'https://github.com/data-fair/events/events/post-req',
   title: 'Post event req',
@@ -7,9 +9,8 @@ export default {
   properties: {
     body: {
       type: 'array',
-      items: {
-        $ref: 'https://github.com/data-fair/lib/event'
-      }
+      items: PostSingleReqSchema.properties.body
     }
-  }
+  },
+  $defs: PostSingleReqSchema.$defs
 }

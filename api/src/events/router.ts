@@ -1,5 +1,5 @@
 import type { Filter, Sort } from 'mongodb'
-import type { FullEvent } from '#types'
+import type { Event, FullEvent } from '#types'
 
 import { Router } from 'express'
 import mongo from '#mongo'
@@ -55,8 +55,12 @@ router.get('', async (req, res, next) => {
 router.post('', async (req, res, next) => {
   assertReqInternalSecret(req, config.secretKeys.events)
   const { body } = postReq.returnValid(req, { name: 'req' })
+  const events: Event[] = body.map(e => ({
+    date: new Date().toISOString(),
+    ...e,
+  }))
 
-  await postEvents(body)
+  await postEvents(events)
 
   res.status(201).json(body)
 })

@@ -1,7 +1,6 @@
 import type { SortDirection } from 'mongodb'
 import type { Pointer } from '../types.ts'
 import type { Notification } from '#types'
-import { nanoid } from 'nanoid'
 import { Router } from 'express'
 import debugModule from 'debug'
 import mongo from '#mongo'
@@ -12,6 +11,7 @@ import * as eventsPostSingleReq from '#doc/events/post-single-req/index.ts'
 import * as notificationsPostReq from '#doc/notifications/post-req/index.ts'
 import { postEvents } from '../events/service.ts'
 import { sendNotification } from './service.ts'
+import { nanoid } from 'nanoid'
 
 const debug = debugModule('events')
 
@@ -66,7 +66,7 @@ router.post('', async (req, res, next) => {
       delete req.body.recipient
     }
     const { body } = eventsPostSingleReq.returnValid(req, { name: 'req' })
-    await postEvents([body])
+    await postEvents([{ date: new Date().toISOString(), ...body }])
     res.status(201).json(body)
   } else {
     debug('pushing a notification with a recipient', req.body)
@@ -81,10 +81,11 @@ router.post('', async (req, res, next) => {
 
     const { body } = notificationsPostReq.returnValid(req, { name: 'req' })
     const notification: Notification = {
-      ...body,
       _id: nanoid(),
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      ...body,
     }
+
     await sendNotification(notification)
     res.status(200).json(notification)
   }
