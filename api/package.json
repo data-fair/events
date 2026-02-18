@@ -38,6 +38,7 @@
     "ws": "^8.19.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/fs-extra": "^11.0.4",
     "@types/i18n": "^0.13.12",
     "@types/node-pushnotifications": "^3.1.1",
