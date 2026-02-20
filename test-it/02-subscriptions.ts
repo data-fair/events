@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { it, describe, before, beforeEach, after } from 'node:test'
+import WebSocket from 'ws'
 import { axios, axiosAuth, clean, startApiServer, stopApiServer } from './utils/index.ts'
 
 const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082/events' })
@@ -280,5 +281,67 @@ describe('subscriptions', () => {
     })
     res = await user1.get('/api/notifications')
     assert.equal(res.data.count, 2)
+  })
+
+  it('should deliver direct notifications via WS', async () => {
+    const cookies = user1.cookieJar.getCookiesSync('http://localhost:5600')
+    const ws = new WebSocket('ws://localhost:8082', { headers: { Cookie: cookies.map(String).join('; ') } })
+    const messages: any[] = []
+
+    await new Promise<void>((resolve, reject) => {
+      ws.on('message', (raw: Buffer) => {
+        const msg = JSON.parse(raw.toString())
+        if (msg.type === 'subscribe-confirm') resolve()
+        if (msg.type === 'message') messages.push(msg)
+      })
+      ws.on('open', () => ws.send(JSON.stringify({ type: 'subscribe', channel: 'user:user1:notifications' })))
+      ws.on('error', reject)
+    })
+
+    await axPush.post('/api/notifications', {
+      topic: { key: 'topic1' },
+      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      title: 'notif direct 1',
+      recipient: { id: 'user1' }
+    })
+    await new Promise(resolve => setTimeout(resolve, 200))
+    assert.equal(messages.length, 1)
+    assert.equal(messages[0].data.title, 'notif direct 1')
+
+    await axPush.post('/api/notifications', {
+      topic: { key: 'topic1' },
+      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      title: 'notif direct 2',
+      recipient: { id: 'user1' }
+    })
+    await new Promise(resolve => setTimeout(resolve, 200))
+    assert.equal(messages.length, 2)
+    assert.equal(messages[1].data.title, 'notif direct 2')
+
+    // a duplicate should not produce a WS message
+    await axPush.post('/api/notifications', {
+      eventId: 'ws-dedup',
+      topic: { key: 'topic1' },
+      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      title: 'notif dedup',
+      recipient: { id: 'user1' }
+    })
+    await new Promise(resolve => setTimeout(resolve, 200))
+    assert.equal(messages.length, 3)
+
+    await axPush.post('/api/notifications', {
+      eventId: 'ws-dedup',
+      topic: { key: 'topic1' },
+      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      title: 'notif dedup',
+      recipient: { id: 'user1' }
+    })
+    await new Promise(resolve => setTimeout(resolve, 200))
+    assert.equal(messages.length, 3)
+
+    const res = await user1.get('/api/notifications')
+    assert.equal(res.data.count, 3)
+
+    ws.close()
   })
 })

@@ -59,10 +59,10 @@ export const sendNotification = async (notification: Notification, skipInsert = 
   if (!skipInsert) {
     try {
       await mongo.notifications.insertOne(notification)
-      return
     } catch (err) {
       if (err instanceof MongoError && err.code === 11000) {
         // conflict error, simply ignore this duplicate notification
+        return
       } else {
         throw err
       }
