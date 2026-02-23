@@ -1,4 +1,4 @@
-import type { Filter } from 'mongodb'
+import { MongoBulkWriteError, type Filter } from 'mongodb'
 import type { Event, FullEvent, SearchableEvent, LocalizedEvent, Subscription, WebhookSubscription, Notification } from '#types'
 import config from '#config'
 import mongo from '#mongo'
@@ -61,10 +61,10 @@ export const postEvents = async (events: Event[]) => {
     // this logic should work much better on a mongodb version that would support multi-language indexing
     // https://www.mongodb.com/docs/manual/core/indexes/index-types/index-text/specify-language-text-index/create-text-index-multiple-languages/
     const event: SearchableEvent = {
-      ...rawEvent,
       _id: nanoid(),
-      _search: [],
-      visibility: rawEvent.visibility ?? 'private'
+      visibility: 'private',
+      ...rawEvent,
+      _search: []
     }
     for (const locale of config.i18n.locales) {
       const localizedEvent = localizeEvent(event, locale)
@@ -98,11 +98,43 @@ export const postEvents = async (events: Event[]) => {
       await createWebhook(localizeEvent(event), webhookSubscription)
     }
   }
-  if (eventsBulkOp.length) await eventsBulkOp.execute()
-  if (notifsBulkOp.length) await notifsBulkOp.execute()
+
+  if (eventsBulkOp.length) {
+    try {
+      await eventsBulkOp.execute({})
+    } catch (err) {
+      // we ignore conflict error, meaning that the same event id can be sent twice without triggering a failure
+      // but without being inserted twice either
+      if (err instanceof MongoBulkWriteError) {
+        const nonConflictError = err.result.getWriteErrors().find(e => e.code !== 11000)
+        if (nonConflictError) throw err
+      } else {
+        throw err
+      }
+    }
+  }
+
+  const insertedNotifications: Notification[] = []
+  if (notifsBulkOp.length) {
+    try {
+      const res = await notifsBulkOp.execute({})
+      for (const id of Object.values(res.insertedIds)) {
+        insertedNotifications.push(notifications.find(n => n._id === id)!)
+      }
+    } catch (err) {
+      // we ignore conflict error, meaning that the same event id can be sent twice without triggering a failure
+      // but without being inserted twice either
+      if (err instanceof MongoBulkWriteError) {
+        const nonConflictError = err.result.getWriteErrors().find(e => e.code !== 11000)
+        if (nonConflictError) throw err
+      } else {
+        throw err
+      }
+    }
+  }
 
   // insertion must be performed before, so that data is available on receiving a WS event
-  for (const notification of notifications) {
+  for (const notification of insertedNotifications) {
     await sendNotification(notification, true)
   }
 }

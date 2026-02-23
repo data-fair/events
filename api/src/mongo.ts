@@ -61,7 +61,14 @@ export class EventsMongo {
         ]
       },
       notifications: {
-        'main-keys': { 'recipient.id': 1, date: -1 }
+        'main-keys': { 'recipient.id': 1, date: -1 },
+        'unique-event': [
+          { 'recipient.id': 1, eventId: 1 },
+          {
+            unique: true,
+            partialFilterExpression: { eventId: { $exists: true } }
+          }
+        ]
       },
       'webhook-subscriptions': {
         'main-keys': { 'sender.type': 1, 'sender.id': 1, 'owner.type': 1, 'owner.id': 1, 'topic.key': 1 }

@@ -78,4 +78,24 @@ describe('events', () => {
     assert.equal(res.data.results.length, 1)
     assert.equal(res.data.results[0].title, 'an english notification')
   })
+
+  it('should send an event with same id twice', async () => {
+    let res = await axPush.post('/api/events', [{
+      _id: 'test',
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'notif 1',
+      sender: { type: 'user', id: 'user1', name: 'User 1' }
+    }])
+    res = await axPush.post('/api/events', [{
+      _id: 'test',
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'notif 2',
+      sender: { type: 'user', id: 'user1', name: 'User 1' }
+    }])
+    res = await user1.get('/api/events')
+    assert.equal(res.data.results.length, 1)
+    assert.equal(res.data.results[0].title, 'notif 1')
+  })
 })
