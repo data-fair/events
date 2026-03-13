@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
 import WebSocket from 'ws'
-import { axios, axiosAuth, clean } from './support/axios.ts'
+import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082/events' })
+const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
 const user1 = await axiosAuth('user1@test.com')
 const user2 = await axiosAuth('user2@test.com')
 const admin1 = await axiosAuth('admin1@test.com')
@@ -30,7 +30,7 @@ test.describe('subscriptions', () => {
     await user2.post('/api/subscriptions', subscription)
     let res = await admin1.get('/api/subscriptions')
     expect(res.data.count).toBe(1)
-    expect(res.data.results[0].origin).toBe('http://localhost:5600')
+    expect(res.data.results[0].origin).toBe(`http://localhost:${process.env.NGINX_PORT}`)
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
@@ -201,7 +201,7 @@ test.describe('subscriptions', () => {
     await user2.post('/api/subscriptions', subscription)
     let res = await admin1.get('/api/subscriptions')
     expect(res.data.count).toBe(1)
-    expect(res.data.results[0].origin).toBe('http://localhost:5600')
+    expect(res.data.results[0].origin).toBe(`http://localhost:${process.env.NGINX_PORT}`)
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
@@ -280,8 +280,8 @@ test.describe('subscriptions', () => {
   })
 
   test('should deliver direct notifications via WS', async () => {
-    const cookies = user1.cookieJar.getCookiesSync('http://localhost:5600')
-    const ws = new WebSocket('ws://localhost:8082', { headers: { Cookie: cookies.map(String).join('; ') } })
+    const cookies = user1.cookieJar.getCookiesSync(`http://localhost:${process.env.NGINX_PORT}`)
+    const ws = new WebSocket(`ws://localhost:${process.env.DEV_API_PORT}`, { headers: { Cookie: cookies.map(String).join('; ') } })
     const messages: any[] = []
 
     await new Promise<void>((resolve, reject) => {

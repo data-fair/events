@@ -1,12 +1,12 @@
 import type { Subscription } from '#types'
 import type { Filter } from 'mongodb'
-import type { User } from '@data-fair/lib-express/index.js'
 
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { session, mongoSort, mongoPagination, httpError, reqSiteUrl } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
 import * as postReq from '#doc/subscriptions/post-req/index.ts'
+import { canSubscribePrivate } from './operations.ts'
 
 const router = Router()
 export default router
@@ -52,25 +52,6 @@ router.get('', async (req, res, next) => {
   ])
   res.json({ results, count })
 })
-
-const canSubscribePrivate = (sender: Subscription['sender'], user: User) => {
-  // super admin can do whatever he wants
-  if (user.adminMode) return true
-  if (!sender) return false
-
-  // user sends to himself ?
-  if (sender.type === 'user') return sender.id === user.id
-
-  if (sender.type === 'organization') {
-    let userOrg = user.organizations.find(o => o.id === sender.id && !o.department)
-    if (sender.department) {
-      userOrg = user.organizations.find(o => o.id === sender.id && o.department === sender.department) || userOrg
-    }
-    if (!userOrg) return false
-    if (sender.role && sender.role !== userOrg.role && userOrg.role !== 'admin') return false
-    return true
-  }
-}
 
 // Create or update a subscription
 router.post('', async (req, res, next) => {

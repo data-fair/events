@@ -10,6 +10,7 @@ import mongo from '#mongo'
 import * as notificationsMetrics from '../notifications/metrics.js'
 import * as metrics from './metrics.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
+import { backoffMinutes } from '../shared/operations.ts'
 
 const debug = Debug('webpush')
 
@@ -96,7 +97,7 @@ export const push = async (notification: Notification, forceRegistrationIndex: n
             console.warn('registration returned too many errors, disable it', error, JSON.stringify(registration))
           } else {
             delete registration.disabled
-            registration.disabledUntil = dayjs().add(Math.ceil(Math.pow(registration.lastErrors.length, 2.5)), 'minute').toISOString()
+            registration.disabledUntil = dayjs().add(backoffMinutes(registration.lastErrors.length), 'minute').toISOString()
             console.warn('registration returned an error, progressively backoff', error, JSON.stringify(registration))
           }
         }

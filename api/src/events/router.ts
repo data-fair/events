@@ -39,7 +39,7 @@ router.get('', async (req, res, next) => {
 
   const events = (await mongo.events.find(query).project(project).limit(size).sort(sort).toArray()) as FullEvent[]
 
-  const results = events.map(event => cleanEvent(localizeEvent(event, lang), sessionState))
+  const results = events.map(event => cleanEvent(localizeEvent(event, lang || config.i18n.defaultLocale, config.i18n.defaultLocale), sessionState))
 
   const response: any = { results }
 

@@ -1,58 +1,21 @@
-import type { FullEvent, Notification, Subscription } from '#types'
+import type { Notification } from '#types'
 
-import { parseTemplate } from 'url-template'
-import { nanoid } from 'nanoid'
 import Debug from 'debug'
 import i18n from 'i18n'
 import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import axios from '@data-fair/lib-node/axios.js'
-import microTemplate from '@data-fair/lib-utils/micro-template.js'
 import mongo from '#mongo'
 import config from '#config'
 import * as metrics from './metrics.js'
-import { localizeEvent } from '../events/service.ts'
 import * as pushService from '../push/service.ts'
 import { MongoError } from 'mongodb'
+
+export { prepareSubscriptionNotification } from './operations.ts'
 
 const debug = Debug('notifications')
 
 const directoryUrl = config.privateDirectoryUrl
-
-export const prepareSubscriptionNotification = (event: FullEvent, subscription: Subscription): Notification => {
-  const localizedEvent = localizeEvent(event, subscription.locale)
-  delete localizedEvent.resource
-  delete localizedEvent.originator
-  delete localizedEvent.urlParams
-  const notification: Notification = {
-    eventId: event._id,
-    icon: subscription.icon || config.theme.notificationIcon || (subscription.origin + '/events/logo-192x192.png'),
-    locale: subscription.locale,
-    ...localizedEvent,
-    _id: nanoid(),
-    recipient: subscription.recipient,
-    origin: subscription.origin
-  }
-  if (subscription.outputs && (!notification.outputs || !notification.outputs.length)) {
-    notification.outputs = subscription.outputs
-  }
-  if (subscription.urlTemplate) {
-    notification.url = parseTemplate(subscription.urlTemplate).expand(event.urlParams || {})
-    if (notification.url.startsWith('/') && subscription.origin) notification.url = subscription.origin + notification.url
-  }
-  if (!notification.topic.title && subscription.topic.title) {
-    notification.topic.title = subscription.topic.title
-  }
-  if (!notification.title && notification.topic.title) {
-    notification.title = notification.topic.title
-  }
-
-  const templateParams = { origin: subscription.origin, hostname: new URL(subscription.origin).hostname }
-  if (notification.body) notification.body = microTemplate(notification.body, templateParams)
-  if (notification.htmlBody) notification.htmlBody = microTemplate(notification.htmlBody, templateParams)
-
-  return notification
-}
 
 export const sendNotification = async (notification: Notification, skipInsert = false) => {
   // global.events.emit('saveNotification', notification)

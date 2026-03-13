@@ -55,7 +55,7 @@ const {
   topic,
   icon,
   urlTemplate,
-  // eslint-disable-next-line vue/require-valid-default-prop
+
   outputs = ['email', 'devices'],
   sender,
   noSender

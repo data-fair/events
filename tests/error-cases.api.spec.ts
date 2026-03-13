@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
-import { axios, axiosAuth, clean } from './support/axios.ts'
+import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
 const axAno = axios()
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082/events' })
+const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
 const user1 = await axiosAuth('user1@test.com')
 const admin1 = await axiosAuth('admin1@test.com')
 

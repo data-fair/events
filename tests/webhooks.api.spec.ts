@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
 import { createServer } from 'node:http'
-import { axios, axiosAuth, clean } from './support/axios.ts'
-import mongo from '@data-fair/lib-node/mongo.js'
+import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082/events' })
+const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axDev = axios({ baseURL: devBaseURL })
 const admin1 = await axiosAuth('admin1@test.com')
 
 // helper to post event matching a webhook subscription owned by admin1/orga1
@@ -131,8 +131,8 @@ test.describe('webhooks', () => {
       })).data
 
       // insert a webhook with 9 previous attempts so the next failure is the 10th
-      await mongo.db.collection('webhooks').insertOne({
-        _id: 'test-max-retries' as any,
+      await axDev.post('/api/test-env/webhooks', {
+        _id: 'test-max-retries',
         sender: { type: 'organization', id: 'orga1' },
         owner: sub.owner,
         subscription: { _id: sub._id, title: sub.title },
@@ -148,7 +148,7 @@ test.describe('webhooks', () => {
 
       await new Promise(resolve => setTimeout(resolve, 8000))
 
-      const webhook = await mongo.db.collection('webhooks').findOne({ _id: 'test-max-retries' as any })
+      const webhook = (await axDev.get('/api/test-env/webhooks/test-max-retries')).data
       expect(webhook?.status).toBe('error')
       expect(webhook?.nbAttempts).toBe(10)
       // no more retries scheduled

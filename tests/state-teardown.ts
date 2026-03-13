@@ -1,6 +1,7 @@
 import { test as teardown } from '@playwright/test'
 
-teardown('stop API server', async () => {
-  const apiServer = await import('../api/src/server.ts')
-  await apiServer.stop()
+teardown('Stateful tests teardown', async () => {
+  if (process.env.TAIL_PID) {
+    try { process.kill(-Number(process.env.TAIL_PID)) } catch (e) { /* ignore */ }
+  }
 })

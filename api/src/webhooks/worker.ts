@@ -9,6 +9,7 @@ import mongo from '#mongo'
 import axios from '@data-fair/lib-node/axios.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import locks from '@data-fair/lib-node/locks.js'
+import { backoffMinutes } from '../shared/operations.ts'
 
 const debug = Debug('webhooks-worker')
 
@@ -86,7 +87,7 @@ const loop = async () => {
         debug('webhook failed 10 times, no more attempts')
         patch.$unset = { nextAttempt: '' }
       } else {
-        patch.$set.nextAttempt = dayjs().add(Math.ceil(Math.pow(webhook.nbAttempts + 1, 2.5)), 'minute').toDate()
+        patch.$set.nextAttempt = dayjs().add(backoffMinutes(webhook.nbAttempts + 1), 'minute').toDate()
         debug('webhook failed, progressively backoff', patch.$set.nextAttempt)
       }
       await mongo.webhooks.updateOne({ _id: webhook._id }, patch)
