@@ -1,7 +1,6 @@
-import { strict as assert } from 'node:assert'
-import { it, describe, before, beforeEach, after } from 'node:test'
+import { test, expect } from '@playwright/test'
 import { createServer } from 'node:http'
-import { axios, axiosAuth, clean, startApiServer, stopApiServer } from './utils/index.ts'
+import { axios, axiosAuth, clean } from './support/axios.ts'
 import mongo from '@data-fair/lib-node/mongo.js'
 
 const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082/events' })
@@ -16,12 +15,10 @@ const postMatchingEvent = (title: string) => axPush.post('/api/events', [{
   visibility: 'public'
 }])
 
-describe('webhooks', () => {
-  before(startApiServer)
-  beforeEach(clean)
-  after(stopApiServer)
+test.describe('webhooks', () => {
+  test.beforeEach(clean)
 
-  it('should create a webhook when event matches a webhook subscription', async () => {
+  test('should create a webhook when event matches a webhook subscription', async () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Test webhook sub',
       topic: { key: 'topic1' },
@@ -32,13 +29,13 @@ describe('webhooks', () => {
     await postMatchingEvent('a notification')
 
     const res = await admin1.get('/api/webhooks')
-    assert.equal(res.data.count, 1)
-    assert.equal(res.data.results[0].status, 'waiting')
-    assert.equal(res.data.results[0].notification.title, 'a notification')
-    assert.equal(res.data.results[0].nbAttempts, 0)
+    expect(res.data.count).toBe(1)
+    expect(res.data.results[0].status).toBe('waiting')
+    expect(res.data.results[0].notification.title).toBe('a notification')
+    expect(res.data.results[0].nbAttempts).toBe(0)
   })
 
-  it('should deliver a webhook to a target URL', async () => {
+  test('should deliver a webhook to a target URL', async () => {
     const received: any[] = []
     const hookServer = createServer((req, res) => {
       const chunks: Buffer[] = []
@@ -65,19 +62,19 @@ describe('webhooks', () => {
       // wait for the webhook worker to process (polls every 4s)
       await new Promise(resolve => setTimeout(resolve, 8000))
 
-      assert.equal(received.length, 1)
-      assert.equal(received[0].body.title, 'webhook delivery test')
-      assert.equal(received[0].headers['x-secret'], 'mysecret')
+      expect(received.length).toBe(1)
+      expect(received[0].body.title).toBe('webhook delivery test')
+      expect(received[0].headers['x-secret']).toBe('mysecret')
 
       const res = await admin1.get('/api/webhooks')
-      assert.equal(res.data.results[0].status, 'ok')
-      assert.equal(res.data.results[0].nbAttempts, 1)
+      expect(res.data.results[0].status).toBe('ok')
+      expect(res.data.results[0].nbAttempts).toBe(1)
     } finally {
       hookServer.close()
     }
   })
 
-  it('should retry failed webhooks with backoff', async () => {
+  test('should retry failed webhooks with backoff', async () => {
     let callCount = 0
     const hookServer = createServer((req, res) => {
       callCount++
@@ -102,19 +99,19 @@ describe('webhooks', () => {
       // wait for the first attempt
       await new Promise(resolve => setTimeout(resolve, 8000))
 
-      assert.equal(callCount, 1)
+      expect(callCount).toBe(1)
 
       const res = await admin1.get('/api/webhooks')
-      assert.equal(res.data.results[0].status, 'error')
-      assert.equal(res.data.results[0].nbAttempts, 1)
-      assert.ok(res.data.results[0].lastAttempt)
-      assert.ok(res.data.results[0].nextAttempt)
+      expect(res.data.results[0].status).toBe('error')
+      expect(res.data.results[0].nbAttempts).toBe(1)
+      expect(res.data.results[0].lastAttempt).toBeTruthy()
+      expect(res.data.results[0].nextAttempt).toBeTruthy()
     } finally {
       hookServer.close()
     }
   })
 
-  it('should stop retrying after 10 failed attempts', async () => {
+  test('should stop retrying after 10 failed attempts', async () => {
     // create a real webhook subscription and a failing server
     const hookServer = createServer((req, res) => {
       req.on('data', () => {})
@@ -152,16 +149,16 @@ describe('webhooks', () => {
       await new Promise(resolve => setTimeout(resolve, 8000))
 
       const webhook = await mongo.db.collection('webhooks').findOne({ _id: 'test-max-retries' as any })
-      assert.equal(webhook?.status, 'error')
-      assert.equal(webhook?.nbAttempts, 10)
+      expect(webhook?.status).toBe('error')
+      expect(webhook?.nbAttempts).toBe(10)
       // no more retries scheduled
-      assert.ok(!webhook?.nextAttempt)
+      expect(webhook?.nextAttempt).toBeFalsy()
     } finally {
       hookServer.close()
     }
   })
 
-  it('should cancel a webhook', async () => {
+  test('should cancel a webhook', async () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Cancel test',
       topic: { key: 'topic1' },
@@ -172,14 +169,14 @@ describe('webhooks', () => {
     await postMatchingEvent('cancel test')
 
     const list = await admin1.get('/api/webhooks')
-    assert.equal(list.data.count, 1)
+    expect(list.data.count).toBe(1)
     const webhookId = list.data.results[0]._id
 
     const res = await admin1.post(`/api/webhooks/${webhookId}/_cancel`)
-    assert.equal(res.data.status, 'cancelled')
+    expect(res.data.status).toBe('cancelled')
   })
 
-  it('should retry a webhook on demand', async () => {
+  test('should retry a webhook on demand', async () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Manual retry test',
       topic: { key: 'topic1' },
@@ -193,10 +190,10 @@ describe('webhooks', () => {
     await new Promise(resolve => setTimeout(resolve, 8000))
 
     const list = await admin1.get('/api/webhooks')
-    assert.equal(list.data.results[0].status, 'error')
+    expect(list.data.results[0].status).toBe('error')
 
     const res = await admin1.post(`/api/webhooks/${list.data.results[0]._id}/_retry`)
-    assert.equal(res.data.status, 'waiting')
-    assert.equal(res.data.nbAttempts, 0)
+    expect(res.data.status).toBe('waiting')
+    expect(res.data.nbAttempts).toBe(0)
   })
 })

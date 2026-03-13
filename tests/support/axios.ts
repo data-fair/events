@@ -4,9 +4,11 @@ import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 import { axiosAuth as _axiosAuth } from '@data-fair/lib-node/axios-auth.js'
 import mongo from '@data-fair/lib-node/mongo.js'
 
-const directoryUrl = 'http://localhost:5600/simple-directory'
+const nginxPort = process.env.NGINX_PORT || '5600'
 
-export const baseURL = 'http://localhost:5600/events'
+const directoryUrl = `http://localhost:${nginxPort}/simple-directory`
+
+export const baseURL = `http://localhost:${nginxPort}/events`
 
 const axiosOpts = { baseURL }
 
@@ -22,17 +24,4 @@ export const clean = async () => {
   for (const name of ['notifications', 'subscriptions', 'events', 'webhooks', 'webhook-subscriptions', 'pushSubscriptions']) {
     await mongo.db.collection(name).deleteMany({})
   }
-}
-
-export const startApiServer = async () => {
-  // Before tests
-  process.env.SUPPRESS_NO_CONFIG_WARNING = '1'
-  process.env.NODE_CONFIG_DIR = 'api/config/'
-  const apiServer = await import('../../api/src/server.ts')
-  await apiServer.start()
-}
-
-export const stopApiServer = async () => {
-  const apiServer = await import('../../api/src/server.ts')
-  await apiServer.stop()
 }

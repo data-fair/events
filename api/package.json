@@ -3,7 +3,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development DEBUG=upgrade,webpush node --watch --experimental-strip-types index.ts"
+    "dev": "mkdir -p ../dev/logs && NODE_ENV=development DEBUG=upgrade,webpush nodemon -e js,ts,json --exec \"node --experimental-strip-types index.ts || (sleep 2 && touch index.ts)\" 2>&1 | tee ../dev/logs/dev-api.log"
   },
   "imports": {
     "#config": "./src/config.ts",

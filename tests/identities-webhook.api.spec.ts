@@ -1,19 +1,16 @@
 import type { Subscription } from '../api/types/index.js'
 
-import { strict as assert } from 'node:assert'
-import { describe, it, before, beforeEach, after } from 'node:test'
-import { axios, axiosAuth, clean, startApiServer, stopApiServer } from './utils/index.ts'
+import { test, expect } from '@playwright/test'
+import { axios, axiosAuth, clean } from './support/axios.ts'
 
 const axIdentities = axios({ params: { key: 'SECRET_IDENTITIES' }, baseURL: 'http://localhost:8082/events' })
 const user1 = await axiosAuth('user1@test.com')
 const admin1 = await axiosAuth('admin1@test.com')
 
-describe('identities webhooks', () => {
-  before(startApiServer)
-  beforeEach(clean)
-  after(stopApiServer)
+test.describe('identities webhooks', () => {
+  test.beforeEach(clean)
 
-  it('should update recipient and sender name', async () => {
+  test('should update recipient and sender name', async () => {
     let subscription = (await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
       sender: { type: 'user', id: 'user1', name: 'User1' },
@@ -22,17 +19,17 @@ describe('identities webhooks', () => {
 
     await axIdentities.post('/api/identities/user/user1', { name: 'New name' })
     subscription = (await user1.get('/api/subscriptions/' + subscription._id)).data
-    assert.equal(subscription.recipient.name, 'New name')
-    assert.equal(subscription.sender.name, 'New name')
+    expect(subscription.recipient.name).toBe('New name')
+    expect(subscription.sender.name).toBe('New name')
   })
 
-  it('should remove deprecated private subscriptions', async () => {
+  test('should remove deprecated private subscriptions', async () => {
     const privateSubscription = (await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
       sender: { type: 'organization', id: 'orga1', name: 'Orga 1' },
       visibility: 'private'
     })).data
-    assert.equal(privateSubscription.visibility, 'private')
+    expect(privateSubscription.visibility).toBe('private')
 
     const publicSubscription = (await user1.post('/api/subscriptions', {
       topic: { key: 'topic2' },
@@ -45,18 +42,18 @@ describe('identities webhooks', () => {
       sender: { type: 'organization', id: 'orga2', name: 'Orga 2', department: 'dep1' },
       visibility: 'private'
     })).data
-    assert.equal(org2Subscription.visibility, 'private')
+    expect(org2Subscription.visibility).toBe('private')
 
     await axIdentities.post('/api/identities/user/user1', { name: 'New name', organizations: [{ id: 'orga2', role: 'user' }] })
 
     let subscriptions = (await user1.get('/api/subscriptions')).data.results as Subscription[]
-    assert.ok(!subscriptions.find(s => s._id === privateSubscription._id))
-    assert.ok(subscriptions.find(s => s._id === publicSubscription._id))
-    assert.ok(subscriptions.find(s => s._id === org2Subscription._id))
+    expect(subscriptions.find(s => s._id === privateSubscription._id)).toBeFalsy()
+    expect(subscriptions.find(s => s._id === publicSubscription._id)).toBeTruthy()
+    expect(subscriptions.find(s => s._id === org2Subscription._id)).toBeTruthy()
 
     await axIdentities.post('/api/identities/user/user1', { name: 'New name', organizations: [{ id: 'orga2', role: 'user', department: 'dep2' }] })
     subscriptions = (await user1.get('/api/subscriptions')).data.results
-    assert.ok(!subscriptions.find(s => s._id === org2Subscription._id))
+    expect(subscriptions.find(s => s._id === org2Subscription._id)).toBeFalsy()
 
     const allRolesSubscription = (await admin1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
@@ -68,10 +65,10 @@ describe('identities webhooks', () => {
       sender: { type: 'organization', id: 'orga1', name: 'Orga 1', role: 'admin' },
       visibility: 'private'
     })).data
-    assert.equal(adminSubscription.visibility, 'private')
+    expect(adminSubscription.visibility).toBe('private')
     await axIdentities.post('/api/identities/user/admin1', { name: 'New name', organizations: [{ id: 'orga1', role: 'user' }] })
     subscriptions = (await admin1.get('/api/subscriptions')).data.results
-    assert.ok(subscriptions.find(s => s._id === allRolesSubscription._id))
-    assert.ok(!subscriptions.find(s => s._id === adminSubscription._id))
+    expect(subscriptions.find(s => s._id === allRolesSubscription._id)).toBeTruthy()
+    expect(subscriptions.find(s => s._id === adminSubscription._id)).toBeFalsy()
   })
 })

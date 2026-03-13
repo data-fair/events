@@ -10,12 +10,11 @@
     "dev-deps": "docker compose up -d --wait",
     "stop-dev-deps": "docker compose stop",
     "dev-ui": "npm -w ui run dev",
-    "dev-zellij": "export DEV_SHELL=$(basename \"$SHELL\") && zellij --layout .zellij.kdl && rm data/zellij-deps-ready",
+    "dev-zellij": "dotenv -- bash -c 'export DEV_SHELL=$(basename \"$SHELL\") && zellij --layout .zellij.kdl && rm data/zellij-deps-ready'",
     "dev-send-notifications": "NODE_ENV=development node --experimental-strip-types dev/scripts/send-notifications.ts",
     "lint": "eslint . && npm -w ui run lint",
     "lint-fix": "eslint --fix . && npm -w ui run lint-fix",
-    "test": "npm run test-base -- test-it/*.ts",
-    "test-base": "NODE_ENV=test node --experimental-strip-types --test-force-exit --test-concurrency=1 --test",
+    "test": "playwright test --max-failures=1",
     "check-types": "tsc && npm -w ui run check-types",
     "prepare": "husky || true",
     "quality": "npm run dev-deps && npm run lint && npm run build-types && npm run check-types && npm -w ui run build && npm run test && npm audit --omit=dev --audit-level=critical"
@@ -38,7 +37,9 @@
     "@data-fair/lib-types-builder": "^1.11.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@commitlint/config-conventional": "^19.2.2",
+    "dotenv-cli": "^8.0.0",
     "@data-fair/lib-node": "^2.12.0",
     "@types/config": "^3.3.5",
     "@types/debug": "^4.1.12",
@@ -48,6 +49,7 @@
     "eslint-plugin-vuetify": "github:albanm/eslint-plugin-vuetify",
     "husky": "^9.1.7",
     "json-schema-to-typescript": "^11.0.5",
+    "nodemon": "^3.1.9",
     "neostandard": "^0.12.2",
     "nock": "^13.0.6",
     "tough-cookie": "^5.0.0",
