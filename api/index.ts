@@ -5,8 +5,8 @@ start().then(() => {}, err => {
   process.exit(1)
 })
 
-process.on('SIGTERM', function onSigterm () {
-  console.info('Received SIGTERM signal, shutdown gracefully...')
+const shutdown = (signal: string) => {
+  console.info(`Received ${signal} signal, shutdown gracefully...`)
   stop().then(() => {
     console.log('shutting down now')
     process.exit()
@@ -14,4 +14,7 @@ process.on('SIGTERM', function onSigterm () {
     console.error('Failure while stopping service', err)
     process.exit(1)
   })
-})
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))
