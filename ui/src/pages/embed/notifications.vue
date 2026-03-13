@@ -94,10 +94,10 @@
 
 <i18n lang="yaml">
 fr:
-  notifications: "Aucune notification | {nb} notifications"
+  notifications: "Aucune notification | {nb} notification | {nb} notifications"
   seeMore: "Voir plus"
 en:
-  notifications: "No notification | {nb} notifications"
+  notifications: "No notification | {nb} notification | {nb} notifications"
   seeMore: "See more"
 </i18n>
 
