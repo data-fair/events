@@ -4,7 +4,7 @@
     data-iframe-height
     class="bg-surface"
   >
-    <div class="text-h6 mb-5">
+    <div class="text-headline-small mb-5">
       <v-icon
         class="mt-n1 mr-1"
         :icon="mdiBell"
@@ -47,7 +47,7 @@
                 </v-avatar>
                 <div class="d-flex align-center flex-column">
                   <div
-                    class="text-black text-subtitle-1"
+                    class="text-black text-body-large"
                     style="align-self: start;"
                   >
                     {{ notification.title }}

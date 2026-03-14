@@ -14,7 +14,6 @@
     <v-card>
       <v-card-title
         v-if="title"
-        primary-title
       >
         {{ title }}
       </v-card-title>
@@ -80,7 +79,7 @@ defineProps({
   },
   btnProps: {
     type: Object,
-    default: () => ({ color: 'warning', depressed: true })
+    default: () => ({ color: 'warning', variant: 'flat' })
   },
   alert: {
     type: String as () => 'error' | 'warning',

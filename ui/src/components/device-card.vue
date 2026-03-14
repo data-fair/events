@@ -39,7 +39,7 @@
         variant="text"
         @click="emit('test')"
       >
-        tester
+        Tester
       </v-btn>
     </v-card-actions>
   </v-card>

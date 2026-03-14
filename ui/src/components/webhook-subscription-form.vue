@@ -1,7 +1,6 @@
 <template>
   <v-form
     ref="form"
-    lazy
     @submit="save.execute()"
   >
     <v-row>
