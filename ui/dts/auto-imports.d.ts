@@ -6,132 +6,134 @@
 // biome-ignore lint: disable
 export {}
 declare global {
-  const $apiPath: typeof import('~/context')['$apiPath']
-  const $cspNonce: typeof import('~/context')['$cspNonce']
-  const $fetch: typeof import('~/context')['$fetch']
-  const $sitePath: typeof import('~/context')['$sitePath']
-  const $uiConfig: typeof import('~/context')['$uiConfig']
-  const EffectScope: typeof import('vue')['EffectScope']
-  const computed: typeof import('vue')['computed']
-  const computedDeepDiff: typeof import('@data-fair/lib-vue/deep-diff.js')['computedDeepDiff']
-  const createApp: typeof import('vue')['createApp']
-  const customRef: typeof import('vue')['customRef']
-  const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
-  const defineComponent: typeof import('vue')['defineComponent']
-  const dfDateMatchFilter: typeof import('@data-fair/lib-vuetify/date-match-filter.vue')['default']
-  const dfDateRangePicker: typeof import('@data-fair/lib-vuetify/date-range-picker.vue')['default']
-  const dfLangSwitcher: typeof import('@data-fair/lib-vuetify/lang-switcher.vue')['default']
-  const dfNavigationRight: typeof import('@data-fair/lib-vuetify/navigation-right.vue')['default']
-  const dfOwnerAvatar: typeof import('@data-fair/lib-vuetify/owner-avatar.vue')['default']
-  const dfOwnerPick: typeof import('@data-fair/lib-vuetify/owner-pick.vue')['default']
-  const dfPersonalMenu: typeof import('@data-fair/lib-vuetify/personal-menu.vue')['default']
-  const dfThemeSwitcher: typeof import('@data-fair/lib-vuetify/theme-switcher.vue')['default']
-  const dfTutorialAlert: typeof import('@data-fair/lib-vuetify/tutorial-alert.vue')['default']
-  const dfUiNotif: typeof import('@data-fair/lib-vuetify/ui-notif.vue')['default']
-  const dfUiNotifAlert: typeof import('@data-fair/lib-vuetify/ui-notif-alert.vue')['default']
-  const dfUserAvatar: typeof import('@data-fair/lib-vuetify/ui-user-avatar.vue')['default']
-  const effectScope: typeof import('vue')['effectScope']
-  const equalDeviceRegistrations: typeof import('../src/utils/registrations')['equalDeviceRegistrations']
-  const formatBytes: typeof import('@data-fair/lib-vue/format/bytes.js')['formatBytes']
-  const getCurrentInstance: typeof import('vue')['getCurrentInstance']
-  const getCurrentScope: typeof import('vue')['getCurrentScope']
-  const h: typeof import('vue')['h']
-  const inject: typeof import('vue')['inject']
-  const isProxy: typeof import('vue')['isProxy']
-  const isReactive: typeof import('vue')['isReactive']
-  const isReadonly: typeof import('vue')['isReadonly']
-  const isRef: typeof import('vue')['isRef']
-  const markRaw: typeof import('vue')['markRaw']
-  const mdiAlertCircle: typeof import('@mdi/js')['mdiAlertCircle']
-  const mdiBell: typeof import('@mdi/js')['mdiBell']
+  const $apiPath: typeof import('~/context').$apiPath
+  const $cspNonce: typeof import('~/context').$cspNonce
+  const $fetch: typeof import('~/context').$fetch
+  const $sitePath: typeof import('~/context').$sitePath
+  const $uiConfig: typeof import('~/context').$uiConfig
+  const EffectScope: typeof import('vue').EffectScope
+  const computed: typeof import('vue').computed
+  const computedDeepDiff: typeof import('@data-fair/lib-vue/deep-diff.js').computedDeepDiff
+  const createApp: typeof import('vue').createApp
+  const customRef: typeof import('vue').customRef
+  const defineAsyncComponent: typeof import('vue').defineAsyncComponent
+  const defineComponent: typeof import('vue').defineComponent
+  const dfDateMatchFilter: typeof import('@data-fair/lib-vuetify/date-match-filter.vue').default
+  const dfDateRangePicker: typeof import('@data-fair/lib-vuetify/date-range-picker.vue').default
+  const dfLangSwitcher: typeof import('@data-fair/lib-vuetify/lang-switcher.vue').default
+  const dfNavigationRight: typeof import('@data-fair/lib-vuetify/navigation-right.vue').default
+  const dfOwnerAvatar: typeof import('@data-fair/lib-vuetify/owner-avatar.vue').default
+  const dfOwnerPick: typeof import('@data-fair/lib-vuetify/owner-pick.vue').default
+  const dfPersonalMenu: typeof import('@data-fair/lib-vuetify/personal-menu.vue').default
+  const dfThemeSwitcher: typeof import('@data-fair/lib-vuetify/theme-switcher.vue').default
+  const dfTutorialAlert: typeof import('@data-fair/lib-vuetify/tutorial-alert.vue').default
+  const dfUiNotif: typeof import('@data-fair/lib-vuetify/ui-notif.vue').default
+  const dfUiNotifAlert: typeof import('@data-fair/lib-vuetify/ui-notif-alert.vue').default
+  const dfUserAvatar: typeof import('@data-fair/lib-vuetify/ui-user-avatar.vue').default
+  const effectScope: typeof import('vue').effectScope
+  const equalDeviceRegistrations: typeof import('../src/utils/registrations').equalDeviceRegistrations
+  const formatBytes: typeof import('@data-fair/lib-vue/format/bytes.js').formatBytes
+  const getCurrentInstance: typeof import('vue').getCurrentInstance
+  const getCurrentScope: typeof import('vue').getCurrentScope
+  const getCurrentWatcher: typeof import('vue').getCurrentWatcher
+  const h: typeof import('vue').h
+  const inject: typeof import('vue').inject
+  const isProxy: typeof import('vue').isProxy
+  const isReactive: typeof import('vue').isReactive
+  const isReadonly: typeof import('vue').isReadonly
+  const isRef: typeof import('vue').isRef
+  const isShallow: typeof import('vue').isShallow
+  const markRaw: typeof import('vue').markRaw
+  const mdiAlertCircle: typeof import('@mdi/js').mdiAlertCircle
+  const mdiBell: typeof import('@mdi/js').mdiBell
   const mdiCalendarRange: typeof import('@mdi/js')['mdiCalendarRange']
-  const mdiCancel: typeof import('@mdi/js')['mdiCancel']
-  const mdiCellphone: typeof import('@mdi/js')['mdiCellphone']
-  const mdiCheckCircle: typeof import('@mdi/js')['mdiCheckCircle']
+  const mdiCancel: typeof import('@mdi/js').mdiCancel
+  const mdiCellphone: typeof import('@mdi/js').mdiCellphone
+  const mdiCheckCircle: typeof import('@mdi/js').mdiCheckCircle
   const mdiDatabase: typeof import('@mdi/js')['mdiDatabase']
-  const mdiDelete: typeof import('@mdi/js')['mdiDelete']
-  const mdiDevices: typeof import('@mdi/js')['mdiDevices']
-  const mdiDotsVertical: typeof import('@mdi/js')['mdiDotsVertical']
-  const mdiEmail: typeof import('@mdi/js')['mdiEmail']
+  const mdiDelete: typeof import('@mdi/js').mdiDelete
+  const mdiDevices: typeof import('@mdi/js').mdiDevices
+  const mdiDotsVertical: typeof import('@mdi/js').mdiDotsVertical
+  const mdiEmail: typeof import('@mdi/js').mdiEmail
   const mdiImageSizeSelectSmall: typeof import('@mdi/js')['mdiImageSizeSelectSmall']
-  const mdiRefresh: typeof import('@mdi/js')['mdiRefresh']
-  const mdiRss: typeof import('@mdi/js')['mdiRss']
-  const mdiSend: typeof import('@mdi/js')['mdiSend']
-  const mdiWeb: typeof import('@mdi/js')['mdiWeb']
-  const nextTick: typeof import('vue')['nextTick']
-  const onActivated: typeof import('vue')['onActivated']
-  const onBeforeMount: typeof import('vue')['onBeforeMount']
-  const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
-  const onBeforeRouteUpdate: typeof import('vue-router')['onBeforeRouteUpdate']
-  const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
-  const onBeforeUpdate: typeof import('vue')['onBeforeUpdate']
-  const onDeactivated: typeof import('vue')['onDeactivated']
-  const onErrorCaptured: typeof import('vue')['onErrorCaptured']
-  const onMounted: typeof import('vue')['onMounted']
-  const onRenderTracked: typeof import('vue')['onRenderTracked']
-  const onRenderTriggered: typeof import('vue')['onRenderTriggered']
-  const onScopeDispose: typeof import('vue')['onScopeDispose']
-  const onServerPrefetch: typeof import('vue')['onServerPrefetch']
-  const onUnmounted: typeof import('vue')['onUnmounted']
-  const onUpdated: typeof import('vue')['onUpdated']
-  const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
-  const parseSender: typeof import('../src/utils/sender-utils')['parseSender']
-  const provide: typeof import('vue')['provide']
-  const reactive: typeof import('vue')['reactive']
-  const readonly: typeof import('vue')['readonly']
-  const ref: typeof import('vue')['ref']
-  const resolveComponent: typeof import('vue')['resolveComponent']
+  const mdiRefresh: typeof import('@mdi/js').mdiRefresh
+  const mdiRss: typeof import('@mdi/js').mdiRss
+  const mdiSend: typeof import('@mdi/js').mdiSend
+  const mdiWeb: typeof import('@mdi/js').mdiWeb
+  const nextTick: typeof import('vue').nextTick
+  const onActivated: typeof import('vue').onActivated
+  const onBeforeMount: typeof import('vue').onBeforeMount
+  const onBeforeRouteLeave: typeof import('vue-router').onBeforeRouteLeave
+  const onBeforeRouteUpdate: typeof import('vue-router').onBeforeRouteUpdate
+  const onBeforeUnmount: typeof import('vue').onBeforeUnmount
+  const onBeforeUpdate: typeof import('vue').onBeforeUpdate
+  const onDeactivated: typeof import('vue').onDeactivated
+  const onErrorCaptured: typeof import('vue').onErrorCaptured
+  const onMounted: typeof import('vue').onMounted
+  const onRenderTracked: typeof import('vue').onRenderTracked
+  const onRenderTriggered: typeof import('vue').onRenderTriggered
+  const onScopeDispose: typeof import('vue').onScopeDispose
+  const onServerPrefetch: typeof import('vue').onServerPrefetch
+  const onUnmounted: typeof import('vue').onUnmounted
+  const onUpdated: typeof import('vue').onUpdated
+  const onWatcherCleanup: typeof import('vue').onWatcherCleanup
+  const parseSender: typeof import('../src/utils/sender-utils').parseSender
+  const provide: typeof import('vue').provide
+  const reactive: typeof import('vue').reactive
+  const readonly: typeof import('vue').readonly
+  const ref: typeof import('vue').ref
+  const resolveComponent: typeof import('vue').resolveComponent
   const sendUiNotif: typeof import('@data-fair/lib-vue/ui-notif.js')['sendUiNotif']
-  const serializeSender: typeof import('../src/utils/sender-utils')['serializeSender']
-  const shallowReactive: typeof import('vue')['shallowReactive']
-  const shallowReadonly: typeof import('vue')['shallowReadonly']
-  const shallowRef: typeof import('vue')['shallowRef']
+  const serializeSender: typeof import('../src/utils/sender-utils').serializeSender
+  const shallowReactive: typeof import('vue').shallowReactive
+  const shallowReadonly: typeof import('vue').shallowReadonly
+  const shallowRef: typeof import('vue').shallowRef
   const subscribeWebhook: typeof import('../src/components/subscribe-webhook.vue')['default']
-  const toRaw: typeof import('vue')['toRaw']
-  const toRef: typeof import('vue')['toRef']
-  const toRefs: typeof import('vue')['toRefs']
-  const toValue: typeof import('vue')['toValue']
-  const triggerRef: typeof import('vue')['triggerRef']
-  const unref: typeof import('vue')['unref']
-  const urlBase64ToUint8Array: typeof import('../src/utils/registrations')['urlBase64ToUint8Array']
-  const useAsyncAction: typeof import('@data-fair/lib-vue/async-action.js')['useAsyncAction']
-  const useAttrs: typeof import('vue')['useAttrs']
-  const useBooleanSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useBooleanSearchParam']
-  const useConceptFilters: typeof import('@data-fair/lib-vue/concept-filters.js')['useConceptFilters']
-  const useCssModule: typeof import('vue')['useCssModule']
-  const useCssVars: typeof import('vue')['useCssVars']
-  const useEditFetch: typeof import('@data-fair/lib-vue/edit-fetch.js')['useEditFetch']
-  const useFetch: typeof import('@data-fair/lib-vue/fetch.js')['useFetch']
-  const useI18n: typeof import('vue-i18n')['useI18n']
-  const useId: typeof import('vue')['useId']
-  const useLeaveGuard: typeof import('@data-fair/lib-vue/leave-guard.js')['useLeaveGuard']
-  const useLink: typeof import('vue-router')['useLink']
-  const useLocaleDayjs: typeof import('@data-fair/lib-vue/locale-dayjs.js')['useLocaleDayjs']
-  const useModel: typeof import('vue')['useModel']
-  const useNumberSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useNumberSearchParam']
-  const useReactiveSearchParams: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useReactiveSearchParams']
-  const useRoute: typeof import('vue-router')['useRoute']
-  const useRouter: typeof import('vue-router')['useRouter']
-  const useSession: typeof import('@data-fair/lib-vue/session.js')['useSession']
-  const useSessionAuthenticated: typeof import('@data-fair/lib-vue/session.js')['useSessionAuthenticated']
-  const useSlots: typeof import('vue')['useSlots']
-  const useStringSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useStringSearchParam']
-  const useStringsArraySearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js')['useStringsArraySearchParam']
-  const useSubscriptions: typeof import('../src/composables/use-subscriptions')['default']
-  const useTemplateRef: typeof import('vue')['useTemplateRef']
-  const useUiNotif: typeof import('@data-fair/lib-vue/ui-notif.js')['useUiNotif']
-  const useWS: typeof import('@data-fair/lib-vue/ws.js')['useWS']
-  const watch: typeof import('vue')['watch']
-  const watchDeepDiff: typeof import('@data-fair/lib-vue/deep-diff.js')['watchDeepDiff']
-  const watchEffect: typeof import('vue')['watchEffect']
-  const watchPostEffect: typeof import('vue')['watchPostEffect']
-  const watchSyncEffect: typeof import('vue')['watchSyncEffect']
-  const withUiNotif: typeof import('@data-fair/lib-vue/ui-notif.js')['withUiNotif']
+  const toRaw: typeof import('vue').toRaw
+  const toRef: typeof import('vue').toRef
+  const toRefs: typeof import('vue').toRefs
+  const toValue: typeof import('vue').toValue
+  const triggerRef: typeof import('vue').triggerRef
+  const unref: typeof import('vue').unref
+  const urlBase64ToUint8Array: typeof import('../src/utils/registrations').urlBase64ToUint8Array
+  const useAsyncAction: typeof import('@data-fair/lib-vue/async-action.js').useAsyncAction
+  const useAttrs: typeof import('vue').useAttrs
+  const useBooleanSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js').useBooleanSearchParam
+  const useConceptFilters: typeof import('@data-fair/lib-vue/concept-filters.js').useConceptFilters
+  const useCssModule: typeof import('vue').useCssModule
+  const useCssVars: typeof import('vue').useCssVars
+  const useEditFetch: typeof import('@data-fair/lib-vue/edit-fetch.js').useEditFetch
+  const useFetch: typeof import('@data-fair/lib-vue/fetch.js').useFetch
+  const useI18n: typeof import('vue-i18n').useI18n
+  const useId: typeof import('vue').useId
+  const useLeaveGuard: typeof import('@data-fair/lib-vue/leave-guard.js').useLeaveGuard
+  const useLink: typeof import('vue-router').useLink
+  const useLocaleDayjs: typeof import('@data-fair/lib-vue/locale-dayjs.js').useLocaleDayjs
+  const useModel: typeof import('vue').useModel
+  const useNumberSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js').useNumberSearchParam
+  const useReactiveSearchParams: typeof import('@data-fair/lib-vue/reactive-search-params.js').useReactiveSearchParams
+  const useRoute: typeof import('vue-router').useRoute
+  const useRouter: typeof import('vue-router').useRouter
+  const useSession: typeof import('@data-fair/lib-vue/session.js').useSession
+  const useSessionAuthenticated: typeof import('@data-fair/lib-vue/session.js').useSessionAuthenticated
+  const useSlots: typeof import('vue').useSlots
+  const useStringSearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js').useStringSearchParam
+  const useStringsArraySearchParam: typeof import('@data-fair/lib-vue/reactive-search-params.js').useStringsArraySearchParam
+  const useSubscriptions: typeof import('../src/composables/use-subscriptions').default
+  const useTemplateRef: typeof import('vue').useTemplateRef
+  const useUiNotif: typeof import('@data-fair/lib-vue/ui-notif.js').useUiNotif
+  const useWS: typeof import('@data-fair/lib-vue/ws.js').useWS
+  const watch: typeof import('vue').watch
+  const watchDeepDiff: typeof import('@data-fair/lib-vue/deep-diff.js').watchDeepDiff
+  const watchEffect: typeof import('vue').watchEffect
+  const watchPostEffect: typeof import('vue').watchPostEffect
+  const watchSyncEffect: typeof import('vue').watchSyncEffect
+  const withUiNotif: typeof import('@data-fair/lib-vue/ui-notif.js').withUiNotif
 }
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { Component, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
+  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
 }
 
@@ -169,12 +171,14 @@ declare module 'vue' {
     readonly formatBytes: UnwrapRef<typeof import('@data-fair/lib-vue/format/bytes.js')['formatBytes']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
+    readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly mdiAlertCircle: UnwrapRef<typeof import('@mdi/js')['mdiAlertCircle']>
     readonly mdiBell: UnwrapRef<typeof import('@mdi/js')['mdiBell']>
