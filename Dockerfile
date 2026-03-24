@@ -1,8 +1,12 @@
 ##########################
-FROM node:24.13.1-alpine3.23 AS base
+FROM node:24.14.0-alpine3.23 AS base
 
 WORKDIR /app
 ENV NODE_ENV=production
+
+##########################
+FROM base AS node-clean
+RUN rm -rf /usr/local/lib/node_modules/npm
 
 ##########################
 FROM base AS package-strip
@@ -53,7 +57,7 @@ RUN npm ci -w api --prefer-offline --omit=dev --omit=optional --no-audit --no-fu
 RUN mkdir -p /app/api/node_modules
 
 ##########################
-FROM base AS main
+FROM node-clean AS main
 
 COPY --from=api-installer /app/node_modules node_modules
 ADD /api api
