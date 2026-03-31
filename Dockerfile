@@ -26,6 +26,7 @@ COPY --from=package-strip /app/package.json package.json
 COPY --from=package-strip /app/package-lock.json package-lock.json
 ADD ui/package.json ui/package.json
 ADD api/package.json api/package.json
+ADD lib-vuetify/package.json lib-vuetify/package.json
 # full deps install used for building
 # also used to fill the npm cache for faster install of api deps
 RUN npm ci --omit=optional --no-audit --no-fund
