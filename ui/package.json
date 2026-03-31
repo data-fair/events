@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "NODE_CONFIG_DIR=../api/config/ vite --port $DEV_UI_PORT",
+    "dev": "mkdir -p ../dev/logs && NODE_CONFIG_DIR=../api/config/ vite --port $DEV_UI_PORT 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' | tee ../dev/logs/dev-ui.log",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "check-types": "vue-tsc",
