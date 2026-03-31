@@ -13,6 +13,7 @@ import uiLogsRouter from './ui-logs/router.ts'
 import adminRouter from './admin/router.ts'
 import { uiConfig } from '#config'
 import { internalError } from '@data-fair/lib-node/observer.js'
+import eventsMongo from './mongo.ts'
 
 const app = express()
 export default app
@@ -33,6 +34,8 @@ app.use(helmet({
 app.set('query parser', 'simple')
 app.use(express.json())
 
+app.use('/api/ping', (req, res) => res.send('ok'))
+
 app.use(createSiteMiddleware('events'))
 
 app.use('/api/events', eventsRouter)
@@ -52,6 +55,28 @@ app.use('api/v1', (req, res, next) => {
 })
 app.use('/api/v1/notifications', notificationsRouter)
 app.use('/api/v1/subscriptions', subscriptionsRouter)
+
+if (process.env.NODE_ENV === 'development') {
+  app.delete('/api/test-env', async (req, res) => {
+    const testFilter = /^test/
+    for (const name of ['notifications', 'subscriptions']) {
+      await eventsMongo.db.collection(name).deleteMany({ 'recipient.id': testFilter })
+    }
+    await eventsMongo.db.collection('events').deleteMany({ 'sender.id': testFilter })
+    for (const name of ['webhooks', 'webhook-subscriptions', 'pushSubscriptions']) {
+      await eventsMongo.db.collection(name).deleteMany({ 'owner.id': testFilter })
+    }
+    res.send()
+  })
+  app.post('/api/test-env/:collection', async (req, res) => {
+    await eventsMongo.db.collection(req.params.collection).insertOne(req.body)
+    res.send()
+  })
+  app.get('/api/test-env/:collection/:id', async (req, res) => {
+    const doc = await eventsMongo.db.collection(req.params.collection).findOne({ _id: req.params.id as any })
+    res.json(doc)
+  })
+}
 
 app.use('/api', (req, res) => res.status(404).send('unknown api endpoint'))
 

@@ -1,211 +1,207 @@
-import { strict as assert } from 'node:assert'
-import { it, describe, before, beforeEach, after } from 'node:test'
+import { test, expect } from '@playwright/test'
 import WebSocket from 'ws'
-import { axios, axiosAuth, clean, startApiServer, stopApiServer } from './utils/index.ts'
+import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082/events' })
-const user1 = await axiosAuth('user1@test.com')
-const user2 = await axiosAuth('user2@test.com')
-const admin1 = await axiosAuth('admin1@test.com')
+const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const user1 = await axiosAuth('test-user1')
+const user2 = await axiosAuth('test-user2')
+const admin1 = await axiosAuth('test1-admin1')
 
-describe('subscriptions', () => {
-  before(startApiServer)
-  beforeEach(clean)
-  after(stopApiServer)
+test.describe('subscriptions', () => {
+  test.beforeEach(clean)
 
-  it('should reject wrong recipient', async () => {
-    await assert.rejects(user1.post('/api/subscriptions', {
+  test('should reject wrong recipient', async () => {
+    await expect(user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
       recipient: { id: 'anotheruser' },
-      sender: { type: 'user', id: 'user1' }
-    }), { status: 403 })
+      sender: { type: 'user', id: 'test-user1' }
+    })).rejects.toMatchObject({ status: 403 })
   })
 
-  it('should send a public notification to any subscribed user', async () => {
+  test('should send a public notification to any subscribed user', async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'user1' },
+      sender: { type: 'user', id: 'test-user1' },
       visibility: 'public'
     }
     await admin1.post('/api/subscriptions', subscription)
-    await assert.rejects(admin1.post('/api/subscriptions', subscription), { status: 409 })
+    await expect(admin1.post('/api/subscriptions', subscription)).rejects.toMatchObject({ status: 409 })
     await user1.post('/api/subscriptions', subscription)
     await user2.post('/api/subscriptions', subscription)
     let res = await admin1.get('/api/subscriptions')
-    assert.equal(res.data.count, 1)
-    assert.equal(res.data.results[0].origin, 'http://localhost:5600')
+    expect(res.data.count).toBe(1)
+    expect(res.data.results[0].origin).toBe(`http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}`)
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
       body: 'a notification from host {hostname}',
-      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
       visibility: 'public'
     }])
     res = await admin1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
-    assert.equal(res.data.results[0].body, 'a notification from host localhost')
+    expect(res.data.count).toBe(1)
+    expect(res.data.results[0].body).toBe(`a notification from host ${process.env.DEV_HOST}`)
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
     res = await user2.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
   })
 
-  it('should send a private notification only to member of sender organization', async () => {
+  test('should send a private notification only to member of sender organization', async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga1' }
+      sender: { type: 'organization', id: 'test1' }
     }
     let res = await admin1.post('/api/subscriptions', subscription)
-    assert.equal(res.data.visibility, 'private')
+    expect(res.data.visibility).toBe('private')
     res = await user1.post('/api/subscriptions', subscription)
-    assert.equal(res.data.visibility, 'private')
+    expect(res.data.visibility).toBe('private')
     res = await user2.post('/api/subscriptions', subscription)
-    assert.equal(res.data.visibility, 'public')
+    expect(res.data.visibility).toBe('public')
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga1', name: 'Orga 1' }
+      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' }
     }])
     res = await admin1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
     res = await user2.get('/api/notifications')
-    assert.equal(res.data.count, 0)
+    expect(res.data.count).toBe(0)
   })
 
-  it('should send a private notification only to member of sender organization with certain role', async () => {
+  test('should send a private notification only to member of sender organization with certain role', async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga1', role: 'admin' }
+      sender: { type: 'organization', id: 'test1', role: 'admin' }
     }
     let res = await admin1.post('/api/subscriptions', subscription)
-    assert.equal(res.data.visibility, 'private')
+    expect(res.data.visibility).toBe('private')
     res = await user1.post('/api/subscriptions', subscription)
-    assert.equal(res.data.visibility, 'public')
+    expect(res.data.visibility).toBe('public')
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga1', role: 'admin', name: 'Orga 1' }
+      sender: { type: 'organization', id: 'test1', role: 'admin', name: 'Test Organization 1' }
     }])
     res = await admin1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 0)
+    expect(res.data.count).toBe(0)
   })
 
-  it('should not send a global private notification to member of a department in sender organization', async () => {
+  test('should not send a global private notification to member of a department in sender organization', async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga2' }
+      sender: { type: 'organization', id: 'test2' }
     }
     let res = await user2.post('/api/subscriptions', subscription)
-    // user2 is in a department, he only as access to public notification on the root of the org
-    assert.equal(res.data.visibility, 'public')
+    expect(res.data.visibility).toBe('public')
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga2', name: 'Orga 2' }
+      sender: { type: 'organization', id: 'test2', name: 'Test Organization 2' }
     }])
     res = await user2.get('/api/notifications')
-    assert.equal(res.data.count, 0)
+    expect(res.data.count).toBe(0)
   })
 
-  it('should send a notification to any department', async () => {
+  test('should send a notification to any department', async () => {
     let res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga2', department: 'dep1', name: 'Orga 2' }
+      sender: { type: 'organization', id: 'test2', department: 'dep1', name: 'Test Organization 2' }
     })
-    assert.equal(res.data.visibility, 'private')
+    expect(res.data.visibility).toBe('private')
     res = await user2.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga2', department: 'dep2', name: 'Orga 2' }
+      sender: { type: 'organization', id: 'test2', department: 'dep2', name: 'Test Organization 2' }
     })
-    assert.equal(res.data.visibility, 'private')
+    expect(res.data.visibility).toBe('private')
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga2', department: '*', name: 'Orga 2' }
+      sender: { type: 'organization', id: 'test2', department: '*', name: 'Test Organization 2' }
     }])
 
     res = await user2.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
   })
 
-  it('should send a private department notification to member of right department in sender organization', async () => {
+  test('should send a private department notification to member of right department in sender organization', async () => {
     let res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga2', department: 'dep2' }
+      sender: { type: 'organization', id: 'test2', department: 'dep2' }
     })
-    assert.equal(res.data.visibility, 'public')
+    expect(res.data.visibility).toBe('public')
     res = await user2.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga2', department: 'dep2' }
+      sender: { type: 'organization', id: 'test2', department: 'dep2' }
     })
-    assert.equal(res.data.visibility, 'private')
+    expect(res.data.visibility).toBe('private')
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'orga2', department: 'dep2', name: 'Orga 2' }
+      sender: { type: 'organization', id: 'test2', department: 'dep2', name: 'Test Organization 2' }
     }])
     res = await user2.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 0)
+    expect(res.data.count).toBe(0)
   })
 
-  it('should send a notification with subscribedOnly option', async () => {
+  test('should send a notification with subscribedOnly option', async () => {
     const notif = {
       topic: { key: 'topic1' },
       title: 'a notification',
       body: 'a notification from host {hostname}',
-      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
       visibility: 'public',
-      recipient: { id: 'admin1' }
+      recipient: { id: 'test1-admin1' }
     }
     let res = await axPush.post('/api/notifications', notif, { params: { subscribedOnly: 'true' } })
     res = await admin1.get('/api/notifications')
-    assert.equal(res.data.count, 0)
+    expect(res.data.count).toBe(0)
 
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'user1' },
+      sender: { type: 'user', id: 'test-user1' },
       visibility: 'public'
     }
     await admin1.post('/api/subscriptions', subscription)
 
     res = await axPush.post('/api/notifications', notif, { params: { subscribedOnly: 'true' } })
     res = await admin1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
-    assert.equal(res.data.results[0].body, 'a notification from host localhost')
+    expect(res.data.count).toBe(1)
+    expect(res.data.results[0].body).toBe(`a notification from host ${process.env.DEV_HOST}`)
   })
 
-  it('should send a global public notification to any subscribed user', async () => {
+  test('should send a global public notification to any subscribed user', async () => {
     const subscription = {
       topic: { key: 'global-topic1' },
       visibility: 'public'
     }
     await admin1.post('/api/subscriptions', subscription)
-    await assert.rejects(admin1.post('/api/subscriptions', subscription), { status: 409 })
+    await expect(admin1.post('/api/subscriptions', subscription)).rejects.toMatchObject({ status: 409 })
     await user1.post('/api/subscriptions', subscription)
     await user2.post('/api/subscriptions', subscription)
     let res = await admin1.get('/api/subscriptions')
-    assert.equal(res.data.count, 1)
-    assert.equal(res.data.results[0].origin, 'http://localhost:5600')
+    expect(res.data.count).toBe(1)
+    expect(res.data.results[0].origin).toBe(`http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}`)
 
     res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
@@ -215,29 +211,29 @@ describe('subscriptions', () => {
       visibility: 'public'
     }])
     res = await admin1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
-    assert.equal(res.data.results[0].body, 'a global notification from host localhost')
+    expect(res.data.count).toBe(1)
+    expect(res.data.results[0].body).toBe(`a global notification from host ${process.env.DEV_HOST}`)
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
     res = await user2.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
   })
 
-  it('should send notificationss of de-duplicated events', async () => {
+  test('should send notifications of de-duplicated events', async () => {
     // user1 is subscribed in 2 different manners
     let res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga1' }
+      sender: { type: 'organization', id: 'test1' }
     })
     res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic2' },
-      sender: { type: 'organization', id: 'orga1' }
+      sender: { type: 'organization', id: 'test1' }
     })
 
     // admin is subscribed in the second manner only
     res = await admin1.post('/api/subscriptions', {
       topic: { key: 'topic2' },
-      sender: { type: 'organization', id: 'orga1' }
+      sender: { type: 'organization', id: 'test1' }
     })
 
     res = await axPush.post('/api/events', [{
@@ -245,20 +241,20 @@ describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'notif 1',
-      sender: { type: 'organization', id: 'orga1', name: 'Orga 1' }
+      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' }
     }])
     res = await axPush.post('/api/events', [{
       _id: 'test',
       date: new Date().toISOString(),
       topic: { key: 'topic2' },
       title: 'notif 2',
-      sender: { type: 'organization', id: 'orga1', name: 'Orga 1' }
+      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' }
     }])
     res = await admin1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
     // no duplicate created
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 1)
+    expect(res.data.count).toBe(1)
 
     // another notification sent straight to the user
     res = await axPush.post('/api/notifications', {
@@ -266,10 +262,10 @@ describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic2' },
       title: 'notif 2',
-      recipient: { id: 'user1' }
+      recipient: { id: 'test-user1' }
     })
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 2)
+    expect(res.data.count).toBe(2)
 
     // a duplicate not saved
     res = await axPush.post('/api/notifications', {
@@ -277,15 +273,15 @@ describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic2' },
       title: 'notif 2',
-      recipient: { id: 'user1' }
+      recipient: { id: 'test-user1' }
     })
     res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 2)
+    expect(res.data.count).toBe(2)
   })
 
-  it('should deliver direct notifications via WS', async () => {
-    const cookies = user1.cookieJar.getCookiesSync('http://localhost:5600')
-    const ws = new WebSocket('ws://localhost:8082', { headers: { Cookie: cookies.map(String).join('; ') } })
+  test('should deliver direct notifications via WS', async () => {
+    const cookies = user1.cookieJar.getCookiesSync(`http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}`)
+    const ws = new WebSocket(`ws://localhost:${process.env.DEV_API_PORT}`, { headers: { Cookie: cookies.map(String).join('; ') } })
     const messages: any[] = []
 
     await new Promise<void>((resolve, reject) => {
@@ -294,53 +290,53 @@ describe('subscriptions', () => {
         if (msg.type === 'subscribe-confirm') resolve()
         if (msg.type === 'message') messages.push(msg)
       })
-      ws.on('open', () => ws.send(JSON.stringify({ type: 'subscribe', channel: 'user:user1:notifications' })))
+      ws.on('open', () => ws.send(JSON.stringify({ type: 'subscribe', channel: 'user:test-user1:notifications' })))
       ws.on('error', reject)
     })
 
     await axPush.post('/api/notifications', {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
       title: 'notif direct 1',
-      recipient: { id: 'user1' }
+      recipient: { id: 'test-user1' }
     })
     await new Promise(resolve => setTimeout(resolve, 200))
-    assert.equal(messages.length, 1)
-    assert.equal(messages[0].data.title, 'notif direct 1')
+    expect(messages.length).toBe(1)
+    expect(messages[0].data.title).toBe('notif direct 1')
 
     await axPush.post('/api/notifications', {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
       title: 'notif direct 2',
-      recipient: { id: 'user1' }
+      recipient: { id: 'test-user1' }
     })
     await new Promise(resolve => setTimeout(resolve, 200))
-    assert.equal(messages.length, 2)
-    assert.equal(messages[1].data.title, 'notif direct 2')
+    expect(messages.length).toBe(2)
+    expect(messages[1].data.title).toBe('notif direct 2')
 
     // a duplicate should not produce a WS message
     await axPush.post('/api/notifications', {
       eventId: 'ws-dedup',
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
       title: 'notif dedup',
-      recipient: { id: 'user1' }
+      recipient: { id: 'test-user1' }
     })
     await new Promise(resolve => setTimeout(resolve, 200))
-    assert.equal(messages.length, 3)
+    expect(messages.length).toBe(3)
 
     await axPush.post('/api/notifications', {
       eventId: 'ws-dedup',
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
       title: 'notif dedup',
-      recipient: { id: 'user1' }
+      recipient: { id: 'test-user1' }
     })
     await new Promise(resolve => setTimeout(resolve, 200))
-    assert.equal(messages.length, 3)
+    expect(messages.length).toBe(3)
 
     const res = await user1.get('/api/notifications')
-    assert.equal(res.data.count, 3)
+    expect(res.data.count).toBe(3)
 
     ws.close()
   })

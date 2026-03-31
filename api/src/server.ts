@@ -53,5 +53,6 @@ export const stop = async () => {
   await webhooksWorker.stop()
   await wsServer.stop()
   if (config.observer.active) await stopObserver()
+  await locks.stop()
   await mongo.client.close()
 }

@@ -12,7 +12,7 @@
         :loading="test.loading.value"
         @click="test.execute()"
       >
-        tester
+        Tester
         <v-icon
           end
           :icon="mdiSend"
@@ -32,7 +32,6 @@
     <div style="height:4px;width:100%;">
       <v-progress-linear
         v-if="fetchWebhooks.loading.value"
-        stream
         height="4"
         style="margin:0;"
       />

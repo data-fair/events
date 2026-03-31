@@ -20,7 +20,7 @@
       </v-row>
       <v-row v-if="header">
         <v-col>
-          <div class="text-subtitle-2">
+          <div class="text-label-large">
             {{ header }}
           </div>
         </v-col>

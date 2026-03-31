@@ -7,7 +7,6 @@
     <div style="height:4px;width:100%;">
       <v-progress-linear
         v-if="fetchSubscriptions.loading.value"
-        stream
         height="4"
         style="margin:0;"
       />

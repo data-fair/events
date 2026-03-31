@@ -13,18 +13,12 @@ import * as postRegistrationReq from '#doc/push/post-registration-req/index.ts'
 import { nanoid } from 'nanoid'
 import { session, reqSiteUrl, httpError } from '@data-fair/lib-express/index.js'
 import { getPushState, push, pushToDevice } from './service.ts'
+import { equalDeviceRegistrations } from './operations.ts'
 
 const debug = Debug('webpush')
 
 const router = Router()
 export default router
-
-export function equalDeviceRegistrations (regId1: DeviceRegistration['id'] | null, regId2: DeviceRegistration['id'] | null) {
-  if (regId1 === null || regId2 === null) return false
-  if (typeof regId1 === 'string' && typeof regId2 === 'string' && regId1 === regId2) return true
-  if (typeof regId1 === 'object' && typeof regId2 === 'object' && regId1.endpoint === regId2.endpoint) return true
-  return false
-}
 
 router.get('/vapidkey', async (req, res) => {
   res.send({ publicKey: getPushState().vapidKeys.publicKey })

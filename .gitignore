@@ -2,3 +2,9 @@ data/
 node_modules/
 api/config/local-*
 .type/
+.env*
+*.log
+coverage/
+.DS_Store
+test-results/
+dev/logs/

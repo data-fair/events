@@ -3,24 +3,42 @@
   "email": "superadmin@test.com",
   "isAdmin": true,
   "password": {
-      "clear": "superpasswd"
+    "clear": "superpasswd"
   }
 }, {
-  "id": "user1",
-  "email": "user1@test.com",
+  "id": "dev-user1",
+  "email": "dev-user1@test.com",
   "password": {
-      "clear": "passwd"
+    "clear": "passwd"
   }
 }, {
-  "id": "user2",
-  "email": "user2@test.com",
+  "id": "dev1-admin1",
+  "email": "dev1-admin1@test.com",
   "password": {
-      "clear": "passwd"
+    "clear": "passwd"
   }
 }, {
-  "id": "admin1",
-  "email": "admin1@test.com",
+  "id": "dev1-user1",
+  "email": "dev1-user1@test.com",
   "password": {
-      "clear": "passwd"
+    "clear": "passwd"
+  }
+}, {
+  "id": "test-user1",
+  "email": "test-user1@test.com",
+  "password": {
+    "clear": "passwd"
+  }
+}, {
+  "id": "test-user2",
+  "email": "test-user2@test.com",
+  "password": {
+    "clear": "passwd"
+  }
+}, {
+  "id": "test1-admin1",
+  "email": "test1-admin1@test.com",
+  "password": {
+    "clear": "passwd"
   }
 }]

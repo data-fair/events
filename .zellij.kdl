@@ -7,7 +7,7 @@ layout {
       }
       pane name="deps" {
         command "bash"
-        args "-ic" "npm run dev-deps && watch -n 4 \"docker compose ps --all --format 'table {{.Name}}\t{{.Status}}'\""
+        args "-ic" "npm run dev-deps"
       }
     }
     pane {
@@ -23,6 +23,6 @@ layout {
     }
     pane size=2 borderless=true {
         command "bash"
-        args "-ic" "echo -n -e \"Dev server available at \\e[1;96mhttp://localhost:5600\\033[0m\""
+        args "-ic" "echo -n -e \"Dev server available at \\e[1;96mhttp://$DEV_HOST:$NGINX_PORT\\033[0m\""
     }
 }
