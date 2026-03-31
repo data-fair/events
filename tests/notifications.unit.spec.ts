@@ -14,7 +14,7 @@ const makeSubscription = (overrides: any = {}) => ({
   _id: 'sub1',
   origin: 'https://example.com',
   topic: { key: 'topic1' },
-  recipient: { id: 'user1', name: 'User 1' },
+  recipient: { id: 'test-user1', name: 'User 1' },
   outputs: ['devices' as const],
   visibility: 'private' as const,
   created: { date: '2024-01-01' },
@@ -29,7 +29,7 @@ test.describe('prepareSubscriptionNotification', () => {
     const notif = prepareSubscriptionNotification(event, sub, {}, 'fr', 'notif1')
     expect(notif._id).toBe('notif1')
     expect(notif.eventId).toBe('evt1')
-    expect(notif.recipient).toEqual({ id: 'user1', name: 'User 1' })
+    expect(notif.recipient).toEqual({ id: 'test-user1', name: 'User 1' })
     expect(notif.origin).toBe('https://example.com')
   })
 

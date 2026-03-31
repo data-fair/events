@@ -3,8 +3,8 @@ import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
 const axAno = axios()
 const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
-const user1 = await axiosAuth('user1@test.com')
-const admin1 = await axiosAuth('admin1@test.com')
+const user1 = await axiosAuth('test-user1')
+const admin1 = await axiosAuth('test1-admin1')
 
 test.describe('error cases', () => {
   test.beforeEach(clean)
@@ -62,7 +62,7 @@ test.describe('error cases', () => {
     await expect(user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
       recipient: { id: 'someone-else' },
-      sender: { type: 'user', id: 'user1' }
+      sender: { type: 'user', id: 'test-user1' }
     })).rejects.toMatchObject({ status: 403 })
   })
 
@@ -75,7 +75,7 @@ test.describe('error cases', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'dedup test',
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }
     await Promise.all([
       axPush.post('/api/events', [event]),
@@ -116,7 +116,7 @@ test.describe('error cases', () => {
   test('should reject duplicate subscriptions', async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'user1' },
+      sender: { type: 'user', id: 'test-user1' },
       visibility: 'public'
     }
     await user1.post('/api/subscriptions', subscription)
@@ -130,7 +130,7 @@ test.describe('error cases', () => {
       eventId: 'notif-dedup',
       topic: { key: 'topic1' },
       title: 'dedup notification',
-      recipient: { id: 'user1' }
+      recipient: { id: 'test-user1' }
     }
     await axPush.post('/api/notifications', notif)
     await axPush.post('/api/notifications', notif)

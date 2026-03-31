@@ -3,8 +3,8 @@ import { axios, axiosAuth, clean, baseURL, devBaseURL } from './support/axios.ts
 
 const axAno = axios()
 const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
-const user1 = await axiosAuth('user1@test.com')
-const admin1 = await axiosAuth('admin1@test.com')
+const user1 = await axiosAuth('test-user1')
+const admin1 = await axiosAuth('test1-admin1')
 
 test.describe('events', () => {
   test.beforeEach(clean)
@@ -26,17 +26,17 @@ test.describe('events', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }, {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'another notification',
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }, {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'anotherone',
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
     res = await admin1.get('/api/events')
     expect(res.data.results.length).toBe(0)
@@ -44,7 +44,7 @@ test.describe('events', () => {
     expect(res.data.results.length).toBe(3)
     res = await user1.get('/api/events?q=notification')
     expect(res.data.results.length).toBe(2)
-    res = await user1.get('/api/events?q=test')
+    res = await user1.get('/api/events?q=nonexistent')
     expect(res.data.results.length).toBe(0)
     res = await user1.get('/api/events', { params: { size: 2 } })
     expect(res.data.results.length).toBe(2)
@@ -61,7 +61,7 @@ test.describe('events', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: { en: 'an english notification', fr: 'une notification française' },
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
     res = await admin1.get('/api/events')
     expect(res.data.results.length).toBe(0)
@@ -82,14 +82,14 @@ test.describe('events', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'notif 1',
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
     res = await axPush.post('/api/events', [{
       _id: 'test',
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'notif 2',
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
     res = await user1.get('/api/events')
     expect(res.data.results.length).toBe(1)

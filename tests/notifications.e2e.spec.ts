@@ -8,16 +8,16 @@ test.describe('Notifications UI', () => {
   test.beforeEach(clean)
 
   test('shows empty state when no notifications', async ({ page, goToWithAuth }) => {
-    await goToWithAuth('/events/embed/notifications', 'user1')
+    await goToWithAuth('/events/embed/notifications', 'test-user1')
     await expect(page.getByText('No notification')).toBeVisible()
   })
 
   test('shows notifications after events are sent with subscription', async ({ page, goToWithAuth }) => {
-    // create a subscription for user1
-    const user1 = await axiosAuth('user1@test.com')
+    // create a subscription for test-user1
+    const user1 = await axiosAuth('test-user1')
     await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
       outputs: ['devices']
     })
 
@@ -26,13 +26,13 @@ test.describe('Notifications UI', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'Test notification title',
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
 
     // wait a bit for notification processing
     await new Promise(resolve => setTimeout(resolve, 2000))
 
-    await goToWithAuth('/events/embed/notifications', 'user1')
+    await goToWithAuth('/events/embed/notifications', 'test-user1')
     await expect(page.getByText('Test notification title')).toBeVisible()
     await expect(page.getByText('1 notification')).toBeVisible()
   })

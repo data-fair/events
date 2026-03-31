@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
 
   use: {
-    baseURL: 'http://localhost:' + process.env.NGINX_PORT,
+    baseURL: `http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}`,
     trace: 'on-first-retry',
   },
 

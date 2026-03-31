@@ -4,14 +4,14 @@ import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
 const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })
-const admin1 = await axiosAuth('admin1@test.com')
+const admin1 = await axiosAuth('test1-admin1')
 
-// helper to post event matching a webhook subscription owned by admin1/orga1
+// helper to post event matching a webhook subscription owned by test1-admin1/test1
 const postMatchingEvent = (title: string) => axPush.post('/api/events', [{
   date: new Date().toISOString(),
   topic: { key: 'topic1' },
   title,
-  sender: { type: 'organization', id: 'orga1', name: 'Orga 1' },
+  sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' },
   visibility: 'public'
 }])
 
@@ -22,7 +22,7 @@ test.describe('webhooks', () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Test webhook sub',
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga1' },
+      sender: { type: 'organization', id: 'test1' },
       url: 'http://localhost:19876/hook'
     })
 
@@ -52,7 +52,7 @@ test.describe('webhooks', () => {
       await admin1.post('/api/webhook-subscriptions', {
         title: 'Test delivery',
         topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'orga1' },
+        sender: { type: 'organization', id: 'test1' },
         url: 'http://localhost:19876/hook',
         header: { key: 'X-Secret', value: 'mysecret' }
       })
@@ -90,7 +90,7 @@ test.describe('webhooks', () => {
       await admin1.post('/api/webhook-subscriptions', {
         title: 'Retry test',
         topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'orga1' },
+        sender: { type: 'organization', id: 'test1' },
         url: 'http://localhost:19877/hook'
       })
 
@@ -126,14 +126,14 @@ test.describe('webhooks', () => {
       const sub = (await admin1.post('/api/webhook-subscriptions', {
         title: 'Max retry test',
         topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'orga1' },
+        sender: { type: 'organization', id: 'test1' },
         url: 'http://localhost:19878/hook'
       })).data
 
       // insert a webhook with 9 previous attempts so the next failure is the 10th
       await axDev.post('/api/test-env/webhooks', {
         _id: 'test-max-retries',
-        sender: { type: 'organization', id: 'orga1' },
+        sender: { type: 'organization', id: 'test1' },
         owner: sub.owner,
         subscription: { _id: sub._id, title: sub.title },
         notification: {
@@ -162,7 +162,7 @@ test.describe('webhooks', () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Cancel test',
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga1' },
+      sender: { type: 'organization', id: 'test1' },
       url: 'http://localhost:19879/hook'
     })
 
@@ -180,7 +180,7 @@ test.describe('webhooks', () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Manual retry test',
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'orga1' },
+      sender: { type: 'organization', id: 'test1' },
       url: 'http://localhost:19880/hook'
     })
 

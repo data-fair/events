@@ -8,6 +8,7 @@ services:
     image: nginx:1.29.4-alpine
     network_mode: host
     environment:
+      DEV_HOST: ${DEV_HOST}
       NGINX_PORT: ${NGINX_PORT}
       DEV_API_PORT: ${DEV_API_PORT}
       DEV_UI_PORT: ${DEV_UI_PORT}
@@ -29,7 +30,7 @@ services:
       PORT: ${SD_PORT}
       DEBUG: session
       ADMINS: '["superadmin@test.com"]'
-      PUBLIC_URL: http://localhost:${NGINX_PORT}/simple-directory
+      PUBLIC_URL: http://${DEV_HOST}:${NGINX_PORT}/simple-directory
       MAILDEV_ACTIVE: "true"
       STORAGE_TYPE: file
       ROLES_DEFAULTS: '["admin", "contrib", "user"]'

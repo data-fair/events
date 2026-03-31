@@ -8,7 +8,7 @@ test.describe('Events UI', () => {
   test.beforeEach(clean)
 
   test('shows empty state when no events', async ({ page, goToWithAuth }) => {
-    await goToWithAuth('/events/embed/events', 'user1')
+    await goToWithAuth('/events/embed/events', 'test-user1')
     await expect(page.getByText('Aucun résultat')).toBeVisible()
   })
 
@@ -17,10 +17,10 @@ test.describe('Events UI', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'My test event',
-      sender: { type: 'user', id: 'user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
 
-    await goToWithAuth('/events/embed/events', 'user1')
+    await goToWithAuth('/events/embed/events', 'test-user1')
     await expect(page.getByText('My test event')).toBeVisible()
   })
 })

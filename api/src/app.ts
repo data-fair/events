@@ -58,8 +58,13 @@ app.use('/api/v1/subscriptions', subscriptionsRouter)
 
 if (process.env.NODE_ENV === 'development') {
   app.delete('/api/test-env', async (req, res) => {
-    for (const name of ['notifications', 'subscriptions', 'events', 'webhooks', 'webhook-subscriptions', 'pushSubscriptions']) {
-      await eventsMongo.db.collection(name).deleteMany({})
+    const testFilter = /^test/
+    for (const name of ['notifications', 'subscriptions']) {
+      await eventsMongo.db.collection(name).deleteMany({ 'recipient.id': testFilter })
+    }
+    await eventsMongo.db.collection('events').deleteMany({ 'sender.id': testFilter })
+    for (const name of ['webhooks', 'webhook-subscriptions', 'pushSubscriptions']) {
+      await eventsMongo.db.collection(name).deleteMany({ 'owner.id': testFilter })
     }
     res.send()
   })

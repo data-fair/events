@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test'
 import { canSubscribePrivate } from '../api/src/subscriptions/operations.ts'
 
 const makeUser = (overrides: any = {}) => ({
-  id: 'user1',
-  email: 'user1@test.com',
+  id: 'test-user1',
+  email: 'test-user1@test.com',
   name: 'User 1',
   organizations: [],
   ...overrides
@@ -20,7 +20,7 @@ test.describe('canSubscribePrivate', () => {
   })
 
   test('user sender matches own id', () => {
-    expect(canSubscribePrivate({ type: 'user', id: 'user1' }, makeUser())).toBe(true)
+    expect(canSubscribePrivate({ type: 'user', id: 'test-user1' }, makeUser())).toBe(true)
   })
 
   test('user sender does not match other id', () => {
