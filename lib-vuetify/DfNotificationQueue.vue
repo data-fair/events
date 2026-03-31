@@ -6,6 +6,7 @@
     max-width="500"
     width="100%"
     eager
+    style="z-index: 2600; /* Higher than agent-chat's 2500 */"
   >
     <template #activator="{ props }">
       <v-btn
