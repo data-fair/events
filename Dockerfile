@@ -1,5 +1,5 @@
 ##########################
-FROM node:24.14.0-alpine3.23 AS base
+FROM node:24.14.1-alpine3.23 AS base
 
 WORKDIR /app
 ENV NODE_ENV=production
@@ -26,9 +26,12 @@ COPY --from=package-strip /app/package.json package.json
 COPY --from=package-strip /app/package-lock.json package-lock.json
 ADD ui/package.json ui/package.json
 ADD api/package.json api/package.json
-# full deps install used for building
+ADD lib-vuetify/package.json lib-vuetify/package.json
+# full deps install used for types and ui building
 # also used to fill the npm cache for faster install of api deps
-RUN npm ci --omit=optional --no-audit --no-fund
+RUN npm ci --omit=dev --no-audit --no-fund
+# install dev dependencies for ui workspace
+RUN npm install -w ui --include=dev --no-audit --no-fund
 
 ##########################
 FROM installer AS types
@@ -46,6 +49,7 @@ COPY --from=types /app/api/config api/config
 COPY --from=types /app/api/types api/types
 ADD /api/src/config.ts api/src/config.ts
 ADD /ui ui
+ADD /lib-vuetify lib-vuetify
 RUN npm -w ui run build
 
 ##########################

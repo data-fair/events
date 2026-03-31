@@ -27,7 +27,8 @@
   "license": "MIT",
   "workspaces": [
     "ui",
-    "api"
+    "api",
+    "lib-vuetify"
   ],
   "bugs": {
     "url": "https://github.com/data-fair/events/issues"
@@ -47,7 +48,7 @@
     "dotenv-cli": "^11.0.0",
     "eslint": "^9.39.4",
     "eslint-plugin-vue": "^9.33.0",
-    "eslint-plugin-vuetify": "github:albanm/eslint-plugin-vuetify",
+    "eslint-plugin-vuetify": "^2.5.1",
     "husky": "^9.1.7",
     "json-schema-to-typescript": "^11.0.5",
     "neostandard": "^0.12.2",
@@ -65,5 +66,8 @@
   "relativeDependencies": {
     "@data-fair/lib-express": "../lib/packages/express",
     "@data-fair/lib-vue": "../lib/packages/vue"
+  },
+  "optionalDependencies": {
+    "sass": "1.98.0"
   }
 }
