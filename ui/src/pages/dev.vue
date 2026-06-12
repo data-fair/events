@@ -2,7 +2,7 @@
   <div>
     <v-app-bar density="comfortable">
       <v-spacer />
-      <df-notification-queue :events-url="$apiPath" />
+      <df-notification-queue :events-url="$eventsUrl" />
       <personal-menu dark-mode-switch />
     </v-app-bar>
 
@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import personalMenu from '@data-fair/lib-vuetify/personal-menu.vue'
 import { DfNotificationQueue } from '@data-fair/lib-vuetify-events'
-import { $apiPath } from '../context.ts'
+import { $eventsUrl } from '../context.ts'
 
 const session = useSession()
 

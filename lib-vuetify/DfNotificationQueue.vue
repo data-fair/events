@@ -2,18 +2,18 @@
   <!-- Eager to prevent ARIA errors-->
   <v-menu
     :close-on-content-click="false"
+    style="z-index: 2600; /* Higher than agent-chat's 2500 */"
     max-height="400"
     max-width="500"
     width="100%"
     eager
-    style="z-index: 2600; /* Higher than agent-chat's 2500 */"
+    @update:model-value="(open) => refresh(open ? 10 : 0)"
   >
     <template #activator="{ props }">
       <v-btn
         v-bind="props"
         :title="t('openNotificationList')"
         stacked
-        @click="refresh()"
       >
         <v-badge
           :model-value="!!countNew"
@@ -25,14 +25,17 @@
       </v-btn>
     </template>
 
-    <v-list density="compact">
+    <v-list
+      density="compact"
+      class="py-0"
+    >
       <v-list-item v-if="!session.state.user">
         {{ t('loginRequired.part1') }} <a
           :href="session.loginUrl()"
           class="simple-link"
         >{{ t('loginRequired.part2') }}</a> {{ t('loginRequired.part3') }}
       </v-list-item>
-      <v-list-item v-else-if="!notifications || !notifications.length">
+      <v-list-item v-else-if="!notifications.length">
         {{ t('noNotifications') }}
       </v-list-item>
       <v-list-item
@@ -40,13 +43,14 @@
         v-else
         :key="notif._id"
         :href="notif.url"
-        :title="notif.title"
-        :subtitle="dayjs(notif.date).format('lll')"
         :value="notif._id"
         :active="notif.new"
-        active-class="text-pink"
+        active-class="text-warning"
         lines="three"
       >
+        <template #title>
+          <span :title="notif.title">{{ notif.title }}</span>
+        </template>
         <template #subtitle>
           {{ dayjs(notif.date).format('lll') }}
           <div v-if="notif.body">{{ notif.body }}</div>
@@ -64,17 +68,17 @@
 </template>
 
 <script setup lang="ts">
+import type { Emitter } from '@data-fair/lib-common-types/event/index.js'
 import { ref, onMounted } from 'vue'
 import { ofetch } from 'ofetch'
 import OwnerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 import useSession from '@data-fair/lib-vue/session.js'
 import useLocaleDayjs from '@data-fair/lib-vue/locale-dayjs.js'
+import useWS from '@data-fair/lib-vue/ws.js'
 import { useI18n } from 'vue-i18n'
 import { mdiBell } from '@mdi/js'
 
-const props = defineProps<{
-  eventsUrl: string
-}>()
+const { eventsUrl } = defineProps<{ eventsUrl: string }>()
 
 const session = useSession()
 const { dayjs } = useLocaleDayjs()
@@ -87,11 +91,7 @@ type NotificationItem = {
   body?: string
   url?: string
   new?: boolean
-  sender?: {
-    type: 'user' | 'organization'
-    id: string
-    name?: string
-  }
+  sender?: Emitter
 }
 
 type NotificationsRes = {
@@ -103,15 +103,23 @@ type NotificationsRes = {
 const notifications = ref<NotificationItem[]>([])
 const countNew = ref(0)
 
-async function refresh () {
+async function refresh (size = 10) {
   if (!session.state.user) return
-  const res = await ofetch<NotificationsRes>(`${props.eventsUrl}/notifications`, { query: { size: 10 } })
-  notifications.value = res.results
+  const res = await ofetch<NotificationsRes>(`${eventsUrl}/api/notifications`, { query: { size } })
+  if (size > 0) notifications.value = res.results
   countNew.value = res.countNew
 }
 
 onMounted(() => {
   refresh()
+  const userId = session.state.user?.id
+  const ws = useWS(eventsUrl + '/api/')
+  if (ws && userId) {
+    ws.subscribe<NotificationItem>(`user:${userId}:notifications`, (notif) => {
+      notifications.value = [{ ...notif, new: true }, ...notifications.value]
+      countNew.value += 1
+    })
+  }
 })
 </script>
 
