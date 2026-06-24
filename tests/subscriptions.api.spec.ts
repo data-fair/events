@@ -140,6 +140,33 @@ test.describe('subscriptions', () => {
     expect(res.data.count).toBe(1)
   })
 
+  test('should send any-department subscription notifications for root and departmental events', async () => {
+    // a root member subscribes to every department of the org using the '*' wildcard
+    const res = await admin1.post('/api/subscriptions', {
+      topic: { key: 'topic1' },
+      sender: { type: 'organization', id: 'test1', department: '*', name: 'Test Organization 1' }
+    })
+    expect(res.data.visibility).toBe('private')
+
+    // a root event (no department) must reach the wildcard subscription
+    await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'a root notification',
+      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' }
+    }])
+    // a departmental event must also reach the wildcard subscription
+    await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'a departmental notification',
+      sender: { type: 'organization', id: 'test1', department: 'dep1', name: 'Test Organization 1' }
+    }])
+
+    const notifs = await admin1.get('/api/notifications')
+    expect(notifs.data.count).toBe(2)
+  })
+
   test('should send a private department notification to member of right department in sender organization', async () => {
     let res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },

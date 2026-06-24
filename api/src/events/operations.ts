@@ -33,11 +33,19 @@ export const getSubscriptionsFilter = (event: Event): Filter<Subscription> => {
     subscriptionsFilter['sender.id'] = event.sender.id
     if (event.sender.role) subscriptionsFilter['sender.role'] = event.sender.role
     if (event.sender.department) {
+      // a departmental event also matches subscriptions using the '*' wildcard (any department)
       if (event.sender.department !== '*') {
-        subscriptionsFilter['sender.department'] = event.sender.department
+        subscriptionsFilter.$or = [
+          { 'sender.department': event.sender.department },
+          { 'sender.department': '*' }
+        ]
       }
     } else {
-      subscriptionsFilter['sender.department'] = { $exists: false }
+      // a root event matches subscriptions without department, or using the '*' wildcard
+      subscriptionsFilter.$or = [
+        { 'sender.department': { $exists: false } },
+        { 'sender.department': '*' }
+      ]
     }
   } else {
     subscriptionsFilter.sender = { $exists: false }

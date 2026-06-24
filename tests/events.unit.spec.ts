@@ -62,7 +62,12 @@ test.describe('getSubscriptionsFilter', () => {
     const filter = getSubscriptionsFilter(event)
     expect(filter['sender.type']).toBe('organization')
     expect(filter['sender.id']).toBe('org1')
-    expect(filter['sender.department']).toEqual({ $exists: false })
+    // a root event matches subscriptions without department, or using the '*' wildcard
+    expect(filter.$or).toEqual([
+      { 'sender.department': { $exists: false } },
+      { 'sender.department': '*' }
+    ])
+    expect(filter['sender.department']).toBeUndefined()
   })
 
   test('filters by sender with department', () => {
@@ -71,7 +76,12 @@ test.describe('getSubscriptionsFilter', () => {
       sender: { type: 'organization', id: 'org1', department: 'dep1' }
     }
     const filter = getSubscriptionsFilter(event)
-    expect(filter['sender.department']).toBe('dep1')
+    // a departmental event also matches subscriptions using the '*' wildcard (any department)
+    expect(filter.$or).toEqual([
+      { 'sender.department': 'dep1' },
+      { 'sender.department': '*' }
+    ])
+    expect(filter['sender.department']).toBeUndefined()
   })
 
   test('wildcard department does not filter', () => {
