@@ -1,6 +1,6 @@
 {
   "name": "@data-fair/lib-vuetify-events",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Vuetify components for embedding events features.",
   "main": "index.js",
   "type": "module",
