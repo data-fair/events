@@ -10,14 +10,19 @@
     @update:model-value="(open) => refresh(open ? 10 : 0)"
   >
     <template #activator="{ props }">
+      <!-- no aria-haspopup: the popup is a list of notifications, not a menu.
+           Vuetify's VMenu default sets aria-haspopup="menu" on the activator -->
       <v-btn
         v-bind="props"
+        :aria-haspopup="undefined"
+        :aria-label="countNew ? t('openNotificationListWithCount', { count: countNew }) : t('openNotificationList')"
         :title="t('openNotificationList')"
         stacked
       >
         <v-badge
           :model-value="!!countNew"
           :content="countNew"
+          :label="t('newNotifications', { count: countNew })"
           color="warning"
         >
           <v-icon :icon="mdiBell" />
@@ -25,9 +30,11 @@
       </v-btn>
     </template>
 
+    <!-- remove the default role="list": its items are links, which breaks list/listitem semantics -->
     <v-list
       density="compact"
       class="py-0"
+      :role="undefined"
     >
       <v-list-item v-if="!session.state.user">
         {{ t('loginRequired.part1') }} <a
@@ -131,6 +138,8 @@ onMounted(() => {
       part3: to receive notifications.
     noNotifications: You have not received any notifications yet.
     openNotificationList: Open notification list
+    openNotificationListWithCount: Open notification list, {count} new notification | Open notification list, {count} new notifications
+    newNotifications: '{count} new notification | {count} new notifications'
 
   fr:
     loginRequired:
@@ -139,4 +148,6 @@ onMounted(() => {
       part3: pour recevoir des notifications.
     noNotifications: Vous n'avez pas encore reçu de notification.
     openNotificationList: Ouvrir la liste des notifications
+    openNotificationListWithCount: Ouvrir la liste des notifications, {count} nouvelle notification | Ouvrir la liste des notifications, {count} nouvelles notifications
+    newNotifications: '{count} nouvelle notification | {count} nouvelles notifications'
 </i18n>
