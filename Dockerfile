@@ -1,12 +1,16 @@
 ##########################
-FROM node:24.14.1-alpine3.23 AS base
+FROM node:24.20.0-alpine3.24 AS base
+
+# pick up alpine security fixes published after the base image was built
+RUN apk upgrade --no-cache
 
 WORKDIR /app
 ENV NODE_ENV=production
 
 ##########################
 FROM base AS node-clean
-RUN rm -rf /usr/local/lib/node_modules/npm
+# npm and corepack are not used to run the service and carry their own CVEs
+RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 
 ##########################
 FROM base AS package-strip
