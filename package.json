@@ -60,10 +60,6 @@
     "ufo": "^1.6.4",
     "ws": "^8.20.0"
   },
-  "overrides": {
-    "axios": "1.20.0",
-    "tinyexec": "1.0.2"
-  },
   "relativeDependencies": {
     "@data-fair/lib-express": "../lib/packages/express",
     "@data-fair/lib-vue": "../lib/packages/vue"
