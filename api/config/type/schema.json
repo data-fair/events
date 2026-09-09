@@ -16,7 +16,6 @@
     "port",
     "observer",
     "secretKeys",
-    "apn",
     "defaultPushNotif",
     "worker",
     "theme",
@@ -52,35 +51,10 @@
     "gcmAPIKey": {
       "type": "string"
     },
-    "apn": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["token", "production"],
-      "properties": {
-        "token": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "key": {
-              "type": "string"
-            },
-            "keyId": {
-              "type": "string"
-            },
-            "teamId": {
-              "type": "string"
-            }
-          }
-        },
-        "production": {
-          "type": "boolean"
-        }
-      }
-    },
     "defaultPushNotif": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["apn", "webpush"],
+      "required": ["webpush"],
       "patternProperties": {
         ".*": {
           "type": "object"

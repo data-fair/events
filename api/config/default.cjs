@@ -13,16 +13,7 @@ module.exports = {
     sendMails: undefined
   },
   gcmAPIKey: undefined,
-  apn: {
-    token: {
-      key: undefined,
-      keyId: undefined,
-      teamId: undefined
-    },
-    production: false
-  },
   defaultPushNotif: {
-    apn: {},
     webpush: {}
   },
   worker: {
