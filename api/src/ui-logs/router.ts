@@ -1,7 +1,7 @@
 // very basic mecanism to log client side events on the server
 
 import { Router } from 'express'
-import useragent from 'useragent'
+import { describeUserAgent } from '../shared/user-agent.ts'
 import { returnValid } from '#types/ui-log/index.js'
 
 const router = Router()
@@ -14,7 +14,7 @@ router.post('', async (req, res, next) => {
   const fullUiLogs = {
     ...uiLog,
     referrer: req.get('referer'),
-    ua: useragent.parse(req.headers['user-agent']).toString(),
+    ua: describeUserAgent(req.headers['user-agent']),
     ip: req?.get('X-Client-IP')
   }
   console.log('ui-log:' + JSON.stringify(fullUiLogs))

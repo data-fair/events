@@ -4,7 +4,6 @@
 import type { DeviceRegistration } from '#types'
 
 import { Router } from 'express'
-import useragent from 'useragent'
 import config from '#config'
 import mongo from '#mongo'
 import Debug from 'debug'
@@ -14,6 +13,7 @@ import { nanoid } from 'nanoid'
 import { session, reqSiteUrl, httpError } from '@data-fair/lib-express/index.js'
 import { getPushState, push, pushToDevice } from './service.ts'
 import { equalDeviceRegistrations } from './operations.ts'
+import { describeUserAgent } from '../shared/user-agent.ts'
 
 const debug = Debug('webpush')
 
@@ -45,11 +45,10 @@ router.put('/registrations', async (req, res) => {
 router.post('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
   const { body } = postRegistrationReq.returnValid(req, { name: 'req' })
-  const agent = useragent.parse(req.headers['user-agent'])
   const date = new Date().toISOString()
   const newRegistration: DeviceRegistration = {
     type: 'webpush',
-    deviceName: agent.toString(),
+    deviceName: describeUserAgent(req.headers['user-agent']),
     ...body,
     date: new Date().toISOString()
   }
