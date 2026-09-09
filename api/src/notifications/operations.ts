@@ -11,6 +11,52 @@ interface PrepareDefaults {
   notificationIcon?: string
 }
 
+const htmlEscapes: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+}
+
+// notification title/body are plain text by contract, they are controlled by the users of the
+// producer services (a dataset title for example) and must never be interpolated as is in html
+const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char => htmlEscapes[char])
+
+// new URL() happily accepts javascript: and data:, only http(s) links belong in a mail
+const parseSafeUrl = (url: string) => {
+  let parsedUrl: URL
+  try {
+    parsedUrl = new URL(url)
+  } catch {
+    return undefined
+  }
+  if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') return undefined
+  return parsedUrl
+}
+
+/**
+ * Build the subject, text and html parts of the mail sent for a notification.
+ * htmlBody is the explicit and deliberate html channel, it is used as is.
+ * invalidUrl signals a url that could not be used, so that the caller can report it.
+ */
+export const buildNotificationMail = (notification: Notification, seeAtLabel: string) => {
+  const content = notification.body || notification.title || ''
+  let text = content
+  let simpleHtml = `<p>${escapeHtml(content)}</p>`
+  const parsedUrl = notification.url ? parseSafeUrl(notification.url) : undefined
+  if (notification.url && parsedUrl) {
+    text += '\n\n' + notification.url
+    simpleHtml += `<p>${seeAtLabel} <a href="${escapeHtml(notification.url)}">${escapeHtml(parsedUrl.host)}</a></p>`
+  }
+  return {
+    subject: notification.title,
+    text,
+    html: notification.htmlBody || simpleHtml,
+    invalidUrl: !!notification.url && !parsedUrl
+  }
+}
+
 export const prepareSubscriptionNotification = (event: FullEvent, subscription: Subscription, defaults: PrepareDefaults, defaultLocale: string, id: string): Notification => {
   const localizedEvent = localizeEvent(event, subscription.locale || defaultLocale, defaultLocale)
   delete localizedEvent.resource
