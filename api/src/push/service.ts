@@ -1,8 +1,6 @@
 import type { DeviceRegistration, Notification } from '#types'
-import type { RegistrationId } from 'node-pushnotifications'
 
 import webpush from 'web-push'
-import PushNotifications from 'node-pushnotifications'
 import dayjs from 'dayjs'
 import Debug from 'debug'
 import config from '#config'
@@ -14,7 +12,7 @@ import { backoffMinutes } from '../shared/operations.ts'
 
 const debug = Debug('webpush')
 
-let pushState: undefined | { vapidKeys: webpush.VapidKeys, pushNotifications: PushNotifications }
+let pushState: undefined | { vapidKeys: webpush.VapidKeys, webPushOptions: webpush.RequestOptions }
 export const init = async () => {
   let vapidKeys = (await mongo.secrets.findOne({ _id: 'vapid-keys' }))?.data as webpush.VapidKeys | undefined
   if (!vapidKeys) {
@@ -25,23 +23,17 @@ export const init = async () => {
     console.log('use existing vapid keys for webpush notifications')
   }
 
-  console.log(`with gcmAPIKey ? ${!!config.gcmAPIKey}, with APN ${!!config.apn.token.key}`)
-  const settings: PushNotifications.Settings = {
-    web: {
-      vapidDetails: {
-        subject: 'mailto:Koumoul <contact@koumoul.com>',
-        publicKey: vapidKeys.publicKey,
-        privateKey: vapidKeys.privateKey
-      },
-      gcmAPIKey: config.gcmAPIKey,
-      TTL: 60 * 60 * 24 * 4 // push service should store the message for 4 days
-    }
+  console.log(`with gcmAPIKey ? ${!!config.gcmAPIKey}`)
+  const webPushOptions: webpush.RequestOptions = {
+    vapidDetails: {
+      subject: 'mailto:Koumoul <contact@koumoul.com>',
+      publicKey: vapidKeys.publicKey,
+      privateKey: vapidKeys.privateKey
+    },
+    gcmAPIKey: config.gcmAPIKey,
+    TTL: 60 * 60 * 24 * 4 // push service should store the message for 4 days
   }
-  if (config.apn.token.key) {
-    settings.apn = config.apn
-  }
-  const pushNotifications = new PushNotifications(settings)
-  pushState = { vapidKeys, pushNotifications }
+  pushState = { vapidKeys, webPushOptions }
 }
 export const getPushState = () => {
   if (!pushState) throw new Error('missing pushService.init call ?')
@@ -49,7 +41,7 @@ export const getPushState = () => {
 }
 
 export const pushToDevice = async (notification: Notification, registration: DeviceRegistration) => {
-  const pushNotifications = getPushState().pushNotifications
+  const { webPushOptions } = getPushState()
   const defaultPushNotif = config.defaultPushNotif[registration.type || 'webpush']
   const pushNotif: any = {
     ...notification,
@@ -57,9 +49,18 @@ export const pushToDevice = async (notification: Notification, registration: Dev
     ...defaultPushNotif
   }
   delete pushNotif.recipient
-  const res = await pushNotifications.send([registration.id as RegistrationId], pushNotif)
-  debug('Send push notif', notification.recipient.id, registration, pushNotif, res[0])
-  return res[0].message.find(m => !!m.error)?.error
+  // errors are returned, not thrown, the caller inspects statusCode to disable or backoff the registration
+  let error: any
+  try {
+    // the schema requires `keys` on the registration id but leaves its properties commented out,
+    // so the generated type does not model it and a direct cast is not enough
+    await webpush.sendNotification(registration.id as unknown as webpush.PushSubscription, JSON.stringify(pushNotif), webPushOptions)
+  } catch (err: any) {
+    error = err
+    error.errorMsg = err.message
+  }
+  debug('Send push notif', notification.recipient.id, registration, pushNotif, error)
+  return error
 }
 
 export const push = async (notification: Notification, forceRegistrationIndex: number = -1) => {
