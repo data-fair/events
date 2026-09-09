@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { prepareSubscriptionNotification } from '../api/src/notifications/operations.ts'
+import { buildNotificationMail, prepareSubscriptionNotification } from '../api/src/notifications/operations.ts'
 
 const makeEvent = (overrides: any = {}) => ({
   _id: 'evt1',
@@ -123,5 +123,56 @@ test.describe('prepareSubscriptionNotification', () => {
     const sub = makeSubscription({ locale: 'en' })
     const notif = prepareSubscriptionNotification(event, sub, {}, 'fr', 'n1')
     expect(notif.title).toBe('Title')
+  })
+})
+
+const makeNotification = (overrides: any = {}) => ({
+  _id: 'notif1',
+  date: '2024-01-01',
+  title: 'Notification Title',
+  topic: { key: 'topic1' },
+  sender: { type: 'organization' as const, id: 'test1' },
+  recipient: { id: 'test-user1', name: 'User 1' },
+  ...overrides
+})
+
+test.describe('buildNotificationMail', () => {
+  test('escapes html in the body while leaving the subject and text part untouched', () => {
+    const title = "Jeu de données de l'utilisateur <img src=x onerror=alert(1)>"
+    const { subject, text, html } = buildNotificationMail(makeNotification({ title }), 'See at')
+    expect(subject).toBe(title)
+    expect(text).toBe(title)
+    expect(html).toBe('<p>Jeu de données de l&#39;utilisateur &lt;img src=x onerror=alert(1)&gt;</p>')
+  })
+
+  test('escapes html in the body when it comes from the body property', () => {
+    const { text, html } = buildNotificationMail(makeNotification({ body: '<b>bold</b> & "quoted"' }), 'See at')
+    expect(text).toBe('<b>bold</b> & "quoted"')
+    expect(html).toBe('<p>&lt;b&gt;bold&lt;/b&gt; &amp; &quot;quoted&quot;</p>')
+  })
+
+  test('escapes the url in the link and its host', () => {
+    const notification = makeNotification({ url: 'https://example.com/a?x=1&y="><script>' })
+    const { text, html } = buildNotificationMail(notification, 'See at')
+    expect(text).toContain('https://example.com/a?x=1&y="><script>')
+    expect(html).toContain('<a href="https://example.com/a?x=1&amp;y=&quot;&gt;&lt;script&gt;">example.com</a>')
+  })
+
+  test('ignores a url with a non http(s) scheme', () => {
+    const { text, html, invalidUrl } = buildNotificationMail(makeNotification({ url: 'javascript:alert(1)' }), 'See at')
+    expect(invalidUrl).toBe(true)
+    expect(text).not.toContain('javascript:')
+    expect(html).not.toContain('javascript:')
+  })
+
+  test('ignores a badly formatted url', () => {
+    const { html, invalidUrl } = buildNotificationMail(makeNotification({ url: 'not an url' }), 'See at')
+    expect(invalidUrl).toBe(true)
+    expect(html).not.toContain('<a ')
+  })
+
+  test('uses htmlBody as is, it is the explicit html channel', () => {
+    const { html } = buildNotificationMail(makeNotification({ htmlBody: '<p><b>rich</b> content</p>' }), 'See at')
+    expect(html).toBe('<p><b>rich</b> content</p>')
   })
 })
