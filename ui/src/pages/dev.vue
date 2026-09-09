@@ -6,19 +6,17 @@
       <personal-menu dark-mode-switch />
     </v-app-bar>
 
-    <p>
-      <ul>
-        <li
-          v-for="(link,i) in links"
-          :key="i"
-        >
-          <a :href="link[0]">{{ link[1] }}</a>
-        </li>
-      </ul>
-    </p>
-    <p>
+    <ul>
+      <li
+        v-for="(link,i) in links"
+        :key="i"
+      >
+        <a :href="link[0]">{{ link[1] }}</a>
+      </li>
+    </ul>
+    <div>
       Session : <pre>{{ session.state }}</pre>
-    </p>
+    </div>
   </div>
 </template>
 
