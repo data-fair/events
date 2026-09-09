@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@data-fair/frame": "^0.17.7",
+    "@data-fair/lib-utils": "^1.14.0",
     "@data-fair/lib-vue": "^1.26.0",
     "@data-fair/lib-vuetify": "^2.0.0",
     "@data-fair/lib-vuetify-events": "*",
@@ -25,7 +26,6 @@
     "ofetch": "^1.5.1",
     "reconnecting-websocket": "^4.4.0",
     "sass-embedded": "^1.97.3",
-    "truncate-middle": "^1.0.6",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-vue-components": "^31.0.0",
     "vite": "^8.0.0",
