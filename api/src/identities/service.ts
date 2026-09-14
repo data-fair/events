@@ -26,7 +26,7 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
     await mongo.notifications.updateMany({ 'recipient.id': id }, { $set: { 'recipient.name': name } })
     await mongo.subscriptions.updateMany({ 'recipient.id': id }, { $set: { 'recipient.name': name } })
   }
-  await mongo.notifications.updateMany({ 'sender.type': type, 'sender.id': id }, { $set: { 'sender.name': name } })
+  // notifications are snapshots taken at delivery, their sender name is not rewritten (no index on sender)
   await mongo.subscriptions.updateMany({ 'sender.type': type, 'sender.id': id }, { $set: { 'sender.name': name } })
   await mongo.pushSubscriptions.updateMany({ 'owner.type': type, 'owner.id': id }, { $set: { 'owner.name': name } })
   await mongo.webhookSubscriptions.updateMany({ 'sender.type': type, 'sender.id': id }, { $set: { 'sender.name': name } })
