@@ -50,8 +50,8 @@ export default createIdentitiesRouter(
   // onDelete
   async (identity) => {
     if (identity.type === 'user') {
-      mongo.notifications.deleteMany({ 'recipient.id': identity.id })
-      mongo.subscriptions.deleteMany({ 'recipient.id': identity.id })
+      await mongo.notifications.deleteMany({ 'recipient.id': identity.id })
+      await mongo.subscriptions.deleteMany({ 'recipient.id': identity.id })
     }
     await mongo.subscriptions.deleteMany({ 'sender.type': identity.type, 'sender.id': identity.id })
     await mongo.pushSubscriptions.deleteMany({ 'owner.type': identity.type, 'owner.id': identity.id })
