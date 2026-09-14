@@ -4,6 +4,7 @@ import { test, expect } from '@playwright/test'
 import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
 const axIdentities = axios({ params: { key: 'SECRET_IDENTITIES' }, baseURL: devBaseURL })
+const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')
 const admin1 = await axiosAuth('test1-admin1')
 
@@ -70,5 +71,34 @@ test.describe('identities webhooks', () => {
     subscriptions = (await admin1.get('/api/subscriptions')).data.results
     expect(subscriptions.find(s => s._id === allRolesSubscription._id)).toBeTruthy()
     expect(subscriptions.find(s => s._id === adminSubscription._id)).toBeFalsy()
+  })
+})
+
+test.describe('identities delete webhook', () => {
+  test.beforeEach(clean)
+
+  test('should delete subscriptions and notifications of a deleted user before responding', async () => {
+    await user1.post('/api/subscriptions', {
+      topic: { key: 'topic1' },
+      sender: { type: 'user', id: 'test-user1', name: 'User1' },
+      visibility: 'public'
+    })
+    await user1.post('/api/subscriptions', {
+      topic: { key: 'topic2' },
+      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' },
+      visibility: 'public'
+    })
+    await axPush.post('/api/notifications', {
+      topic: { key: 'topic1' },
+      title: 'a notification',
+      recipient: { id: 'test-user1' }
+    })
+    expect((await user1.get('/api/subscriptions')).data.results).toHaveLength(2)
+    expect((await user1.get('/api/notifications')).data.count).toBe(1)
+
+    await axIdentities.delete('/api/identities/user/test-user1')
+    // the deletions must be complete when the webhook responds, no polling here
+    expect((await user1.get('/api/subscriptions')).data.results).toHaveLength(0)
+    expect((await user1.get('/api/notifications')).data.count).toBe(0)
   })
 })
