@@ -52,7 +52,10 @@ export class EventsMongo {
         'main-keys': [
           { 'sender.type': 1, 'sender.id': 1, '_search.text': 'text', date: -1 },
           { default_language: config.i18n.defaultLocale }
-        ]
+        ],
+        // identity webhooks rewrite the events triggered by a user or an organization
+        'originator-user': [{ 'originator.user.id': 1 }, { sparse: true }],
+        'originator-organization': [{ 'originator.organization.id': 1 }, { sparse: true }]
       },
       subscriptions: {
         'main-keys': [

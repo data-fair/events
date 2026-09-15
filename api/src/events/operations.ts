@@ -77,13 +77,15 @@ export const buildSearchTexts = (event: SearchableEvent, locales: string[], defa
   const search: SearchableEvent['_search'] = []
   for (const locale of locales) {
     const localizedEvent = localizeEvent(event, locale, defaultLocale)
-    const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body, event.sender?.id, event.sender?.name]
+    // ids only, no name: names change and the search texts of every past event would have to be rebuilt
+    // (the identity webhooks only bulk update the name fields themselves)
+    const searchParts: (string | undefined)[] = [...event.topic.key.split(':'), event.topic.title, localizedEvent.title, localizedEvent.body, event.sender?.id]
     if (event.originator) {
       if (event.originator.organization) {
-        searchParts.push(event.originator.organization.name, event.originator.organization.id)
+        searchParts.push(event.originator.organization.id)
       }
       if (event.originator.user && (!event.originator.organization || (event.sender?.type === 'organization' && event.sender.id === event.originator.organization.id))) {
-        searchParts.push(event.originator.user.name, event.originator.user.id)
+        searchParts.push(event.originator.user.id)
       }
     }
     search.push({ language: locale, text: searchParts.filter(Boolean).join(' ') })
