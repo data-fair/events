@@ -94,6 +94,35 @@ const postEvents = async () => {
 test.describe('identities update webhook on events', () => {
   test.beforeEach(clean)
 
+  test('should rename a department and forget the name of a deleted one', async () => {
+    const subscription = (await admin1.post('/api/subscriptions', {
+      topic: { key: 'topic1' },
+      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1', department: 'dep1', departmentName: 'Department 1' },
+      visibility: 'private'
+    })).data
+    await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'department feed event',
+      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1', department: 'dep1', departmentName: 'Department 1' }
+    }])
+
+    await axIdentities.post('/api/identities/organization/test1', { name: 'Test Organization 1', departments: [{ id: 'dep1', name: 'Renamed Department' }] })
+    let fresh = (await admin1.get('/api/subscriptions')).data.results.find((s: Subscription) => s._id === subscription._id)
+    expect(fresh.sender.departmentName).toBe('Renamed Department')
+    let events = (await admin1.get('/api/events')).data.results
+    expect(events[0].sender.departmentName).toBe('Renamed Department')
+
+    // dep1 is missing from the complete list of departments: it was deleted, only its id remains
+    await axIdentities.post('/api/identities/organization/test1', { name: 'Test Organization 1', departments: [] })
+    fresh = (await admin1.get('/api/subscriptions')).data.results.find((s: Subscription) => s._id === subscription._id)
+    expect(fresh.sender.department).toBe('dep1')
+    expect(fresh.sender.departmentName).toBeUndefined()
+    events = (await admin1.get('/api/events')).data.results
+    expect(events[0].sender.department).toBe('dep1')
+    expect(events[0].sender.departmentName).toBeUndefined()
+  })
+
   test('should rename the sender and originator of events, search texts included', async () => {
     await postEvents()
     await axIdentities.post('/api/identities/user/test-user1', { name: 'Aurélien Lefort' })

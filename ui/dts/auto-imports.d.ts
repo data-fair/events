@@ -104,6 +104,7 @@ declare global {
   const useConceptFilters: typeof import('@data-fair/lib-vue/concept-filters.js').useConceptFilters
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
+  const useDisplayOwner: typeof import('../src/composables/use-display-owner').useDisplayOwner
   const useEditFetch: typeof import('@data-fair/lib-vue/edit-fetch.js').useEditFetch
   const useFetch: typeof import('@data-fair/lib-vue/fetch.js').useFetch
   const useI18n: typeof import('vue-i18n').useI18n
@@ -223,6 +224,7 @@ declare module 'vue' {
     readonly useConceptFilters: UnwrapRef<typeof import('@data-fair/lib-vue/concept-filters.js')['useConceptFilters']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
+    readonly useDisplayOwner: UnwrapRef<typeof import('../src/composables/use-display-owner')['useDisplayOwner']>
     readonly useEditFetch: UnwrapRef<typeof import('@data-fair/lib-vue/edit-fetch.js')['useEditFetch']>
     readonly useFetch: UnwrapRef<typeof import('@data-fair/lib-vue/fetch.js')['useFetch']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>

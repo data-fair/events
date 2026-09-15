@@ -76,7 +76,7 @@
             />
             <owner-avatar
               v-else-if="event.originator?.organization && (event.sender?.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
-              :owner="{type: 'organization', ...event.originator.organization}"
+              :owner="displayOwner({ type: 'organization', ...event.originator.organization })"
             />
             <owner-avatar
               v-else-if="event.originator?.user"
@@ -178,6 +178,7 @@ import OwnerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 type EventsRes = { results: LocalizedEvent[], next?: string }
 
 const { t } = useI18n()
+const { displayOwner } = useDisplayOwner()
 useSessionAuthenticated()
 const { dayjs } = useLocaleDayjs()
 

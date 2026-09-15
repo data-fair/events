@@ -38,6 +38,13 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
       await mongo.webhookSubscriptions.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': department.id }, { $set: { 'sender.name': name, 'sender.departmentName': department.name } })
       await mongo.webhookSubscriptions.updateMany({ 'owner.type': type, 'owner.id': id, 'owner.department': department.id }, { $set: { 'owner.name': name, 'owner.departmentName': department.name } })
     }
+    // the directory sends the complete list of departments: a department missing from it was
+    // deleted, what it owns keeps the id (still reachable by the organization admins) but not the name
+    const deletedDepartment = { $exists: true, $nin: departments.map(d => d.id) }
+    await mongo.subscriptions.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': deletedDepartment }, { $unset: { 'sender.departmentName': 1 } })
+    await mongo.pushSubscriptions.updateMany({ 'owner.type': type, 'owner.id': id, 'owner.department': deletedDepartment }, { $unset: { 'owner.departmentName': 1 } })
+    await mongo.webhookSubscriptions.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': deletedDepartment }, { $unset: { 'sender.departmentName': 1 } })
+    await mongo.webhookSubscriptions.updateMany({ 'owner.type': type, 'owner.id': id, 'owner.department': deletedDepartment }, { $unset: { 'owner.departmentName': 1 } })
   }
 
   // events: as sender, and as the user or organization that triggered them
@@ -47,16 +54,22 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
   await rewriteEvents({ $or: eventsFilter }, (event) => {
     if (event.sender?.type === type && event.sender.id === id) {
       event.sender.name = name
-      const department = event.sender.department && departments?.find(d => d.id === event.sender?.department)
-      if (department) event.sender.departmentName = department.name
+      if (event.sender.department && departments) {
+        const department = departments.find(d => d.id === event.sender?.department)
+        if (department) event.sender.departmentName = department.name
+        else delete event.sender.departmentName
+      }
     }
     if (type === 'user' && event.originator?.user?.id === id) {
       event.originator.user.name = name
     }
     if (type === 'organization' && event.originator?.organization?.id === id) {
       event.originator.organization.name = name
-      const department = event.originator.organization.department && departments?.find(d => d.id === event.originator?.organization?.department)
-      if (department) event.originator.organization.departmentName = department.name
+      if (event.originator.organization.department && departments) {
+        const department = departments.find(d => d.id === event.originator?.organization?.department)
+        if (department) event.originator.organization.departmentName = department.name
+        else delete event.originator.organization.departmentName
+      }
     }
   })
 
