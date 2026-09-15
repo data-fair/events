@@ -123,7 +123,7 @@ test.describe('identities update webhook on events', () => {
     expect(events[0].sender.departmentName).toBeUndefined()
   })
 
-  test('should rename the sender and originator of events, search texts included', async () => {
+  test('should rename the sender and originator of events without touching the search texts', async () => {
     await postEvents()
     await axIdentities.post('/api/identities/user/test-user1', { name: 'Aurélien Lefort' })
 
@@ -131,8 +131,10 @@ test.describe('identities update webhook on events', () => {
     expect(ownEvents).toHaveLength(1)
     expect(ownEvents[0].sender.name).toBe('Aurélien Lefort')
     expect(ownEvents[0].originator.user.name).toBe('Aurélien Lefort')
-    expect((await user1.get('/api/events?q=Lefort')).data.results).toHaveLength(1)
+    // names are never part of the search texts: a rename is a cheap bulk update, not a rewrite of every event
+    expect((await user1.get('/api/events?q=Lefort')).data.results).toHaveLength(0)
     expect((await user1.get('/api/events?q=Dubois')).data.results).toHaveLength(0)
+    expect((await user1.get('/api/events?q=test-user1')).data.results).toHaveLength(1)
 
     let orgEvents = (await admin1.get('/api/events')).data.results
     expect(orgEvents).toHaveLength(1)

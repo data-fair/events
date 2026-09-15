@@ -1,23 +1,10 @@
 // Synchronize the copies of identity data (names on senders, recipients, owners, originators)
 // with the users/organizations directory, and remove them when an identity is deleted.
+// Everything is done with bulk updates: an organization can own tens of thousands of events and
+// simple-directory waits for the response (names are kept out of the search texts for this reason).
 
-import type { Filter } from 'mongodb'
 import type { IdentityUpdate, IdentityDelete } from '@data-fair/lib-express/identities/index.js'
-import type { SearchableEvent } from '#types'
-import config from '#config'
 import mongo from '#mongo'
-import { buildSearchTexts } from '../events/operations.ts'
-
-// events are rewritten one by one: the names are also part of the _search texts
-const rewriteEvents = async (filter: Filter<SearchableEvent>, rewrite: (event: SearchableEvent) => void) => {
-  for await (const event of mongo.events.find(filter)) {
-    rewrite(event)
-    const $set: Partial<SearchableEvent> = { _search: buildSearchTexts(event, config.i18n.locales, config.i18n.defaultLocale) }
-    if (event.sender) $set.sender = event.sender
-    if (event.originator) $set.originator = event.originator
-    await mongo.events.updateOne({ _id: event._id }, { $set })
-  }
-}
 
 export const updateIdentity = async (identity: IdentityUpdate) => {
   const { type, id, name, departments } = identity
@@ -48,30 +35,21 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
   }
 
   // events: as sender, and as the user or organization that triggered them
-  const eventsFilter: Filter<SearchableEvent>[] = [{ 'sender.type': type, 'sender.id': id }]
-  if (type === 'user') eventsFilter.push({ 'originator.user.id': id })
-  else eventsFilter.push({ 'originator.organization.id': id })
-  await rewriteEvents({ $or: eventsFilter }, (event) => {
-    if (event.sender?.type === type && event.sender.id === id) {
-      event.sender.name = name
-      if (event.sender.department && departments) {
-        const department = departments.find(d => d.id === event.sender?.department)
-        if (department) event.sender.departmentName = department.name
-        else delete event.sender.departmentName
-      }
+  await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id }, { $set: { 'sender.name': name } })
+  if (departments) {
+    for (const department of departments.filter(d => !!d.name)) {
+      await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': department.id }, { $set: { 'sender.departmentName': department.name } })
+      await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.department': department.id }, { $set: { 'originator.organization.departmentName': department.name } })
     }
-    if (type === 'user' && event.originator?.user?.id === id) {
-      event.originator.user.name = name
-    }
-    if (type === 'organization' && event.originator?.organization?.id === id) {
-      event.originator.organization.name = name
-      if (event.originator.organization.department && departments) {
-        const department = departments.find(d => d.id === event.originator?.organization?.department)
-        if (department) event.originator.organization.departmentName = department.name
-        else delete event.originator.organization.departmentName
-      }
-    }
-  })
+    const deletedDepartment = { $exists: true, $nin: departments.map(d => d.id) }
+    await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': deletedDepartment }, { $unset: { 'sender.departmentName': 1 } })
+    await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.department': deletedDepartment }, { $unset: { 'originator.organization.departmentName': 1 } })
+  }
+  if (type === 'user') {
+    await mongo.events.updateMany({ 'originator.user.id': id }, { $set: { 'originator.user.name': name } })
+  } else {
+    await mongo.events.updateMany({ 'originator.organization.id': id }, { $set: { 'originator.organization.name': name } })
+  }
 
   if (type === 'user' && identity.organizations) {
     const privateSubscriptionFilter = {
@@ -116,11 +94,6 @@ export const deleteIdentity = async (identity: IdentityDelete) => {
   // the events a user triggered on other feeds keep the trace of the action without the person:
   // only the id remains (pseudonymized), an organization is not personal data and is left as is
   if (type === 'user') {
-    await rewriteEvents({ 'originator.user.id': id }, (event) => {
-      if (event.originator?.user) {
-        delete event.originator.user.name
-        delete event.originator.user.email
-      }
-    })
+    await mongo.events.updateMany({ 'originator.user.id': id }, { $unset: { 'originator.user.name': 1, 'originator.user.email': 1 } })
   }
 }
