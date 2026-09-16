@@ -78,6 +78,8 @@ export class EventsMongo {
       },
       webhooks: {
         'main-keys': { 'owner.type': 1, 'owner.id': 1, 'subscription._id': 1, 'notification.date': 1 },
+        // identity webhooks drop the webhooks of a deleted sender
+        'sender-keys': { 'sender.type': 1, 'sender.id': 1 },
         'loop-keys': { status: 1, nextAttempt: 1 }
       },
       pushSubscriptions: {
