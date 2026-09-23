@@ -2,14 +2,13 @@
 // we simply run it as part of the api server
 
 import config from '#config'
-import dayjs from 'dayjs'
 import Debug from 'debug'
 import type { Webhook } from '#types'
 import mongo from '#mongo'
 import axios from '@data-fair/lib-node/axios.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import locks from '@data-fair/lib-node/locks.js'
-import { backoffMinutes } from '../shared/operations.ts'
+import { nextAttemptDate } from './operations.ts'
 
 const debug = Debug('webhooks-worker')
 
@@ -87,7 +86,7 @@ const loop = async () => {
         debug('webhook failed 10 times, no more attempts')
         patch.$unset = { nextAttempt: '' }
       } else {
-        patch.$set.nextAttempt = dayjs().add(backoffMinutes(webhook.nbAttempts + 1), 'minute').toDate()
+        patch.$set.nextAttempt = nextAttemptDate(webhook.nbAttempts + 1)
         debug('webhook failed, progressively backoff', patch.$set.nextAttempt)
       }
       await mongo.webhooks.updateOne({ _id: webhook._id }, patch)

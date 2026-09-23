@@ -20,29 +20,38 @@ export const postEvents = async (events: Event[]) => {
 
   for (const rawEvent of events) {
     debug('post event', rawEvent)
+    // delivery instructions, not part of the stored event
+    const { channels = ['events', 'notifications', 'webhooks'], coalesce, ...eventFields } = rawEvent
     const event: SearchableEvent = {
       _id: nanoid(),
       visibility: 'private',
-      ...rawEvent,
+      ...eventFields,
       _search: []
     }
-    event._search = buildSearchTexts(event, config.i18n.locales, config.i18n.defaultLocale)
-    eventsBulkOp.insert(event)
+
+    if (channels.includes('events')) {
+      event._search = buildSearchTexts(event, config.i18n.locales, config.i18n.defaultLocale)
+      eventsBulkOp.insert(event)
+    }
 
     const subscriptionsFilter = getSubscriptionsFilter(event)
 
-    debug('find matching subscriptions', subscriptionsFilter)
-    for await (const subscription of mongo.subscriptions.find(subscriptionsFilter)) {
-      const notification = prepareSubscriptionNotification(event, subscription, { notificationIcon: config.theme.notificationIcon }, config.i18n.defaultLocale, nanoid())
-      debug('send notification to', notification.recipient.id)
-      notifsBulkOp.insert(notification)
-      notifications.push(notification)
+    if (channels.includes('notifications')) {
+      debug('find matching subscriptions', subscriptionsFilter)
+      for await (const subscription of mongo.subscriptions.find(subscriptionsFilter)) {
+        const notification = prepareSubscriptionNotification(event, subscription, { notificationIcon: config.theme.notificationIcon }, config.i18n.defaultLocale, nanoid())
+        debug('send notification to', notification.recipient.id)
+        notifsBulkOp.insert(notification)
+        notifications.push(notification)
+      }
     }
 
-    const webhookSubscriptionsFilter = subscriptionsFilter as Filter<WebhookSubscription>
-    for await (const webhookSubscription of mongo.webhookSubscriptions.find(webhookSubscriptionsFilter)) {
-      // TODO: store a locale on webhooks subscription ?
-      await createWebhook(localizeEvent(event, config.i18n.defaultLocale, config.i18n.defaultLocale), webhookSubscription)
+    if (channels.includes('webhooks')) {
+      const webhookSubscriptionsFilter = subscriptionsFilter as Filter<WebhookSubscription>
+      for await (const webhookSubscription of mongo.webhookSubscriptions.find(webhookSubscriptionsFilter)) {
+        // TODO: store a locale on webhooks subscription ?
+        await createWebhook(localizeEvent(event, config.i18n.defaultLocale, config.i18n.defaultLocale), webhookSubscription, { coalesce })
+      }
     }
   }
 
