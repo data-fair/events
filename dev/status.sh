@@ -61,9 +61,11 @@ echo -e "${BOLD}Nginx proxy:${RESET}"
 check_http "nginx" "$NGINX"
 echo ""
 
-# --- Dev processes (probed through nginx) ---
+# --- Dev processes ---
 echo -e "${BOLD}Dev processes:${RESET}"
-check_http "dev-api" "$NGINX/events/api/ping"
+# probed on its own port: /api/ping is mounted before the site middleware that
+# strips the /events prefix, so it is unreachable as /events/api/ping through nginx
+check_http "dev-api" "http://localhost:${DEV_API_PORT}/api/ping"
 check_http "dev-ui" "$NGINX/events"
 echo ""
 
