@@ -19,7 +19,6 @@
     "@data-fair/lib-vuetify-events": "*",
     "@intlify/unplugin-vue-i18n": "^11.0.7",
     "@mdi/js": "^7.4.47",
-    "@types/config": "^3.3.5",
     "@types/debug": "^4.1.12",
     "@vitejs/plugin-vue": "^6.0.5",
     "debug": "^4.4.3",
