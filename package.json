@@ -62,8 +62,5 @@
   "relativeDependencies": {
     "@data-fair/lib-express": "../lib/packages/express",
     "@data-fair/lib-vue": "../lib/packages/vue"
-  },
-  "optionalDependencies": {
-    "sass": "1.98.0"
   }
 }
