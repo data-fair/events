@@ -61,6 +61,7 @@
   },
   "relativeDependencies": {
     "@data-fair/lib-express": "../lib/packages/express",
-    "@data-fair/lib-vue": "../lib/packages/vue"
+    "@data-fair/lib-vue": "../lib/packages/vue",
+    "@data-fair/lib-vuetify": "../lib/packages/vuetify"
   }
 }

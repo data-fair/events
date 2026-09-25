@@ -35,7 +35,7 @@ jobs:
       run: docker compose up -d --wait
 
     - name: Start dev API
-      run: NODE_ENV=development NODE_CONFIG_DIR=api/config node api/index.ts &
+      run: NODE_ENV=development NODE_CONFIG_DIR=./api/config node api/index.ts &
 
     - name: Wait for API to be ready
       run: |
