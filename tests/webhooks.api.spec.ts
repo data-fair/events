@@ -196,4 +196,71 @@ test.describe('webhooks', () => {
     expect(res.data.status).toBe('waiting')
     expect(res.data.nbAttempts).toBe(0)
   })
+
+  const postCoalesced = (title: string, topicKey = 'topic1') => axPush.post('/api/events', [{
+    date: new Date().toISOString(),
+    topic: { key: topicKey },
+    title,
+    sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' },
+    // public like postMatchingEvent: admin1's subscriptions to test1 are forced to public visibility
+    visibility: 'public',
+    channels: ['webhooks'],
+    coalesce: true
+  }])
+
+  const seedWebhook = (sub: any, _id: string, fields: Record<string, any>) => axDev.post('/api/test-env/webhooks', {
+    _id,
+    sender: { type: 'organization', id: 'test1' },
+    owner: sub.owner,
+    subscription: { _id: sub._id, title: sub.title },
+    notification: { title: 'old', topic: { key: 'topic1' }, date: new Date().toISOString() },
+    nbAttempts: 0,
+    ...fields
+  })
+
+  const createSub = async (topicKey = 'topic1') => (await admin1.post('/api/webhook-subscriptions', {
+    title: 'coalesce test', topic: { key: topicKey }, sender: { type: 'organization', id: 'test1' }, url: 'http://localhost:19891/hook'
+  })).data
+
+  test('coalesce resets a delivered webhook instead of queuing another', async () => {
+    const sub = await createSub()
+    await seedWebhook(sub, 'delivered', { status: 'ok', nbAttempts: 1, lastAttempt: { date: new Date().toISOString(), status: 200 } })
+    await postCoalesced('new signal')
+    const res = await admin1.get('/api/webhooks', { params: { subscription: sub._id } })
+    expect(res.data.count).toBe(1)
+    const webhook = (await axDev.get('/api/test-env/webhooks/delivered')).data
+    expect(webhook.notification.title).toBe('new signal')
+    expect(['waiting', 'working', 'ok', 'error']).toContain(webhook.status) // the worker may already have picked it
+    expect(webhook.lastAttempt?.status).not.toBe(200)
+  })
+
+  test('coalesce keeps the backoff of a retrying webhook', async () => {
+    const sub = await createSub()
+    const nextAttempt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    await seedWebhook(sub, 'retrying', { status: 'error', nbAttempts: 3, nextAttempt })
+    await postCoalesced('new signal')
+    const webhook = (await axDev.get('/api/test-env/webhooks/retrying')).data
+    expect(webhook.notification.title).toBe('new signal')
+    expect(webhook.status).toBe('error')
+    expect(webhook.nbAttempts).toBe(3)
+    expect(webhook.nextAttempt).toBe(nextAttempt)
+  })
+
+  test('coalesce leaves an in-flight webhook alone', async () => {
+    const sub = await createSub()
+    await seedWebhook(sub, 'in-flight', { status: 'working' })
+    await postCoalesced('new signal')
+    expect((await axDev.get('/api/test-env/webhooks/in-flight')).data.notification.title).toBe('old')
+    expect((await admin1.get('/api/webhooks', { params: { subscription: sub._id } })).data.count).toBe(2)
+  })
+
+  test('coalesces per event topic key', async () => {
+    const sub = await createSub('topic1') // matches topic1:a and topic1:b through prefix matching
+    await postCoalesced('a1', 'topic1:a')
+    await postCoalesced('b1', 'topic1:b')
+    await postCoalesced('a2', 'topic1:a')
+    const res = await admin1.get('/api/webhooks', { params: { subscription: sub._id } })
+    expect(res.data.count).toBe(2)
+    expect(res.data.results.map((w: any) => w.notification.title).sort()).toEqual(['a2', 'b1'])
+  })
 })

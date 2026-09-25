@@ -3,6 +3,7 @@ import { axios, axiosAuth, clean, baseURL, devBaseURL } from './support/axios.ts
 
 const axAno = axios()
 const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axDev = axios({ baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')
 const admin1 = await axiosAuth('test1-admin1')
 
@@ -94,5 +95,40 @@ test.describe('events', () => {
     res = await user1.get('/api/events')
     expect(res.data.results.length).toBe(1)
     expect(res.data.results[0].title).toBe('notif 1')
+  })
+
+  test('does not store nor notify an event restricted to webhooks', async () => {
+    // user1 is admin of its own account: its subscriptions stay private and it reads its own events
+    const sender = { type: 'user', id: 'test-user1', name: 'User 1' }
+    await user1.post('/api/subscriptions', { topic: { key: 'topic1' }, sender })
+    await user1.post('/api/webhook-subscriptions', {
+      title: 'channels test', topic: { key: 'topic1' }, sender, url: 'http://localhost:19890/hook'
+    })
+    await axPush.post('/api/events', [{ date: new Date().toISOString(), topic: { key: 'topic1' }, title: 'webhooks only', sender, channels: ['webhooks'] }])
+    expect((await user1.get('/api/events')).data.results.length).toBe(0)
+    expect((await user1.get('/api/notifications')).data.count).toBe(0)
+    expect((await user1.get('/api/webhooks')).data.count).toBe(1)
+
+    // same event on every channel: proves the three assertions above can see what they check
+    await axPush.post('/api/events', [{ date: new Date().toISOString(), topic: { key: 'topic1' }, title: 'all channels', sender }])
+    expect((await user1.get('/api/events')).data.results.length).toBe(1)
+    expect((await user1.get('/api/notifications')).data.count).toBe(1)
+    expect((await user1.get('/api/webhooks')).data.count).toBe(2)
+  })
+
+  test('does not persist delivery instructions', async () => {
+    await axPush.post('/api/events', [{
+      _id: 'channels-stored',
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'stored',
+      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' },
+      channels: ['events', 'webhooks'],
+      coalesce: true
+    }])
+    const stored = (await axDev.get('/api/test-env/events/channels-stored')).data
+    expect(stored.title).toBe('stored')
+    expect(stored.channels).toBeUndefined()
+    expect(stored.coalesce).toBeUndefined()
   })
 })

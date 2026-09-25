@@ -44,7 +44,6 @@
     "@commitlint/config-conventional": "^19.8.1",
     "@data-fair/lib-node": "^2.12.1",
     "@playwright/test": "^1.58.2",
-    "@types/config": "^3.3.5",
     "@types/debug": "^4.1.13",
     "commitlint": "^19.8.1",
     "dotenv": "^17.3.1",
@@ -64,8 +63,5 @@
     "@data-fair/lib-express": "../lib/packages/express",
     "@data-fair/lib-vue": "../lib/packages/vue",
     "@data-fair/lib-vuetify": "../lib/packages/vuetify"
-  },
-  "optionalDependencies": {
-    "sass": "1.98.0"
   }
 }
