@@ -123,7 +123,7 @@ test.describe('identities update webhook on events', () => {
     expect(events[0].sender.departmentName).toBeUndefined()
   })
 
-  test('should rename the sender and originator of events without touching the search texts', async () => {
+  test('should rename the sender and originator of events and let the search worker rebuild the search texts', async () => {
     await postEvents()
     await axIdentities.post('/api/identities/user/test-user1', { name: 'Aurélien Lefort' })
 
@@ -131,10 +131,9 @@ test.describe('identities update webhook on events', () => {
     expect(ownEvents).toHaveLength(1)
     expect(ownEvents[0].sender.name).toBe('Aurélien Lefort')
     expect(ownEvents[0].originator.user.name).toBe('Aurélien Lefort')
-    // names are never part of the search texts: a rename is a cheap bulk update, not a rewrite of every event
-    expect((await user1.get('/api/events?q=Lefort')).data.results).toHaveLength(0)
+    // the search texts are rebuilt by the search worker, after the webhook responded
+    await expect.poll(async () => (await user1.get('/api/events?q=Lefort')).data.results.length, { timeout: 10000 }).toBe(1)
     expect((await user1.get('/api/events?q=Dubois')).data.results).toHaveLength(0)
-    expect((await user1.get('/api/events?q=test-user1')).data.results).toHaveLength(1)
 
     let orgEvents = (await admin1.get('/api/events')).data.results
     expect(orgEvents).toHaveLength(1)
@@ -144,6 +143,7 @@ test.describe('identities update webhook on events', () => {
     orgEvents = (await admin1.get('/api/events')).data.results
     expect(orgEvents[0].sender.name).toBe('Renamed Organization 1')
     expect(orgEvents[0].originator.organization.name).toBe('Renamed Organization 1')
+    await expect.poll(async () => (await admin1.get('/api/events?q=Renamed')).data.results.length, { timeout: 10000 }).toBe(1)
   })
 })
 
@@ -152,6 +152,7 @@ test.describe('identities delete webhook', () => {
 
   test('should delete the events of a deleted user and pseudonymize the ones it triggered elsewhere', async () => {
     await postEvents()
+    expect((await admin1.get('/api/events?q=Dubois')).data.results).toHaveLength(1)
     await axIdentities.delete('/api/identities/user/test-user1')
 
     expect((await user1.get('/api/events')).data.results).toHaveLength(0)
@@ -159,7 +160,9 @@ test.describe('identities delete webhook', () => {
     expect(orgEvents).toHaveLength(1)
     expect(orgEvents[0].originator.user).toEqual({ id: 'test-user1' })
     expect(orgEvents[0].originator.organization.name).toBe('Test Organization 1')
-    expect((await admin1.get('/api/events?q=Dubois')).data.results).toHaveLength(0)
+    // the name also leaves the search texts, once the search worker went through
+    await expect.poll(async () => (await admin1.get('/api/events?q=Dubois')).data.results.length, { timeout: 10000 }).toBe(0)
+    expect((await admin1.get('/api/events?q=test-user1')).data.results).toHaveLength(1)
   })
 
   test('should delete the events of a deleted organization', async () => {

@@ -12,6 +12,7 @@ import { createHttpTerminator } from 'http-terminator'
 import app from './app.ts'
 import config from '#config'
 import * as webhooksWorker from './webhooks/worker.ts'
+import * as searchWorker from './events/search-worker.ts'
 import * as pushService from './push/service.ts'
 
 const server = createServer(app)
@@ -41,6 +42,7 @@ export const start = async () => {
   await wsEmitter.init(mongo.db)
   await pushService.init()
   await webhooksWorker.start()
+  searchWorker.start()
 
   server.listen(config.port)
   await new Promise(resolve => server.once('listening', resolve))
@@ -51,6 +53,7 @@ export const start = async () => {
 export const stop = async () => {
   await httpTerminator.terminate()
   await webhooksWorker.stop()
+  await searchWorker.stop()
   await wsServer.stop()
   if (config.observer.active) await stopObserver()
   await locks.stop()

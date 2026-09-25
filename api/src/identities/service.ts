@@ -1,8 +1,10 @@
 // Synchronize the copies of identity data (names on senders, recipients, owners, originators)
 // with the users/organizations directory, and remove them when an identity is deleted.
 // Everything is done with bulk updates: an organization can own tens of thousands of events and
-// simple-directory waits for the response (names are kept out of the search texts for this reason).
+// simple-directory waits for the response. Names are also part of the events search texts: the
+// events are only flagged here (_needsSearch) and the search worker rebuilds the texts.
 
+import { randomUUID } from 'node:crypto'
 import type { IdentityUpdate, IdentityDelete } from '@data-fair/lib-express/identities/index.js'
 import mongo from '#mongo'
 
@@ -35,20 +37,22 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
   }
 
   // events: as sender, and as the user or organization that triggered them
-  await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id }, { $set: { 'sender.name': name } })
+  // only the events whose name actually changes: simple-directory also posts on every membership change
+  const _needsSearch = randomUUID()
+  await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.name': { $ne: name } }, { $set: { 'sender.name': name, _needsSearch } })
   if (departments) {
     for (const department of departments.filter(d => !!d.name)) {
-      await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': department.id }, { $set: { 'sender.departmentName': department.name } })
-      await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.department': department.id }, { $set: { 'originator.organization.departmentName': department.name } })
+      await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': department.id, 'sender.departmentName': { $ne: department.name } }, { $set: { 'sender.departmentName': department.name } })
+      await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.department': department.id, 'originator.organization.departmentName': { $ne: department.name } }, { $set: { 'originator.organization.departmentName': department.name } })
     }
     const deletedDepartment = { $exists: true, $nin: departments.map(d => d.id) }
     await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': deletedDepartment }, { $unset: { 'sender.departmentName': 1 } })
     await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.department': deletedDepartment }, { $unset: { 'originator.organization.departmentName': 1 } })
   }
   if (type === 'user') {
-    await mongo.events.updateMany({ 'originator.user.id': id }, { $set: { 'originator.user.name': name } })
+    await mongo.events.updateMany({ 'originator.user.id': id, 'originator.user.name': { $ne: name } }, { $set: { 'originator.user.name': name, _needsSearch } })
   } else {
-    await mongo.events.updateMany({ 'originator.organization.id': id }, { $set: { 'originator.organization.name': name } })
+    await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.name': { $ne: name } }, { $set: { 'originator.organization.name': name, _needsSearch } })
   }
 
   if (type === 'user' && identity.organizations) {
@@ -94,6 +98,6 @@ export const deleteIdentity = async (identity: IdentityDelete) => {
   // the events a user triggered on other feeds keep the trace of the action without the person:
   // only the id remains (pseudonymized), an organization is not personal data and is left as is
   if (type === 'user') {
-    await mongo.events.updateMany({ 'originator.user.id': id }, { $unset: { 'originator.user.name': 1, 'originator.user.email': 1 } })
+    await mongo.events.updateMany({ 'originator.user.id': id }, { $set: { _needsSearch: randomUUID() }, $unset: { 'originator.user.name': 1, 'originator.user.email': 1 } })
   }
 }

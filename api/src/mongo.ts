@@ -55,7 +55,9 @@ export class EventsMongo {
         ],
         // identity webhooks rewrite the events triggered by a user or an organization
         'originator-user': [{ 'originator.user.id': 1 }, { sparse: true }],
-        'originator-organization': [{ 'originator.organization.id': 1 }, { sparse: true }]
+        'originator-organization': [{ 'originator.organization.id': 1 }, { sparse: true }],
+        // the events waiting for the search worker, empty most of the time
+        'needs-search': [{ _needsSearch: 1 }, { partialFilterExpression: { _needsSearch: { $exists: true } } }]
       },
       subscriptions: {
         'main-keys': [

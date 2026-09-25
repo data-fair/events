@@ -10,4 +10,5 @@ export type { DeviceRegistration } from './device-registration/index.js'
 
 export type FullEvent = Event & Required<Pick<Event, 'visibility'>>
 export type LocalizedEvent = Omit<FullEvent, 'title' | 'body' | 'htmlBody'> & { title: string, body?: string, htmlBody?: string }
-export type SearchableEvent = FullEvent & { _search: { language: string, text: string }[] }
+// _needsSearch: set by the identity webhooks when a name changed, cleared by the search worker
+export type SearchableEvent = FullEvent & { _search: { language: string, text: string }[], _needsSearch?: string }
