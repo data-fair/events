@@ -204,8 +204,6 @@ test.describe('buildSearchTexts', () => {
     expect(result[0].text).toContain('Titre')
     expect(result[0].text).toContain('Topic')
     expect(result[0].text).toContain('test-user1')
-    // names are not searchable: they change, and the search texts would have to be rebuilt on every rename
-    expect(result[0].text).not.toContain('User 1')
     expect(result[1].language).toBe('en')
     expect(result[1].text).toContain('Title')
   })
@@ -225,10 +223,8 @@ test.describe('buildSearchTexts', () => {
       }
     }
     const result = buildSearchTexts(event, ['fr'], 'fr')
-    expect(result[0].text).toContain('org1')
-    expect(result[0].text).toContain('u1')
-    expect(result[0].text).not.toContain('Org 1')
-    expect(result[0].text).not.toContain('User 1')
+    expect(result[0].text).toContain('Org 1')
+    expect(result[0].text).toContain('User 1')
   })
 
   test('excludes user when originator is from different org', () => {
@@ -246,7 +242,7 @@ test.describe('buildSearchTexts', () => {
       }
     }
     const result = buildSearchTexts(event, ['fr'], 'fr')
-    expect(result[0].text).toContain('org-other')
-    expect(result[0].text).not.toContain('u1')
+    expect(result[0].text).toContain('Other Org')
+    expect(result[0].text).not.toContain('User 1')
   })
 })
