@@ -37,9 +37,9 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
   }
 
   // events: as sender, and as the user or organization that triggered them
-  // only the events whose name actually changes: simple-directory also posts on every membership change
-  const _needsSearch = randomUUID()
-  await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.name': { $ne: name } }, { $set: { 'sender.name': name, _needsSearch } })
+  // only the events whose name actually changes: simple-directory also posts on every membership change.
+  // A fresh _needsSearch per update: the search worker only clears the value it read.
+  await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.name': { $ne: name } }, { $set: { 'sender.name': name, _needsSearch: randomUUID() } })
   if (departments) {
     for (const department of departments.filter(d => !!d.name)) {
       await mongo.events.updateMany({ 'sender.type': type, 'sender.id': id, 'sender.department': department.id, 'sender.departmentName': { $ne: department.name } }, { $set: { 'sender.departmentName': department.name } })
@@ -50,9 +50,9 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
     await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.department': deletedDepartment }, { $unset: { 'originator.organization.departmentName': 1 } })
   }
   if (type === 'user') {
-    await mongo.events.updateMany({ 'originator.user.id': id, 'originator.user.name': { $ne: name } }, { $set: { 'originator.user.name': name, _needsSearch } })
+    await mongo.events.updateMany({ 'originator.user.id': id, 'originator.user.name': { $ne: name } }, { $set: { 'originator.user.name': name, _needsSearch: randomUUID() } })
   } else {
-    await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.name': { $ne: name } }, { $set: { 'originator.organization.name': name, _needsSearch } })
+    await mongo.events.updateMany({ 'originator.organization.id': id, 'originator.organization.name': { $ne: name } }, { $set: { 'originator.organization.name': name, _needsSearch: randomUUID() } })
   }
 
   if (type === 'user' && identity.organizations) {
