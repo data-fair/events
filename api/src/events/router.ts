@@ -24,7 +24,7 @@ router.get('', async (req, res, next) => {
     query['resource.id'] = id
   }
 
-  const project = mongoProjection(req.query.select, ['_search', 'htmlBody'])
+  const project = mongoProjection(req.query.select, ['_search', '_needsSearch', 'htmlBody'])
 
   // implement a special pagination based on the fact that we always sort by date
   const sort: Sort = { date: -1, _id: -1 }

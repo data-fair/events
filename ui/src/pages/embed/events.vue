@@ -76,7 +76,7 @@
             />
             <owner-avatar
               v-else-if="event.originator?.organization && (event.sender?.type !== 'organization' || event.originator.organization.id !== event.sender.id)"
-              :owner="{type: 'organization', ...event.originator.organization}"
+              :owner="{ type: 'organization', ...event.originator.organization }"
             />
             <owner-avatar
               v-else-if="event.originator?.user"
