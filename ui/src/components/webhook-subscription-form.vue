@@ -56,8 +56,7 @@
         />
       </v-col>
     </v-row>
-    <v-row class="mx-0 mb-0">
-      <v-spacer />
+    <div class="d-flex justify-end ga-2 mt-4">
       <confirm-menu
         v-if="modelValue._id"
         @confirm="remove.execute()"
@@ -66,13 +65,12 @@
         color="primary"
         variant="flat"
         :loading="save.loading.value"
-        class="ml-2"
         :disabled="JSON.stringify(subscription) === previousState || save.loading.value"
         @click="save.execute()"
       >
         Enregistrer
       </v-btn>
-    </v-row>
+    </div>
   </v-form>
 </template>
 

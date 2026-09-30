@@ -51,7 +51,11 @@
 fr:
   logged: Vous devez être connecté pour pouvoir configurer des Webhooks.
   admin: Vous devez être administrateur pour pouvoir configurer des Webhooks.
-  webhooks: "Configurer des Webhooks pour l'évènement {title}"
+  webhooks: "Webhooks pour l'évènement « {title} »"
+en:
+  logged: You must be logged in to configure webhooks.
+  admin: You must be an administrator to configure webhooks.
+  webhooks: "Webhooks for the event “{title}”"
 </i18n>
 
 <script lang="ts" setup>
