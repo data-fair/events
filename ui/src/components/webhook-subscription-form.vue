@@ -83,7 +83,7 @@
         color="primary"
         variant="flat"
         :loading="save.loading.value"
-        :disabled="JSON.stringify(subscription) === previousState || save.loading.value"
+        :disabled="!changed || save.loading.value"
         @click="save.execute()"
       >
         Enregistrer
@@ -96,27 +96,27 @@
 import type { VForm } from 'vuetify/components'
 import type { WebhookSubscription } from '#api/types'
 
-// const { modelValue } = defineProps<{ modelValue?: WebhookSubscription }>()
 const modelValue = defineModel<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'sender'>>>({ required: true })
 const { topics } = defineProps<{ topics: { key: string, title: string }[] }>()
 const emit = defineEmits<{ saved: [], deleted: [] }>()
 
 const form = ref<VForm | null>(null)
 
-const subscription = reactive<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'header'>>>({
-  title: '',
-  url: '',
-  header: {
-    key: '',
-    value: ''
-  }
+// only the properties accepted by the POST route, the listed subscriptions also carry
+// created, updated, owner and visibility that the API refuses or sets itself
+const editable = (s: typeof modelValue.value) => ({
+  _id: s._id,
+  topic: s.topic,
+  sender: s.sender,
+  title: s.title ?? '',
+  url: s.url ?? '',
+  header: { key: s.header?.key ?? '', value: s.header?.value ?? '' }
 })
 
-watch(modelValue, () => {
-  if (modelValue.value) Object.assign(subscription, modelValue.value)
-}, { immediate: true })
+const subscription = reactive(editable(modelValue.value))
+watch(modelValue, () => { Object.assign(subscription, editable(modelValue.value)) })
 
-const previousState = ref(JSON.stringify(subscription))
+const changed = computed(() => JSON.stringify(subscription) !== JSON.stringify(editable(modelValue.value)))
 
 const topicKey = computed({
   get: () => subscription.topic?.key,
@@ -127,7 +127,6 @@ const save = useAsyncAction(async () => {
   const valid = (await form.value?.validate())?.valid
   if (!valid) return
   await $fetch<WebhookSubscription>('webhook-subscriptions', { method: 'POST', body: subscription })
-  previousState.value = JSON.stringify(subscription)
   emit('saved')
 })
 

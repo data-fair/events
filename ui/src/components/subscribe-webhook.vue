@@ -41,7 +41,7 @@
         <v-expansion-panel-title>{{ t('new') }}</v-expansion-panel-title>
         <v-expansion-panel-text>
           <webhook-subscription-form
-            :model-value="{ topic: topics.length === 1 ? topics[0] : undefined, sender: sender ?? session.state.account }"
+            :model-value="newSubscription"
             :topics="topics"
             @saved="fetchSubscriptions.refresh()"
           />
@@ -75,6 +75,12 @@ const { t } = useI18n()
 const session = useSessionAuthenticated()
 
 const currentPanel = ref<number | null>(null)
+
+// a stable object: an inline literal would be recreated on every render and reset the form
+const newSubscription = computed(() => ({
+  topic: topics.length === 1 ? topics[0] : undefined,
+  sender: sender ?? session.state.account
+}))
 
 const subscriptionsParams = computed(() => ({
   recipient: session.state.user.id,
