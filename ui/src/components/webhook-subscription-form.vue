@@ -4,6 +4,24 @@
     @submit="save.execute()"
   >
     <v-row>
+      <v-col
+        v-if="topics.length > 1"
+        cols="12"
+      >
+        <v-select
+          v-model="topicKey"
+          :items="topics"
+          item-title="title"
+          item-value="key"
+          label="Évènement"
+          variant="outlined"
+          density="compact"
+          hide-details="auto"
+          :rules="[
+            (v: string) => !!v || 'Ce paramètre est requis'
+          ]"
+        />
+      </v-col>
       <v-col cols="12">
         <v-text-field
           v-model="subscription.title"
@@ -56,8 +74,7 @@
         />
       </v-col>
     </v-row>
-    <v-row class="mx-0 mb-0">
-      <v-spacer />
+    <div class="d-flex justify-end ga-2 mt-4">
       <confirm-menu
         v-if="modelValue._id"
         @confirm="remove.execute()"
@@ -66,13 +83,12 @@
         color="primary"
         variant="flat"
         :loading="save.loading.value"
-        class="ml-2"
-        :disabled="JSON.stringify(subscription) === previousState || save.loading.value"
+        :disabled="!changed || save.loading.value"
         @click="save.execute()"
       >
         Enregistrer
       </v-btn>
-    </v-row>
+    </div>
   </v-form>
 </template>
 
@@ -80,32 +96,37 @@
 import type { VForm } from 'vuetify/components'
 import type { WebhookSubscription } from '#api/types'
 
-// const { modelValue } = defineProps<{ modelValue?: WebhookSubscription }>()
-const modelValue = defineModel<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'topic' | 'sender'>>>({ required: true })
+const modelValue = defineModel<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'sender'>>>({ required: true })
+const { topics } = defineProps<{ topics: { key: string, title: string }[] }>()
 const emit = defineEmits<{ saved: [], deleted: [] }>()
 
 const form = ref<VForm | null>(null)
 
-const subscription = reactive<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'header'>>>({
-  title: '',
-  url: '',
-  header: {
-    key: '',
-    value: ''
-  }
+// only the properties accepted by the POST route, the listed subscriptions also carry
+// created, updated, owner and visibility that the API refuses or sets itself
+const editable = (s: typeof modelValue.value) => ({
+  _id: s._id,
+  topic: s.topic,
+  sender: s.sender,
+  title: s.title ?? '',
+  url: s.url ?? '',
+  header: { key: s.header?.key ?? '', value: s.header?.value ?? '' }
 })
 
-watch(modelValue, () => {
-  if (modelValue.value) Object.assign(subscription, modelValue.value)
-}, { immediate: true })
+const subscription = reactive(editable(modelValue.value))
+watch(modelValue, () => { Object.assign(subscription, editable(modelValue.value)) })
 
-const previousState = ref(JSON.stringify(subscription))
+const changed = computed(() => JSON.stringify(subscription) !== JSON.stringify(editable(modelValue.value)))
+
+const topicKey = computed({
+  get: () => subscription.topic?.key,
+  set: (key) => { subscription.topic = topics.find(topic => topic.key === key) }
+})
 
 const save = useAsyncAction(async () => {
   const valid = (await form.value?.validate())?.valid
   if (!valid) return
   await $fetch<WebhookSubscription>('webhook-subscriptions', { method: 'POST', body: subscription })
-  previousState.value = JSON.stringify(subscription)
   emit('saved')
 })
 

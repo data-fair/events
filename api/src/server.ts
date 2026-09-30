@@ -34,9 +34,13 @@ export const start = async () => {
   // await upgradeScripts(mongo.db, resolve(import.meta.dirname, '../..'))
 
   await wsServer.start(server, mongo.db, async (channel, sessionState) => {
-    const [ownerType, ownerId] = channel.split(':')
+    const [ownerType, ownerId, resource] = channel.split(':')
     if (!sessionState.user) return false
     if (sessionState.user.adminMode) return true
+    // same rule as the webhooks routes: an admin of the active account that owns the subscription
+    if (resource?.startsWith('webhook-subscriptions/')) {
+      return sessionState.account?.type === ownerType && sessionState.account.id === ownerId && sessionState.accountRole === 'admin'
+    }
     return ownerType === 'user' && ownerId === sessionState.user.id
   })
   await wsEmitter.init(mongo.db)

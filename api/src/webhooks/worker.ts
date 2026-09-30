@@ -9,6 +9,7 @@ import axios from '@data-fair/lib-node/axios.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import locks from '@data-fair/lib-node/locks.js'
 import { nextAttemptDate } from './operations.ts'
+import { emitWebhook } from './service.ts'
 
 const debug = Debug('webhooks-worker')
 
@@ -39,18 +40,19 @@ const loop = async () => {
       continue
     }
     debug('work on webhook', webhook)
+    await emitWebhook(webhook)
     const date = new Date().toISOString()
     const subscription = await mongo.webhookSubscriptions
       .findOne({ _id: webhook.subscription._id, 'owner.type': webhook.owner.type, 'owner.id': webhook.owner.id })
     if (!subscription) {
       debug('missing subscription for webhook, store as error')
-      await mongo.webhooks.updateOne({ _id: webhook._id }, {
+      await emitWebhook(await mongo.webhooks.findOneAndUpdate({ _id: webhook._id }, {
         $set: {
           status: 'error',
           lastAttempt: { date, error: 'missing subscription' }
         },
         $unset: { nextAttempt: '' }
-      })
+      }, { returnDocument: 'after' }))
       continue
     }
     debug('found matching subscription', subscription)
@@ -62,14 +64,14 @@ const loop = async () => {
       debug('send webhook', subscription.url, webhook.notification)
       const res = await axios.post(subscription.url, webhook.notification, { headers, timeout: 2000 })
       debug('webhook success')
-      await mongo.webhooks.updateOne({ _id: webhook._id }, {
+      await emitWebhook(await mongo.webhooks.findOneAndUpdate({ _id: webhook._id }, {
         $set: {
           status: 'ok',
           lastAttempt: { date, status: res.status }
         },
         $unset: { nextAttempt: '' },
         $inc: { nbAttempts: 1 }
-      })
+      }, { returnDocument: 'after' }))
     } catch (err: any) {
       debug('webhook failed', err)
       const attempt: Webhook['lastAttempt'] = { date }
@@ -89,7 +91,7 @@ const loop = async () => {
         patch.$set.nextAttempt = nextAttemptDate(webhook.nbAttempts + 1)
         debug('webhook failed, progressively backoff', patch.$set.nextAttempt)
       }
-      await mongo.webhooks.updateOne({ _id: webhook._id }, patch)
+      await emitWebhook(await mongo.webhooks.findOneAndUpdate({ _id: webhook._id }, patch, { returnDocument: 'after' }))
     }
   }
   await locks.release('webhooks-loop')

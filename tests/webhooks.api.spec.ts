@@ -1,10 +1,29 @@
 import { test, expect } from '@playwright/test'
 import { createServer } from 'node:http'
+import WebSocket from 'ws'
 import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
 const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })
 const admin1 = await axiosAuth('test1-admin1')
+const user1 = await axiosAuth('test-user1')
+
+// open a WS as this user and subscribe to a channel, resolves with the subscription outcome
+const wsSubscribe = async (ax: typeof admin1, channel: string) => {
+  const cookies = ax.cookieJar.getCookiesSync(`http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}`)
+  const ws = new WebSocket(`ws://localhost:${process.env.DEV_API_PORT}`, { headers: { Cookie: cookies.map(String).join('; ') } })
+  const messages: any[] = []
+  const outcome = await new Promise<string>((resolve, reject) => {
+    ws.on('message', (raw: Buffer) => {
+      const msg = JSON.parse(raw.toString())
+      if (msg.type === 'subscribe-confirm' || msg.type === 'error') resolve(msg.type)
+      if (msg.type === 'message') messages.push(msg.data)
+    })
+    ws.on('open', () => ws.send(JSON.stringify({ type: 'subscribe', channel })))
+    ws.on('error', reject)
+  })
+  return { ws, messages, outcome }
+}
 
 // helper to post event matching a webhook subscription owned by test1-admin1/test1
 const postMatchingEvent = (title: string) => axPush.post('/api/events', [{
@@ -153,6 +172,54 @@ test.describe('webhooks', () => {
       expect(webhook?.nbAttempts).toBe(10)
       // no more retries scheduled
       expect(webhook?.nextAttempt).toBeFalsy()
+    } finally {
+      hookServer.close()
+    }
+  })
+
+  test('should list webhook subscriptions of several topics', async () => {
+    for (const key of ['topic1', 'topic2', 'topic3']) {
+      await admin1.post('/api/webhook-subscriptions', {
+        title: 'Sub ' + key,
+        topic: { key },
+        sender: { type: 'organization', id: 'test1' },
+        url: 'http://localhost:19881/hook'
+      })
+    }
+    const one = await admin1.get('/api/webhook-subscriptions', { params: { topic: 'topic1' } })
+    expect(one.data.results.map((s: any) => s.topic.key)).toEqual(['topic1'])
+    const two = await admin1.get('/api/webhook-subscriptions', { params: { topic: 'topic1,topic3', sort: 'title:1' } })
+    expect(two.data.results.map((s: any) => s.topic.key)).toEqual(['topic1', 'topic3'])
+  })
+
+  test('should stream the delivery progress of a webhook subscription over WS', async () => {
+    const hookServer = createServer((req, res) => { req.resume(); req.on('end', () => { res.writeHead(200); res.end() }) })
+    await new Promise<void>(resolve => hookServer.listen(19882, resolve))
+    try {
+      const sub = (await admin1.post('/api/webhook-subscriptions', {
+        title: 'WS progress',
+        topic: { key: 'topic1' },
+        sender: { type: 'organization', id: 'test1' },
+        url: 'http://localhost:19882/hook'
+      })).data
+      const channel = `${sub.owner.type}:${sub.owner.id}:webhook-subscriptions/${sub._id}/webhooks`
+
+      // only an admin of the owning account can listen
+      const other = await wsSubscribe(user1, channel)
+      other.ws.close()
+      expect(other.outcome).toBe('error')
+
+      const { ws, messages, outcome } = await wsSubscribe(admin1, channel)
+      try {
+        expect(outcome).toBe('subscribe-confirm')
+        await postMatchingEvent('ws progress')
+        // the worker polls every 4s
+        await expect.poll(() => messages.map(m => m.status), { timeout: 12000 }).toEqual(['waiting', 'working', 'ok'])
+        expect(new Set(messages.map(m => m._id)).size).toBe(1)
+        expect(messages[2].notification.title).toBe('ws progress')
+      } finally {
+        ws.close()
+      }
     } finally {
       hookServer.close()
     }

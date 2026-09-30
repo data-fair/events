@@ -28,8 +28,9 @@ router.get('', async (req, res, next) => {
     query['sender.type'] = req.query.sender.split(':')[0]
     query['sender.id'] = req.query.sender.split(':')[1]
   }
-  if (req.query.topic) {
-    query['topic.key'] = req.query.topic
+  // a comma-separated list of topic keys, as the subscribe-webhooks embed page receives them
+  if (req.query.topic && typeof req.query.topic === 'string') {
+    query['topic.key'] = { $in: req.query.topic.split(',') }
   }
 
   const [results, count] = await Promise.all([

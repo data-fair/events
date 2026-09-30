@@ -18,32 +18,12 @@
     >
       {{ t('admin') }}
     </v-alert>
-    <template v-else>
-      <template
-        v-for="topic in topics"
-        :key="topic.key"
-      >
-        <v-row>
-          <v-col>
-            <div
-              class="text-subtitle2"
-              style="height: auto;"
-            >
-              {{ t('webhooks', topic) }}
-            </div>
-          </v-col>
-        </v-row>
-        <v-row
-          class="ma-0"
-        >
-          <subscribe-webhook
-            :topic="topic"
-            :no-sender="!!$route.query.noSender"
-            :sender="sender"
-          />
-        </v-row>
-      </template>
-    </template>
+    <subscribe-webhook
+      v-else
+      :topics="topics"
+      :no-sender="!!$route.query.noSender"
+      :sender="sender"
+    />
   </v-container>
 </template>
 
@@ -51,7 +31,9 @@
 fr:
   logged: Vous devez être connecté pour pouvoir configurer des Webhooks.
   admin: Vous devez être administrateur pour pouvoir configurer des Webhooks.
-  webhooks: "Configurer des Webhooks pour l'évènement {title}"
+en:
+  logged: You must be logged in to configure webhooks.
+  admin: You must be an administrator to configure webhooks.
 </i18n>
 
 <script lang="ts" setup>
