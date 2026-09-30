@@ -5,12 +5,12 @@
   >
     <v-row>
       <v-col
-        v-if="topicItems.length > 1"
+        v-if="topics.length > 1"
         cols="12"
       >
         <v-select
           v-model="topicKey"
-          :items="topicItems"
+          :items="topics"
           item-title="title"
           item-value="key"
           label="Évènement"
@@ -118,15 +118,9 @@ watch(modelValue, () => {
 
 const previousState = ref(JSON.stringify(subscription))
 
-// a subscription whose topic is not among the proposed ones keeps it selectable
-const topicItems = computed(() => {
-  const current = subscription.topic
-  if (!current || topics.some(topic => topic.key === current.key)) return topics
-  return [...topics, { key: current.key, title: current.title ?? current.key }]
-})
 const topicKey = computed({
   get: () => subscription.topic?.key,
-  set: (key) => { subscription.topic = topicItems.value.find(topic => topic.key === key) }
+  set: (key) => { subscription.topic = topics.find(topic => topic.key === key) }
 })
 
 const save = useAsyncAction(async () => {
