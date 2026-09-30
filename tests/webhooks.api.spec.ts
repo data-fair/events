@@ -158,6 +158,21 @@ test.describe('webhooks', () => {
     }
   })
 
+  test('should list webhook subscriptions of several topics', async () => {
+    for (const key of ['topic1', 'topic2', 'topic3']) {
+      await admin1.post('/api/webhook-subscriptions', {
+        title: 'Sub ' + key,
+        topic: { key },
+        sender: { type: 'organization', id: 'test1' },
+        url: 'http://localhost:19881/hook'
+      })
+    }
+    const one = await admin1.get('/api/webhook-subscriptions', { params: { topic: 'topic1' } })
+    expect(one.data.results.map((s: any) => s.topic.key)).toEqual(['topic1'])
+    const two = await admin1.get('/api/webhook-subscriptions', { params: { topic: 'topic1,topic3', sort: 'title:1' } })
+    expect(two.data.results.map((s: any) => s.topic.key)).toEqual(['topic1', 'topic3'])
+  })
+
   test('should cancel a webhook', async () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Cancel test',

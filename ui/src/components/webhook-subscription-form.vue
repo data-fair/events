@@ -4,6 +4,24 @@
     @submit="save.execute()"
   >
     <v-row>
+      <v-col
+        v-if="topicItems.length > 1"
+        cols="12"
+      >
+        <v-select
+          v-model="topicKey"
+          :items="topicItems"
+          item-title="title"
+          item-value="key"
+          label="Évènement"
+          variant="outlined"
+          density="compact"
+          hide-details="auto"
+          :rules="[
+            (v: string) => !!v || 'Ce paramètre est requis'
+          ]"
+        />
+      </v-col>
       <v-col cols="12">
         <v-text-field
           v-model="subscription.title"
@@ -79,7 +97,8 @@ import type { VForm } from 'vuetify/components'
 import type { WebhookSubscription } from '#api/types'
 
 // const { modelValue } = defineProps<{ modelValue?: WebhookSubscription }>()
-const modelValue = defineModel<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'topic' | 'sender'>>>({ required: true })
+const modelValue = defineModel<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'sender'>>>({ required: true })
+const { topics } = defineProps<{ topics: { key: string, title: string }[] }>()
 const emit = defineEmits<{ saved: [], deleted: [] }>()
 
 const form = ref<VForm | null>(null)
@@ -98,6 +117,17 @@ watch(modelValue, () => {
 }, { immediate: true })
 
 const previousState = ref(JSON.stringify(subscription))
+
+// a subscription whose topic is not among the proposed ones keeps it selectable
+const topicItems = computed(() => {
+  const current = subscription.topic
+  if (!current || topics.some(topic => topic.key === current.key)) return topics
+  return [...topics, { key: current.key, title: current.title ?? current.key }]
+})
+const topicKey = computed({
+  get: () => subscription.topic?.key,
+  set: (key) => { subscription.topic = topicItems.value.find(topic => topic.key === key) }
+})
 
 const save = useAsyncAction(async () => {
   const valid = (await form.value?.validate())?.valid

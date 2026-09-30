@@ -16,10 +16,21 @@
         v-for="subscription in fetchSubscriptions.data.value.results"
         :key="subscription._id"
       >
-        <v-expansion-panel-title>{{ subscription.title }}</v-expansion-panel-title>
+        <v-expansion-panel-title>
+          <div>
+            <div>{{ subscription.title }}</div>
+            <div
+              v-if="topics.length > 1"
+              class="text-caption text-medium-emphasis"
+            >
+              {{ subscription.topic.title ?? subscription.topic.key }}
+            </div>
+          </div>
+        </v-expansion-panel-title>
         <v-expansion-panel-text>
           <webhook-subscription-form
             :model-value="subscription"
+            :topics="topics"
             @saved="fetchSubscriptions.refresh()"
             @deleted="onDeleted"
           />
@@ -30,7 +41,8 @@
         <v-expansion-panel-title>{{ t('new') }}</v-expansion-panel-title>
         <v-expansion-panel-text>
           <webhook-subscription-form
-            :model-value="{ topic, sender: sender ?? session.state.account }"
+            :model-value="{ topic: topics.length === 1 ? topics[0] : undefined, sender: sender ?? session.state.account }"
+            :topics="topics"
             @saved="fetchSubscriptions.refresh()"
           />
         </v-expansion-panel-text>
@@ -42,18 +54,19 @@
 <i18n lang="yaml">
 fr:
   new: Déclarer un nouveau Webhook
-  email: email
+en:
+  new: Declare a new webhook
 </i18n>
 
 <script lang="ts" setup>
 import type { Event, WebhookSubscription } from '#api/types'
 
 const {
-  topic,
+  topics,
   sender,
   noSender
 } = defineProps<{
-  topic: { key: string, title: string }
+  topics: { key: string, title: string }[]
   sender?: Event['sender']
   noSender: boolean
 }>()
@@ -65,7 +78,8 @@ const currentPanel = ref<number | null>(null)
 
 const subscriptionsParams = computed(() => ({
   recipient: session.state.user.id,
-  topic: topic.key,
+  topic: topics.map(topic => topic.key).join(','),
+  size: 100,
   sender: noSender ? 'none' : serializeSender(sender ?? session.state.account)
 }))
 const fetchSubscriptions = useFetch<{ results: WebhookSubscription[] }>($apiPath + '/webhook-subscriptions', { query: subscriptionsParams })
@@ -75,55 +89,6 @@ const onDeleted = async () => {
   currentPanel.value = null
 }
 
-/*
-export default {
-  props: {
-    topic: { type: Object, default: null },
-    noSender: { type: Boolean, default: false },
-    sender: { type: Object, default: null }
-  },
-  data: () => ({
-    subscriptions: null,
-    loading: true,
-    currentPanel: null
-  }),
-  computed: {
-    ...mapState('session', ['user']),
-    ...mapGetters('session', ['activeAccount'])
-  },
-  async mounted () {
-    this.refresh()
-  },
-  methods: {
-    async refresh (id) {
-      this.loading = true
-      const params = {
-        recipient: this.user.id,
-        topic: this.topic.key,
-        size: 100
-      }
-      if (this.noSender) {
-        params.noSender = 'true'
-      } else if (this.sender) {
-        params.sender = this.sender.type + ':' + this.sender.id
-      } else {
-        params.sender = this.activeAccount.type + ':' + this.activeAccount.id
-      }
-      this.subscriptions = (await this.$axios.$get('webhook-subscriptions', { params })).results
-
-      this.loading = false
-
-      if (id) {
-        this.currentPanel = null
-        await this.$nextTick()
-        this.currentPanel = this.subscriptions.findIndex(s => s._id === id)
-      }
-    },
-    async saveSubscription (subscription) {
-      await this.$axios.$post('webhook-subscriptions', subscription)
-    }
-  }
-} */
 </script>
 
 <style lang="css" scoped>
