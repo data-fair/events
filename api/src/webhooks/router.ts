@@ -4,6 +4,7 @@ import type { Filter, Sort } from 'mongodb'
 import { Router } from 'express'
 import { session, mongoPagination, httpError } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
+import { emitWebhook } from './service.ts'
 
 const router = Router()
 export default router
@@ -34,6 +35,7 @@ router.post('/:id/_retry', async (req, res, next) => {
     { returnDocument: 'after' })
 
   if (!webhook) throw httpError(404)
+  await emitWebhook(webhook)
   res.send(webhook)
 })
 
@@ -47,5 +49,6 @@ router.post('/:id/_cancel', async (req, res, next) => {
     { returnDocument: 'after' })
 
   if (!webhook) throw httpError(404)
+  await emitWebhook(webhook)
   res.send(webhook)
 })

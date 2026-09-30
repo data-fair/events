@@ -6,18 +6,6 @@
   >
     <div class="d-flex align-center ga-2">
       <span class="text-subtitle-1">{{ t('history') }}</span>
-      <v-btn
-        icon
-        variant="text"
-        color="primary"
-        density="comfortable"
-        :title="t('refresh')"
-        :aria-label="t('refresh')"
-        :loading="fetchWebhooks.loading.value"
-        @click="fetchWebhooks.refresh()"
-      >
-        <v-icon :icon="mdiRefresh" />
-      </v-btn>
       <v-spacer />
       <v-btn
         color="primary"
@@ -50,12 +38,10 @@
 <i18n lang="yaml">
 fr:
   history: Historique des appels
-  refresh: Rafraîchir l'historique
   test: Tester
   noWebhooks: Ce webhook n'a pas encore été appelé.
 en:
   history: Call history
-  refresh: Refresh the history
   test: Test
   noWebhooks: This webhook has not been called yet.
 </i18n>
@@ -69,7 +55,23 @@ const { t } = useI18n()
 
 const webhooksParams = computed(() => ({ size: 100, subscription: subscription._id }))
 const fetchWebhooks = useFetch<{ results: Webhook[] }>($apiPath + '/webhooks', { query: webhooksParams })
-const webhooks = computed(() => fetchWebhooks.data.value?.results)
+// a local copy, the fetched data is read-only and the WS messages patch it
+const webhooks = ref<Webhook[]>()
+watch(fetchWebhooks.data, (data) => { webhooks.value = data?.results }, { immediate: true })
+
+// the delivery progress is pushed live, see webhooksChannel in the API
+const ws = useWS($apiPath + '/')
+ws?.subscribe<Webhook>(`${subscription.owner.type}:${subscription.owner.id}:webhook-subscriptions/${subscription._id}/webhooks`, (webhook) => {
+  const results = webhooks.value
+  if (!results) return
+  const i = results.findIndex(w => w._id === webhook._id)
+  if (i === -1) results.unshift(webhook)
+  else results[i] = webhook
+})
+// messages sent while the socket was reconnecting are lost, catch up from the API
+watch(() => ws?.opened.value, (opened, wasOpened) => {
+  if (opened && wasOpened === false) fetchWebhooks.refresh()
+})
 
 const test = useAsyncAction(async () => {
   await $fetch(`webhook-subscriptions/${subscription._id}/_test`, { method: 'POST' })
