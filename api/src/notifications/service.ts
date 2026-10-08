@@ -4,7 +4,7 @@ import Debug from 'debug'
 import i18n from 'i18n'
 import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
-import axios from '@data-fair/lib-node/axios.js'
+import { privateAxiosInstance } from '@data-fair/lib-node/axios.js'
 import mongo from '#mongo'
 import config from '#config'
 import * as metrics from './metrics.js'
@@ -51,7 +51,7 @@ export const sendNotification = async (notification: Notification, skipInsert = 
     }
     debug('Send mail notif', notification.recipient, mail, notification)
     metrics.sentNotifications.inc({ output: 'mail' })
-    axios.post(directoryUrl + '/api/mails', mail, { params: { key: config.secretKeys.sendMails } }).catch(err => {
+    privateAxiosInstance.post(directoryUrl + '/api/mails', mail, { params: { key: config.secretKeys.sendMails } }).catch(err => {
       internalError('notif-mail', err)
     })
   }
