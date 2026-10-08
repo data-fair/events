@@ -79,6 +79,10 @@ router.post('', async (req, res, next) => {
   if (body._id) {
     const existingSubscription = await mongo.subscriptions.findOne({ _id: body._id })
     if (!existingSubscription) throw httpError(404)
+    // updating a subscription of another user would take it over
+    if (!user.adminMode && existingSubscription.recipient.id !== user.id) {
+      throw httpError(403, 'Impossible de modifier un abonnement pour un autre utilisateur')
+    }
     subscription.created = existingSubscription.created
   }
 

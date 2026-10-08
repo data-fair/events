@@ -54,6 +54,25 @@ test.describe('webhooks', () => {
     expect(res.data.results[0].nbAttempts).toBe(0)
   })
 
+  test('should not update the webhook subscription of another account', async () => {
+    const { data: subscription } = await admin1.post('/api/webhook-subscriptions', {
+      title: 'Test webhook sub',
+      topic: { key: 'topic1' },
+      sender: { type: 'organization', id: 'test1' },
+      url: 'http://localhost:19876/hook'
+    })
+    await expect(user1.post('/api/webhook-subscriptions', {
+      _id: subscription._id,
+      title: 'Hijacked',
+      topic: { key: 'topic1' },
+      sender: { type: 'organization', id: 'test1' },
+      url: 'http://localhost:19876/other'
+    })).rejects.toMatchObject({ status: 404 })
+    const { data } = await admin1.get('/api/webhook-subscriptions')
+    expect(data.count).toBe(1)
+    expect(data.results[0].url).toBe('http://localhost:19876/hook')
+  })
+
   test('should deliver a webhook to a target URL', async () => {
     const received: any[] = []
     const hookServer = createServer((req, res) => {
