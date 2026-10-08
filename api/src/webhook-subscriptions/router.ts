@@ -59,7 +59,8 @@ router.post('', async (req, res, next) => {
   }
 
   if (body._id) {
-    const existingWebhookSubscription = body._id && await mongo.webhookSubscriptions.findOne({ _id: body._id })
+    // updating a subscription of another account would take it over
+    const existingWebhookSubscription = await mongo.webhookSubscriptions.findOne({ _id: body._id, 'owner.type': owner.type, 'owner.id': owner.id })
     if (!existingWebhookSubscription) throw httpError(404)
     webhookSubscription.created = existingWebhookSubscription.created
   }

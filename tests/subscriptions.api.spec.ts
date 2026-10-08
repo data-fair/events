@@ -18,6 +18,21 @@ test.describe('subscriptions', () => {
     })).rejects.toMatchObject({ status: 403 })
   })
 
+  test('should not update the subscription of another user', async () => {
+    const { data: subscription } = await user1.post('/api/subscriptions', {
+      topic: { key: 'topic1' },
+      sender: { type: 'user', id: 'test-user1' }
+    })
+    await expect(user2.post('/api/subscriptions', {
+      _id: subscription._id,
+      topic: { key: 'topic2' },
+      sender: { type: 'user', id: 'test-user1' }
+    })).rejects.toMatchObject({ status: 403 })
+    const { data } = await user1.get('/api/subscriptions/' + subscription._id)
+    expect(data.recipient.id).toBe('test-user1')
+    expect(data.topic.key).toBe('topic1')
+  })
+
   test('should send a public notification to any subscribed user', async () => {
     const subscription = {
       topic: { key: 'topic1' },

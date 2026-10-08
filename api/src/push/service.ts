@@ -1,5 +1,6 @@
 import type { DeviceRegistration, Notification } from '#types'
 
+import https from 'node:https'
 import webpush from 'web-push'
 import dayjs from 'dayjs'
 import Debug from 'debug'
@@ -8,9 +9,15 @@ import mongo from '#mongo'
 import * as notificationsMetrics from '../notifications/metrics.js'
 import * as metrics from './metrics.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
+import { publicLookup, resolvePublicAddress } from '@data-fair/lib-node/ssrf.js'
 import { backoffMinutes } from '../shared/operations.ts'
 
 const debug = Debug('webpush')
+
+// the endpoint of a registration is chosen by the user, it must not reach a non public address
+// web-push ignores agents that are not instances of https.Agent (the agents of lib-node are not)
+// so we use a plain agent whose DNS lookup refuses non public addresses, IP literals are checked in pushToDevice
+const pushAgent = new https.Agent({ keepAlive: true, lookup: publicLookup })
 
 let pushState: undefined | { vapidKeys: webpush.VapidKeys, webPushOptions: webpush.RequestOptions }
 export const init = async () => {
@@ -31,6 +38,7 @@ export const init = async () => {
       privateKey: vapidKeys.privateKey
     },
     gcmAPIKey: config.gcmAPIKey,
+    agent: pushAgent,
     TTL: 60 * 60 * 24 * 4 // push service should store the message for 4 days
   }
   pushState = { vapidKeys, webPushOptions }
@@ -54,7 +62,10 @@ export const pushToDevice = async (notification: Notification, registration: Dev
   try {
     // the schema requires `keys` on the registration id but leaves its properties commented out,
     // so the generated type does not model it and a direct cast is not enough
-    await webpush.sendNotification(registration.id as unknown as webpush.PushSubscription, JSON.stringify(pushNotif), webPushOptions)
+    const pushSubscription = registration.id as unknown as webpush.PushSubscription
+    // node does not call the lookup function for IP literals
+    await resolvePublicAddress(new URL(pushSubscription.endpoint).hostname)
+    await webpush.sendNotification(pushSubscription, JSON.stringify(pushNotif), webPushOptions)
   } catch (err: any) {
     error = err
     error.errorMsg = err.message
