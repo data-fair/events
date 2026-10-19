@@ -61,6 +61,16 @@ When e2e tests fail, follow this order:
 2. Check `test-results/` for traces and screenshots
 3. Only then dig into component code
 
+## Scopes
+
+events is scope-aware (`session.init(..., { scopeAware: true })`): a scope-restricted session (a non-human identity's token with a `scope` claim) can only read the session on routes that checked a scope. Unrestricted sessions and internal secret calls are not concerned.
+
+- The vocabulary (`notifications`, `events`, `webhooks` families, the global `all:read` / `all:write` / `all:admin`) and the operation table live in @api/src/shared/scopes.ts.
+- Every new route that reads the session gets a row in `scopedOperations` and `requireOperationScope('<operationId>')` as its first handler. Without one it stays refused to scoped sessions, as push registrations and admin routes are on purpose.
+- A new websocket channel needs a case in `channelScopes`, otherwise scoped sessions cannot subscribe to it.
+- `GET /api/api-docs.json` (@api/contract/api-docs.ts, built from the same table) is the contract data-fair aggregates to publish the platform scopes: keep its `oauth2` scheme and `x-scopeIncludes` in sync through the table, not by hand.
+- Tests: @tests/scopes.unit.spec.ts and @tests/scopes.api.spec.ts, with `nhiSession` (see Testing).
+
 ## Code patterns
 
 When working on this project, read the following files on a need-to-know basis to understand conventions:

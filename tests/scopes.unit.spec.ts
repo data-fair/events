@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { hasScope } from '@data-fair/lib-common-types/session/index.js'
+import { apiDocs } from '../api/contract/api-docs.ts'
 import { acceptedScopes, scopedOperations, scopeDescriptions, scopeIncludes, channelScopes, requireOperationScope } from '../api/src/shared/scopes.ts'
 
 const state = (scopes?: string[]) => ({ lang: 'fr', scopes }) as any
@@ -69,5 +70,37 @@ test.describe('scope vocabulary', () => {
 
   test('an unknown operation fails at declaration', () => {
     expect(() => requireOperationScope('nope' as any)).toThrow()
+  })
+})
+
+test.describe('OpenAPI document', () => {
+  const doc = apiDocs('http://x/events/api', 'http://x/simple-directory', 'fr')
+  const operations = Object.values(doc.paths).flatMap((methods: any) => Object.entries(methods).map(([method, op]: [string, any]) => ({ method, ...op })))
+
+  test('every operation of the table is documented once, with its accepted scopes', () => {
+    expect(operations.map(op => op.operationId).sort()).toEqual(Object.keys(scopedOperations).sort())
+    for (const op of operations) {
+      const row = scopedOperations[op.operationId as keyof typeof scopedOperations]
+      expect(op.method, op.operationId).toBe(row.method)
+      expect(doc.paths[row.path], op.operationId).toBeDefined()
+      expect(op.security, op.operationId).toEqual([{ sdCookie: [] }, { oauth2: acceptedScopes(row.family, row.tier) }])
+    }
+  })
+
+  test('every scope used is declared in the oauth2 scheme', () => {
+    const scheme = doc.components.securitySchemes.oauth2
+    expect(scheme.flows.clientCredentials.tokenUrl).toBe('http://x/simple-directory/api/auth/nhi-token')
+    const declared = Object.keys(scheme.flows.clientCredentials.scopes)
+    for (const op of operations) {
+      for (const scope of op.security[1].oauth2) expect(declared).toContain(scope)
+    }
+    expect(scheme['x-scopeIncludes']).toEqual(scopeIncludes)
+    for (const included of Object.values(scheme['x-scopeIncludes'] as Record<string, string[]>).flat()) expect(declared).toContain(included)
+  })
+
+  test('webhook management is not granted by write tier scopes', () => {
+    const post = doc.paths['/webhook-subscriptions'].post
+    expect(post.security[1].oauth2).not.toContain('all:write')
+    expect(post.security[1].oauth2).not.toContain('webhooks:read')
   })
 })

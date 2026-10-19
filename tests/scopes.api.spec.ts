@@ -137,4 +137,18 @@ test.describe('scope enforcement', () => {
     expect(webhooks.outcome.type).toBe('subscribe-confirm')
     webhooks.ws.close()
   })
+
+  test('the OpenAPI document declares the scopes, localized', async () => {
+    const anonymous = axios()
+    const fr = await anonymous.get('/api/api-docs.json')
+    const scopes = fr.data.components.securitySchemes.oauth2.flows.clientCredentials.scopes
+    expect(Object.keys(scopes)).toHaveLength(11)
+    expect(scopes['notifications:read']).toBe('Lire ses notifications et ses abonnements')
+    expect(fr.headers.vary).toMatch(/Accept-Language/i)
+    const en = await anonymous.get('/api/api-docs.json', { headers: { 'Accept-Language': 'en' } })
+    expect(en.data.components.securitySchemes.oauth2.flows.clientCredentials.scopes['notifications:read']).toBe('Read own notifications and subscriptions')
+
+    const { cookieAx } = await nhiSession('notifications:read')
+    expect((await cookieAx.get('/api/api-docs.json')).status).toBe(200)
+  })
 })
