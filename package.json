@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.8.1",
-    "@data-fair/lib-node": "^2.15.0",
+    "@data-fair/lib-node": "^2.16.1",
     "@playwright/test": "^1.58.2",
     "@types/debug": "^4.1.13",
     "commitlint": "^19.8.1",
@@ -52,6 +52,7 @@
     "eslint-plugin-vue": "^9.33.0",
     "eslint-plugin-vuetify": "^2.5.1",
     "husky": "^9.1.7",
+    "jose": "^4.15.9",
     "neostandard": "^0.12.2",
     "nodemon": "^3.1.9",
     "tough-cookie": "^5.1.2",
