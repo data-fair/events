@@ -22,12 +22,17 @@ services:
   #####
 
   simple-directory:
-    image: ghcr.io/data-fair/simple-directory:8
+    # master: the scoped NHI token exchange is not in a released major yet
+    image: ghcr.io/data-fair/simple-directory:master
     network_mode: host
     depends_on:
       - mongo
     environment:
       PORT: ${SD_PORT}
+      # non-human identities, declared in dev/resources/users.json (scope tests)
+      MANAGE_NHIS: "true"
+      # dev only: the test NHI issuer is not a real https issuer
+      NHIS_ALLOW_INSECURE_ISSUERS: "true"
       DEBUG: session
       ADMINS: '["superadmin@test.com"]'
       PUBLIC_URL: http://${DEV_HOST}:${NGINX_PORT}/simple-directory

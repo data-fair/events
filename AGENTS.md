@@ -48,6 +48,8 @@ If a test fails with a connection error, run `bash dev/status.sh` to diagnose, t
 
 Test users are defined in @dev/resources/users.json and organizations in @dev/resources/organizations.json. Modify these as little as possible, but if you do you need to force reload of the simple-directory container `docker compose restart simple-directory`.
 
+Scope tests use the non-human identity `test1-scope-nhi` (admin of `test1`, declared in @dev/resources/users.json) through `nhiSession(scope?)` in @tests/support/nhi.ts: it returns cookie and bearer clients for a session limited to the requested scope. It needs the simple-directory `master` image (scoped NHI token exchange, `MANAGE_NHIS`).
+
 Tests are separated in playwright projects: unit (pure functions), api (stateful API endpoints through HTTP) and e2e (UI with playwright browser instrumentation). When working on the e2e part you can use subagents `playwright-test-generator` and `playwright-test-healer`.
 
 In case of failures you might find error contexts in @test-results.
