@@ -151,4 +151,18 @@ test.describe('scope enforcement', () => {
     const { cookieAx } = await nhiSession('notifications:read')
     expect((await cookieAx.get('/api/api-docs.json')).status).toBe(200)
   })
+
+  test('routes that need no session ignore a broken credential', async () => {
+    const brokenCookie = axios({ headers: { cookie: 'id_token=broken.token.value; id_token_sign=broken' } })
+    expect((await brokenCookie.get('/api/push/vapidkey')).status).toBe(200)
+    expect((await brokenCookie.get('/api/api-docs.json')).status).toBe(200)
+    expect((await brokenCookie.post('/api/ui-logs', { message: 'scope test' })).status).toBe(200)
+    // a guarded route still refuses it, through the error handler
+    await expect(brokenCookie.get('/api/notifications', { timeout: 5000 })).rejects.toMatchObject({ status: 401 })
+
+    // an internal secret push only depends on the secret, a stray bearer header is ignored
+    const secretWithBearer = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL, headers: { authorization: 'Bearer not-a-token' } })
+    const res = await secretWithBearer.post('/api/events', [{ topic: { key: 'topic1' }, title: 'pushed with a stray bearer', sender: { type: 'user', id: 'test-user1', name: 'User 1' } }])
+    expect(res.status).toBe(201)
+  })
 })

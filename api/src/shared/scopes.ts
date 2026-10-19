@@ -4,7 +4,7 @@
 // guarded by requireOperationScope; any other route refuses scope-restricted sessions (lib-express).
 // The OpenAPI document (api/contract/api-docs.ts) is built from the same table.
 import type { RequestHandler } from 'express'
-import { requireScope } from '@data-fair/lib-express/index.js'
+import { requireScope, session } from '@data-fair/lib-express/index.js'
 
 export type ScopeFamily = 'notifications' | 'events' | 'webhooks'
 export type ScopeTier = 'read' | 'write' | 'admin'
@@ -50,10 +50,14 @@ export const scopedOperations = {
 
 export type ScopedOperationId = keyof typeof scopedOperations
 
+// the session middleware is applied here and not on the whole api: routes that never read the session
+// (internal secret pushes, ui-logs, vapidkey, api-docs) must not depend on the caller's credentials
 export const requireOperationScope = (operationId: ScopedOperationId): RequestHandler => {
   const operation: ScopedOperation | undefined = scopedOperations[operationId]
   if (!operation) throw new Error(`unknown scoped operation ${operationId}`)
-  return requireScope(acceptedScopes(operation.family, operation.tier))
+  const sessionMiddleware = session.middleware()
+  const scopeCheck = requireScope(acceptedScopes(operation.family, operation.tier))
+  return (req, res, next) => sessionMiddleware(req, res, (err?: any) => err ? next(err) : scopeCheck(req, res, next))
 }
 
 /** scopes accepted by a websocket channel, undefined refuses scope-restricted sessions */

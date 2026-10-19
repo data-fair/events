@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { errorHandler, createSiteMiddleware, createSpaMiddleware, session, reqOrigin, reqSitePathSafe } from '@data-fair/lib-express/index.js'
+import { errorHandler, createSiteMiddleware, createSpaMiddleware, reqOrigin, reqSitePathSafe } from '@data-fair/lib-express/index.js'
 import { apiDocs } from '../contract/api-docs.ts'
 import express from 'express'
 import helmet from 'helmet'
@@ -38,9 +38,6 @@ app.use(express.json())
 app.use('/api/ping', (req, res) => res.send('ok'))
 
 app.use(createSiteMiddleware('events'))
-
-// required by the per-route scope checks (requireOperationScope)
-app.use('/api', session.middleware())
 
 app.use('/api/events', eventsRouter)
 app.use('/api/subscriptions', subscriptionsRouter)
