@@ -14,6 +14,7 @@ import config from '#config'
 import * as webhooksWorker from './webhooks/worker.ts'
 import * as searchWorker from './events/search-worker.ts'
 import * as pushService from './push/service.ts'
+import { channelScopes } from './shared/scopes.ts'
 
 const server = createServer(app)
 const httpTerminator = createHttpTerminator({ server })
@@ -28,7 +29,7 @@ i18n.configure({ ...config.i18n, directory: resolve(import.meta.dirname, '../i18
 
 export const start = async () => {
   if (config.observer.active) await startObserver(config.observer.port)
-  session.init(config.privateDirectoryUrl)
+  session.init(config.privateDirectoryUrl, undefined, undefined, { scopeAware: true })
   await mongo.init()
   await locks.start(mongo.db)
   // await upgradeScripts(mongo.db, resolve(import.meta.dirname, '../..'))
@@ -42,7 +43,7 @@ export const start = async () => {
       return sessionState.account?.type === ownerType && sessionState.account.id === ownerId && sessionState.accountRole === 'admin'
     }
     return ownerType === 'user' && ownerId === sessionState.user.id
-  })
+  }, { channelScopes })
   await wsEmitter.init(mongo.db)
   await pushService.init()
   await webhooksWorker.start()

@@ -7,12 +7,13 @@ import { session, mongoSort, mongoPagination, httpError, reqSiteUrl } from '@dat
 import mongo from '#mongo'
 import * as postReq from '#doc/subscriptions/post-req/index.ts'
 import { canSubscribePrivate } from './operations.ts'
+import { requireOperationScope } from '../shared/scopes.ts'
 
 const router = Router()
 export default router
 
 // Get the list of subscriptions
-router.get('', async (req, res, next) => {
+router.get('', requireOperationScope('listSubscriptions'), async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const sort = mongoSort(req.query.sort)
@@ -54,7 +55,7 @@ router.get('', async (req, res, next) => {
 })
 
 // Create or update a subscription
-router.post('', async (req, res, next) => {
+router.post('', requireOperationScope('postSubscription'), async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const { body } = postReq.returnValid(req, { name: 'req' })
@@ -95,7 +96,7 @@ router.post('', async (req, res, next) => {
   res.status(200).json(subscription)
 })
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requireOperationScope('getSubscription'), async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const subscription = await mongo.subscriptions.findOne({ _id: req.params.id })
@@ -109,7 +110,7 @@ router.get('/:id', async (req, res, next) => {
   res.send(subscription)
 })
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireOperationScope('deleteSubscription'), async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const subscription = await mongo.subscriptions.findOne({ _id: req.params.id })

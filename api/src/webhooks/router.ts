@@ -5,12 +5,13 @@ import { Router } from 'express'
 import { session, mongoPagination, httpError } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
 import { emitWebhook } from './service.ts'
+import { requireOperationScope } from '../shared/scopes.ts'
 
 const router = Router()
 export default router
 
 // Get the list of webhooks
-router.get('', async (req, res, next) => {
+router.get('', requireOperationScope('listWebhooks'), async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -25,7 +26,7 @@ router.get('', async (req, res, next) => {
   res.json({ results, count })
 })
 
-router.post('/:id/_retry', async (req, res, next) => {
+router.post('/:id/_retry', requireOperationScope('retryWebhook'), async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -39,7 +40,7 @@ router.post('/:id/_retry', async (req, res, next) => {
   res.send(webhook)
 })
 
-router.post('/:id/_cancel', async (req, res, next) => {
+router.post('/:id/_cancel', requireOperationScope('cancelWebhook'), async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
