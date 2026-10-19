@@ -63,7 +63,7 @@ When e2e tests fail, follow this order:
 
 ## Scopes
 
-events is scope-aware (`session.init(..., { scopeAware: true })`): a scope-restricted session (a non-human identity's token with a `scope` claim) can only read the session on routes that checked a scope. Unrestricted sessions and internal secret calls are not concerned.
+events is scope-aware (`session.init(..., { scopeAware: true })`): a session whose token carries a `scope` claim can only be read on routes that checked a scope, otherwise it gets 403. Scoped sessions are not specific to non-human identities: today they come from the NHI token exchange, later also from human users authorizing OAuth client applications. Sessions without a `scope` claim and internal secret calls are not affected.
 
 - The vocabulary (`notifications`, `events`, `webhooks` families, the global `all:read` / `all:write` / `all:admin`) and the operation table live in @api/src/shared/scopes.ts.
 - Every new route that reads the session gets a row in `scopedOperations` and `requireOperationScope('<operationId>')` as its first handler. Without one it stays refused to scoped sessions, as push registrations and admin routes are on purpose.
