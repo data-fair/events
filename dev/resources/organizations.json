@@ -20,6 +20,9 @@
   }, {
     "id": "test-user1",
     "role": "user"
+  }, {
+    "id": "test1-scope-nhi",
+    "role": "admin"
   }]
 }, {
   "id": "test2",

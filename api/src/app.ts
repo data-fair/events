@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { errorHandler, createSiteMiddleware, createSpaMiddleware } from '@data-fair/lib-express/index.js'
+import { apiDocs } from '../contract/api-docs.ts'
 import express from 'express'
 import helmet from 'helmet'
 import identitiesRouter from './identities/router.ts'
@@ -77,6 +78,13 @@ if (process.env.NODE_ENV === 'development') {
     res.json(doc)
   })
 }
+
+// public and the same for every caller, merged by data-fair with the documents of the other services
+app.get('/api/api-docs.json', (req, res) => {
+  res.set('Cache-Control', 'public, max-age=300')
+  res.vary('Accept-Language')
+  res.json(apiDocs(req.acceptsLanguages('fr', 'en') === 'en' ? 'en' : 'fr'))
+})
 
 app.use('/api', (req, res) => res.status(404).send('unknown api endpoint'))
 

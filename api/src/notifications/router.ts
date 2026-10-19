@@ -12,13 +12,14 @@ import * as notificationsPostReq from '#doc/notifications/post-req/index.ts'
 import { postEvents } from '../events/service.ts'
 import { sendNotification } from './service.ts'
 import { nanoid } from 'nanoid'
+import { requireOperationScope } from '../shared/scopes.ts'
 
 const debug = debugModule('events')
 
 const router = Router()
 
 // Get the list of notifications
-router.get('', async (req, res, next) => {
+router.get('', requireOperationScope('listNotifications'), async (req, res, next) => {
   const { user } = await session.reqAuthenticated(req)
 
   const sort = { date: -1 as SortDirection }

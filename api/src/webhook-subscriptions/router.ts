@@ -7,12 +7,13 @@ import { session, mongoSort, mongoPagination, httpError } from '@data-fair/lib-e
 import mongo from '#mongo'
 import * as postReq from '#doc/webhook-subscriptions/post-req/index.ts'
 import { createWebhook } from '../webhooks/service.ts'
+import { requireOperationScope } from '../shared/scopes.ts'
 
 const router = Router()
 export default router
 
 // Get the list of subscriptions
-router.get('', async (req, res, next) => {
+router.get('', requireOperationScope('listWebhookSubscriptions'), async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -41,7 +42,7 @@ router.get('', async (req, res, next) => {
 })
 
 // Create or update a subscription
-router.post('', async (req, res, next) => {
+router.post('', requireOperationScope('postWebhookSubscription'), async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -81,7 +82,7 @@ router.post('', async (req, res, next) => {
   res.status(200).json(webhookSubscription)
 })
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireOperationScope('deleteWebhookSubscription'), async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
@@ -93,7 +94,7 @@ router.delete('/:id', async (req, res, next) => {
   res.status(204).send()
 })
 
-router.post('/:id/_test', async (req, res, next) => {
+router.post('/:id/_test', requireOperationScope('testWebhookSubscription'), async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 

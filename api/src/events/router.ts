@@ -7,11 +7,12 @@ import config from '#config'
 import * as postReq from '#doc/events/post-req/index.ts'
 import { session, mongoPagination, mongoProjection, httpError, assertReqInternalSecret, reqOrigin } from '@data-fair/lib-express/index.js'
 import { postEvents, localizeEvent, cleanEvent } from './service.ts'
+import { requireOperationScope } from '../shared/scopes.ts'
 
 const router = Router()
 export default router
 
-router.get('', async (req, res, next) => {
+router.get('', requireOperationScope('listEvents'), async (req, res, next) => {
   const sessionState = await session.reqAuthenticated(req)
   const { account, lang, accountRole } = sessionState
   if (accountRole !== 'admin') throw httpError(403, 'admin only')

@@ -5,7 +5,7 @@ const devHost = process.env.DEV_HOST || 'localhost'
 const nginxPort = process.env.NGINX_PORT || '5600'
 const devApiPort = process.env.DEV_API_PORT || '5600'
 
-const directoryUrl = `http://${devHost}:${nginxPort}/simple-directory`
+export const directoryUrl = `http://${devHost}:${nginxPort}/simple-directory`
 
 export const baseURL = `http://${devHost}:${nginxPort}/events`
 export const devBaseURL = `http://localhost:${devApiPort}`
