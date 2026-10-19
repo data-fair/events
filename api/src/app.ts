@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { errorHandler, createSiteMiddleware, createSpaMiddleware, reqOrigin, reqSitePathSafe } from '@data-fair/lib-express/index.js'
+import { errorHandler, createSiteMiddleware, createSpaMiddleware } from '@data-fair/lib-express/index.js'
 import { apiDocs } from '../contract/api-docs.ts'
 import express from 'express'
 import helmet from 'helmet'
@@ -79,12 +79,11 @@ if (process.env.NODE_ENV === 'development') {
   })
 }
 
-// public, aggregated by data-fair with the documents of the other services of the platform
+// public and the same for every caller, merged by data-fair with the documents of the other services
 app.get('/api/api-docs.json', (req, res) => {
-  const origin = reqOrigin(req) + reqSitePathSafe(req)
   res.set('Cache-Control', 'public, max-age=300')
   res.vary('Accept-Language')
-  res.json(apiDocs(`${origin}/events/api`, `${origin}/simple-directory`, req.acceptsLanguages('fr', 'en') === 'en' ? 'en' : 'fr'))
+  res.json(apiDocs(req.acceptsLanguages('fr', 'en') === 'en' ? 'en' : 'fr'))
 })
 
 app.use('/api', (req, res) => res.status(404).send('unknown api endpoint'))

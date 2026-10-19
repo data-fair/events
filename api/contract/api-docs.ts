@@ -1,10 +1,12 @@
 /**
  * The OpenAPI document of this service, served at /events/api/api-docs.json.
  *
- * data-fair aggregates the documents of the platform services: the oauth2 scheme declares the
- * scopes events enforces (api/src/shared/scopes.ts) and, in x-scopeIncludes, which of them each
- * global tier scope (all:read, all:write, all:admin) includes. Only the session-facing operations
- * are listed, each with the scopes it accepts; the internal secret routes are not.
+ * data-fair merges the documents of the platform services into one document per site: it fetches
+ * this one over the private url, so it does not depend on the request origin (paths relative to
+ * the site, data-fair sets the origin and the token url of each site). The oauth2 scheme declares
+ * the scopes events enforces (api/src/shared/scopes.ts). Only the session-facing operations are
+ * listed, each with every scope it accepts as its own alternative (standard OpenAPI: the scopes of
+ * one requirement are all needed); the internal secret routes are not.
  */
 import pJson from '../../package.json' with { type: 'json' }
 import { oauth2SecurityScheme } from '@data-fair/lib-common-types/scopes.js'
@@ -40,7 +42,7 @@ const bodies: Partial<Record<keyof typeof scopedOperations, string>> = {
   postWebhookSubscription: 'Un abonnement webhook (schéma https://github.com/data-fair/events/webhook-subscription)'
 }
 
-export const apiDocs = (serverUrl: string, directoryUrl: string, locale: 'fr' | 'en') => {
+export const apiDocs = (locale: 'fr' | 'en') => {
   const paths: Record<string, Record<string, any>> = {}
   for (const [operationId, op] of Object.entries(scopedOperations) as [keyof typeof scopedOperations, typeof scopedOperations[keyof typeof scopedOperations]][]) {
     const operation: Record<string, any> = {
@@ -50,21 +52,24 @@ export const apiDocs = (serverUrl: string, directoryUrl: string, locale: 'fr' | 
         ...(op.path.includes('{id}') ? [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }] : []),
         ...(parameters[operationId] ?? [])
       ],
-      security: [{ sdCookie: [] }, { oauth2: acceptedScopes(op.family, op.tier) }],
+      security: [{ sdCookie: [] }, ...acceptedScopes(op.family, op.tier).map(scope => ({ oauth2: [scope] }))],
       responses: { 200: { description: 'OK' } }
     }
     const body = bodies[operationId]
     if (body) operation.requestBody = { required: true, content: { 'application/json': { schema: { type: 'object', description: body } } } }
     paths[op.path] = { ...paths[op.path], [op.method]: operation }
   }
+  // x-scopeIncludes is not part of the platform contract: what a global tier scope grants is read
+  // from the operations that accept it
+  const { 'x-scopeIncludes': _, ...oauth2 } = oauth2SecurityScheme(vocabulary, { directoryUrl: '/simple-directory', locale })
   return {
     openapi: '3.1.0',
     info: { title: 'API events', version: pJson.version },
-    servers: [{ url: serverUrl }],
+    servers: [{ url: '/events/api' }],
     components: {
       securitySchemes: {
         sdCookie: { type: 'apiKey', in: 'cookie', name: 'id_token' },
-        oauth2: oauth2SecurityScheme(vocabulary, { directoryUrl, locale })
+        oauth2
       }
     },
     paths

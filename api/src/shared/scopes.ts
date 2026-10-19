@@ -35,7 +35,7 @@ export const vocabulary = defineScopes({
     }
   }
 })
-export const { acceptedScopes, scopeDescriptions, scopeIncludes } = vocabulary
+export const { acceptedScopes, scopeDescriptions } = vocabulary
 export type ScopeFamily = typeof vocabulary.families[number]
 
 export type ScopedOperation = { method: 'get' | 'post' | 'delete', path: string, family: ScopeFamily, tier: ScopeTier }

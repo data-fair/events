@@ -150,6 +150,11 @@ test.describe('scope enforcement', () => {
 
     const { cookieAx } = await nhiSession('notifications:read')
     expect((await cookieAx.get('/api/api-docs.json')).status).toBe(200)
+
+    // data-fair fetches it over the private url, without the reverse-proxy headers
+    const direct = await axios({ baseURL: devBaseURL }).get('/api/api-docs.json')
+    expect(direct.status).toBe(200)
+    expect(direct.data.servers).toEqual([{ url: '/events/api' }])
   })
 
   test('routes that need no session ignore a broken credential', async () => {

@@ -68,7 +68,7 @@ events is scope-aware (`session.init(..., { scopeAware: true })`): a session who
 - The vocabulary (`notifications`, `events`, `webhooks` families, declared with `defineScopes` from `@data-fair/lib-common-types/scopes.js`, which adds the global `all:read` / `all:write` / `all:admin`) and the operation table live in @api/src/shared/scopes.ts.
 - Every new route that reads the session gets a row in `scopedOperations` and `requireOperationScope('<operationId>')` as its first handler. Without one it stays refused to scoped sessions, as push registrations and admin routes are on purpose.
 - A new websocket channel needs a case in `channelScopes`, otherwise scoped sessions cannot subscribe to it.
-- `GET /api/api-docs.json` (@api/contract/api-docs.ts, built from the same table) is the contract data-fair aggregates to publish the platform scopes: keep its `oauth2` scheme and `x-scopeIncludes` in sync through the table, not by hand.
+- `GET /api/api-docs.json` (@api/contract/api-docs.ts, built from the same table) is the document data-fair merges into the platform document: keep it independent of the request origin (data-fair fetches it over the private url) and keep each accepted scope as its own `security` alternative. Edit the table, not the document.
 - Tests: @tests/scopes.unit.spec.ts and @tests/scopes.api.spec.ts, with `nhiSession` (see Testing).
 
 ## Code patterns

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { hasScope } from '@data-fair/lib-common-types/session/index.js'
 import { apiDocs } from '../api/contract/api-docs.ts'
-import { acceptedScopes, scopedOperations, scopeDescriptions, scopeIncludes, channelScopes, requireOperationScope } from '../api/src/shared/scopes.ts'
+import { acceptedScopes, scopedOperations, scopeDescriptions, channelScopes, requireOperationScope } from '../api/src/shared/scopes.ts'
 
 const state = (scopes?: string[]) => ({ lang: 'fr', scopes }) as any
 
@@ -41,16 +41,6 @@ test.describe('scope vocabulary', () => {
     expect(Object.keys(fr)).toHaveLength(11)
   })
 
-  test('global tier inclusions', () => {
-    expect(scopeIncludes).toEqual({
-      'all:read': ['notifications:read', 'events:read', 'webhooks:read'],
-      'all:write': ['notifications:read', 'events:read', 'webhooks:read', 'notifications:write'],
-      'all:admin': ['notifications:read', 'events:read', 'webhooks:read', 'notifications:write', 'webhooks:admin']
-    })
-    const declared = Object.keys(scopeDescriptions('fr'))
-    for (const included of Object.values(scopeIncludes).flat()) expect(declared).toContain(included)
-  })
-
   test('websocket channels', () => {
     expect(channelScopes('user:u1:notifications')).toEqual(acceptedScopes('notifications', 'read'))
     expect(channelScopes('organization:o1:webhook-subscriptions/abc')).toEqual(acceptedScopes('webhooks', 'read'))
@@ -74,7 +64,8 @@ test.describe('scope vocabulary', () => {
 })
 
 test.describe('OpenAPI document', () => {
-  const doc = apiDocs('http://x/events/api', 'http://x/simple-directory', 'fr')
+  const doc = apiDocs('fr')
+  const oauth2Of = (op: any) => op.security.filter((s: any) => s.oauth2).map((s: any) => s.oauth2)
   const operations = Object.values(doc.paths).flatMap((methods: any) => Object.entries(methods).map(([method, op]: [string, any]) => ({ method, ...op })))
 
   test('every operation of the table is documented once, with its accepted scopes', () => {
@@ -83,24 +74,29 @@ test.describe('OpenAPI document', () => {
       const row = scopedOperations[op.operationId as keyof typeof scopedOperations]
       expect(op.method, op.operationId).toBe(row.method)
       expect(doc.paths[row.path], op.operationId).toBeDefined()
-      expect(op.security, op.operationId).toEqual([{ sdCookie: [] }, { oauth2: acceptedScopes(row.family, row.tier) }])
+      // standard OpenAPI: the scopes of one requirement are all needed, so each accepted scope is its own alternative
+      expect(op.security, op.operationId).toEqual([{ sdCookie: [] }, ...acceptedScopes(row.family, row.tier).map(scope => ({ oauth2: [scope] }))])
     }
   })
 
   test('every scope used is declared in the oauth2 scheme', () => {
     const scheme = doc.components.securitySchemes.oauth2
-    expect(scheme.flows.clientCredentials.tokenUrl).toBe('http://x/simple-directory/api/auth/nhi-token')
     const declared = Object.keys(scheme.flows.clientCredentials.scopes)
     for (const op of operations) {
-      for (const scope of op.security[1].oauth2) expect(declared).toContain(scope)
+      for (const scope of oauth2Of(op).flat()) expect(declared).toContain(scope)
     }
-    expect(scheme['x-scopeIncludes']).toEqual(scopeIncludes)
-    for (const included of Object.values(scheme['x-scopeIncludes'] as Record<string, string[]>).flat()) expect(declared).toContain(included)
+    expect(scheme).not.toHaveProperty('x-scopeIncludes')
+  })
+
+  test('the document does not depend on the request origin', () => {
+    // data-fair fetches it over the private url and sets the site origin itself
+    expect(doc.servers).toEqual([{ url: '/events/api' }])
+    expect(doc.components.securitySchemes.oauth2.flows.clientCredentials.tokenUrl).toBe('/simple-directory/api/auth/nhi-token')
   })
 
   test('webhook management is not granted by write tier scopes', () => {
     const post = doc.paths['/webhook-subscriptions'].post
-    expect(post.security[1].oauth2).not.toContain('all:write')
-    expect(post.security[1].oauth2).not.toContain('webhooks:read')
+    expect(oauth2Of(post).flat()).not.toContain('all:write')
+    expect(oauth2Of(post).flat()).not.toContain('webhooks:read')
   })
 })
