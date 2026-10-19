@@ -7,7 +7,8 @@
  * are listed, each with the scopes it accepts; the internal secret routes are not.
  */
 import pJson from '../../package.json' with { type: 'json' }
-import { acceptedScopes, scopeDescriptions, scopeIncludes, scopedOperations } from '../src/shared/scopes.ts'
+import { oauth2SecurityScheme } from '@data-fair/lib-common-types/scopes.js'
+import { vocabulary, acceptedScopes, scopedOperations } from '../src/shared/scopes.ts'
 
 const summaries: Record<keyof typeof scopedOperations, string> = {
   listNotifications: 'Lister ses notifications',
@@ -63,17 +64,7 @@ export const apiDocs = (serverUrl: string, directoryUrl: string, locale: 'fr' | 
     components: {
       securitySchemes: {
         sdCookie: { type: 'apiKey', in: 'cookie', name: 'id_token' },
-        oauth2: {
-          type: 'oauth2',
-          description: "Jeton d'accès délivré par l'échange de jeton des identités non humaines de simple-directory (assertion JWT bearer, RFC 7523, aucun secret client). Un jeton sans claim de scope est une session de premier niveau, non restreinte. Un jeton avec scope ne donne accès qu'aux opérations couvertes par ses scopes.",
-          flows: {
-            clientCredentials: {
-              tokenUrl: `${directoryUrl}/api/auth/nhi-token`,
-              scopes: scopeDescriptions(locale)
-            }
-          },
-          'x-scopeIncludes': scopeIncludes
-        }
+        oauth2: oauth2SecurityScheme(vocabulary, { directoryUrl, locale })
       }
     },
     paths
