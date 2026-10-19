@@ -9,7 +9,7 @@
  * one requirement are all needed); the internal secret routes are not.
  */
 import pJson from '../../package.json' with { type: 'json' }
-import { oauth2SecurityScheme } from '@data-fair/lib-common-types/scopes.js'
+import { oauth2SecurityScheme, oauth2Alternatives } from '@data-fair/lib-common-types/scopes.js'
 import { vocabulary, acceptedScopes, scopedOperations } from '../src/shared/scopes.ts'
 
 const summaries: Record<keyof typeof scopedOperations, string> = {
@@ -52,16 +52,13 @@ export const apiDocs = (locale: 'fr' | 'en') => {
         ...(op.path.includes('{id}') ? [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }] : []),
         ...(parameters[operationId] ?? [])
       ],
-      security: [{ sdCookie: [] }, ...acceptedScopes(op.family, op.tier).map(scope => ({ oauth2: [scope] }))],
+      security: [{ sdCookie: [] }, ...oauth2Alternatives(acceptedScopes(op.family, op.tier))],
       responses: { 200: { description: 'OK' } }
     }
     const body = bodies[operationId]
     if (body) operation.requestBody = { required: true, content: { 'application/json': { schema: { type: 'object', description: body } } } }
     paths[op.path] = { ...paths[op.path], [op.method]: operation }
   }
-  // x-scopeIncludes is not part of the platform contract: what a global tier scope grants is read
-  // from the operations that accept it
-  const { 'x-scopeIncludes': _, ...oauth2 } = oauth2SecurityScheme(vocabulary, { directoryUrl: '/simple-directory', locale })
   return {
     openapi: '3.1.0',
     info: { title: 'API events', version: pJson.version },
@@ -69,7 +66,7 @@ export const apiDocs = (locale: 'fr' | 'en') => {
     components: {
       securitySchemes: {
         sdCookie: { type: 'apiKey', in: 'cookie', name: 'id_token' },
-        oauth2
+        oauth2: oauth2SecurityScheme(vocabulary, { directoryUrl: '/simple-directory', locale })
       }
     },
     paths
