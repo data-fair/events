@@ -2,7 +2,7 @@ import { expect } from '@playwright/test'
 import { test } from './fixtures/login.ts'
 import { axiosAuth, clean, devBaseURL, axios } from './support/axios.ts'
 
-const axPush = axios({ headers: { 'x-secret-key': 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 
 test.describe('Notifications UI', () => {
   test.beforeEach(clean)

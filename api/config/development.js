@@ -12,8 +12,8 @@ export default {
     port: 9092
   },
   secretKeys: {
-    identities: 'SECRET_IDENTITIES',
-    events: 'SECRET_EVENTS',
-    sendMails: 'SECRET_SENDMAILS'
+    identities: 'secret-identities',
+    events: 'secret-events',
+    sendMails: 'secret-sendmails'
   }
 }

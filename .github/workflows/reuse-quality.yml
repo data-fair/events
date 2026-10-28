@@ -23,26 +23,28 @@ jobs:
       run: npm run lint && npm run build-types && npm run check-types && npm -w ui run build
 
     - name: Init env
-      run: bash dev/init-env.sh
+      run: ./node_modules/.bin/df-dev init-env
 
-    # the runner checks out a detached HEAD, so init-env derives DEV_HOST from the
+    # the runner checks out a detached HEAD, so DEV_HOST is derived from the
     # literal "HEAD"; force a plain lowercase host so simple-directory's site url
     # matches the (lowercased) request host
     - name: Use localhost as DEV_HOST in CI
       run: sed -i 's/^DEV_HOST=.*/DEV_HOST=localhost/' .env
 
     - name: Start dev dependencies
-      run: docker compose up -d --wait
+      run: docker compose --profile '*' up -d --wait
 
     - name: Start dev API
-      run: NODE_ENV=development NODE_CONFIG_DIR=./api/config node api/index.ts &
+      run: mkdir -p dev/logs && (NODE_ENV=development NODE_CONFIG_DIR=./api/config node api/index.ts > dev/logs/api.log 2>&1 &)
 
     - name: Wait for API to be ready
       run: |
         for i in $(seq 1 30); do
-          curl -sf http://localhost:$(grep DEV_API_PORT .env | cut -d= -f2)/api/ping && break
+          curl -sf http://localhost:$(grep DEV_API_PORT .env | cut -d= -f2)/api/ping && exit 0
           sleep 2
         done
+        tail -n 100 dev/logs/api.log
+        exit 1
 
     - name: Run tests
       run: npm run test-unit && npm run test-api

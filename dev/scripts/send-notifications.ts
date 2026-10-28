@@ -1,7 +1,7 @@
 import type { PostEventReq } from '../../api/doc/events/post-req/index.js'
 import { axiosBuilder } from '@data-fair/lib-node/axios.js'
 
-const ax = axiosBuilder({ params: { key: 'SECRET_EVENTS' }, baseURL: 'http://localhost:8082' })
+const ax = axiosBuilder({ params: { key: 'secret-events' }, baseURL: 'http://localhost:8082' })
 
 const postEvent = async (events: PostEventReq['body']) => {
   await ax.post('/events/api/events', events)

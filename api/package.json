@@ -3,7 +3,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "mkdir -p ../dev/logs && NODE_ENV=development DEBUG=upgrade,webpush nodemon -e js,ts,json index.ts 2>&1 | tee ../dev/logs/dev-api.log"
+    "dev": "NODE_ENV=development DEBUG=upgrade,webpush nodemon -e js,ts,json index.ts"
   },
   "imports": {
     "#config": "./src/config.ts",

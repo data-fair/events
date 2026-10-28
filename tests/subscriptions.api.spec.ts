@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import WebSocket from 'ws'
 import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axPush = axios({ params: { key: 'secret-events' }, baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')
 const user2 = await axiosAuth('test-user2')
 const admin1 = await axiosAuth('test1-admin1')

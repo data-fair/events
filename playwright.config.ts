@@ -20,8 +20,7 @@ export default defineConfig({
 
   projects: [
     { name: 'unit', testMatch: /.*\.unit\.spec\.ts/ },
-    { name: 'state-setup', testMatch: /state-setup\.ts/, teardown: 'state-teardown' },
-    { name: 'state-teardown', testMatch: /state-teardown\.ts/ },
+    { name: 'state-setup', testMatch: /state-setup\.ts/ },
     { name: 'api', testMatch: /.*\.api\.spec\.ts/, dependencies: ['state-setup'] },
     {
       // the first hit on each Vite dev route triggers an on-demand compile that
