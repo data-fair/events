@@ -63,7 +63,7 @@ Quality gates:
 |---|---|
 | commit (`.husky/pre-commit`) | `npm run lint` |
 | push (`.husky/pre-push` → `dev/pre-push.sh`) | type check, unit tests, the `@smoke` api/e2e tests, and the api/e2e spec files changed since `origin/main` |
-| pull request, release tag (`reuse-quality.yml`) | lint, types, UI build, audit, and the whole unit/api suite |
+| pull request, release tag (`reuse-quality.yml`) | lint, types, UI build, audit, and the whole unit/api/e2e suite |
 
 `@smoke` (`test('...', { tag: '@smoke' }, ...)`) marks a few fast tests over the core flows (event push, subscription and notification, webhook creation, scoped session, subscriptions and notifications pages). Tag a test only if it is fast and covers a path many features depend on. `npm run quality` runs the full gate locally.
 
