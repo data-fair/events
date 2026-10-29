@@ -8,7 +8,7 @@
       <v-btn
         v-bind="{ ...props, ...btnProps }"
       >
-        Supprimer
+        {{ t('delete') }}
       </v-btn>
     </template>
     <v-card>
@@ -23,10 +23,10 @@
           :type="alert"
           variant="outlined"
         >
-          {{ text }}
+          {{ text || t('confirm') }}
         </v-alert>
         <template v-else>
-          {{ text }}
+          {{ text || t('confirm') }}
         </template>
       </v-card-text>
       <v-card-actions>
@@ -52,9 +52,13 @@
 fr:
   yes: Oui
   no: Non
+  delete: Supprimer
+  confirm: Souhaitez-vous confirmer cette opération ?
 en:
   yes: Yes
   no: No
+  delete: Delete
+  confirm: Do you want to confirm this operation?
 </i18n>
 
 <script setup lang="ts">
@@ -67,7 +71,7 @@ defineProps({
   },
   text: {
     type: String,
-    default: 'Souhaitez-vous confirmer cette opération ?'
+    default: ''
   },
   tooltip: {
     type: String,

@@ -13,25 +13,25 @@
           :items="topics"
           item-title="title"
           item-value="key"
-          label="Évènement"
+          :label="t('topic')"
           variant="outlined"
           density="compact"
           hide-details="auto"
           :rules="[
-            (v: string) => !!v || 'Ce paramètre est requis'
+            (v: string) => !!v || t('required')
           ]"
         />
       </v-col>
       <v-col cols="12">
         <v-text-field
           v-model="subscription.title"
-          label="Libellé"
+          :label="t('title')"
           variant="outlined"
           density="compact"
           hide-details="auto"
           validate-on="blur"
           :rules="[
-            (v: string) => v && !!v.trim() || 'Ce paramètre est requis'
+            (v: string) => v && !!v.trim() || t('required')
           ]"
         />
       </v-col>
@@ -44,8 +44,8 @@
           hide-details="auto"
           validate-on="blur"
           :rules="[
-            (v: string) => v && !!v.trim() || 'Ce paramètre est requis',
-            (v: string) => !!v.trim().startsWith('http://') || !!v.trim().startsWith('https://') || `Cette URL n'est pas valide`
+            (v: string) => v && !!v.trim() || t('required'),
+            (v: string) => !!v.trim().startsWith('http://') || !!v.trim().startsWith('https://') || t('invalidUrl')
           ]"
         />
       </v-col>
@@ -55,7 +55,7 @@
       >
         <v-text-field
           v-model="subscription.header.key"
-          label="Clé de header HTTP"
+          :label="t('headerKey')"
           variant="outlined"
           density="compact"
           hide-details="auto"
@@ -67,7 +67,7 @@
       >
         <v-text-field
           v-model="subscription.header.value"
-          label="Valeur de header HTTP"
+          :label="t('headerValue')"
           variant="outlined"
           density="compact"
           hide-details="auto"
@@ -82,7 +82,7 @@
         variant="text"
         @click="test.execute()"
       >
-        Tester
+        {{ t('test') }}
       </v-btn>
       <confirm-menu
         v-if="modelValue._id"
@@ -95,7 +95,7 @@
         :disabled="!changed || save.loading.value"
         @click="save.execute()"
       >
-        {{ modelValue._id ? 'Enregistrer' : 'Ajouter' }}
+        {{ modelValue._id ? t('save') : t('add') }}
       </v-btn>
     </div>
     <v-alert
@@ -110,6 +110,35 @@
   </v-form>
 </template>
 
+<i18n lang="yaml">
+fr:
+  topic: Évènement
+  title: Libellé
+  headerKey: Clé de header HTTP
+  headerValue: Valeur de header HTTP
+  required: Ce paramètre est requis
+  invalidUrl: Cette URL n'est pas valide
+  test: Tester
+  save: Enregistrer
+  add: Ajouter
+  testReceived: "Le message de test a été reçu (réponse HTTP {status})."
+  testHttpError: "L'URL a répondu par une erreur HTTP {status}."
+  testFailed: "L'envoi a échoué : {error}"
+en:
+  topic: Event
+  title: Label
+  headerKey: HTTP header key
+  headerValue: HTTP header value
+  required: This parameter is required
+  invalidUrl: This URL is not valid
+  test: Test
+  save: Save
+  add: Add
+  testReceived: "The test message was received (HTTP response {status})."
+  testHttpError: "The URL answered with an HTTP error {status}."
+  testFailed: "Sending failed: {error}"
+</i18n>
+
 <script lang="ts" setup>
 import type { VForm } from 'vuetify/components'
 import type { WebhookSubscription } from '#api/types'
@@ -117,6 +146,8 @@ import type { WebhookSubscription } from '#api/types'
 const modelValue = defineModel<Partial<WebhookSubscription> & Required<Pick<WebhookSubscription, 'sender'>>>({ required: true })
 const { topics } = defineProps<{ topics: { key: string, title: string }[] }>()
 const emit = defineEmits<{ saved: [], deleted: [] }>()
+
+const { t } = useI18n()
 
 const form = ref<VForm | null>(null)
 
@@ -161,8 +192,8 @@ const test = useAsyncAction(async () => {
   const valid = (await form.value?.validate())?.valid
   if (!valid) return
   const { status, error } = await $fetch<{ status?: number, error?: string }>('webhook-subscriptions/_test', { method: 'POST', body: subscription })
-  if (status && status < 400) testResult.value = { ok: true, message: `Le message de test a été reçu (réponse HTTP ${status}).` }
-  else testResult.value = { ok: false, message: status ? `L'URL a répondu par une erreur HTTP ${status}.` : `L'envoi a échoué : ${error}` }
+  if (status && status < 400) testResult.value = { ok: true, message: t('testReceived', { status }) }
+  else testResult.value = { ok: false, message: status ? t('testHttpError', { status }) : t('testFailed', { error }) }
 })
 
 const remove = useAsyncAction(async () => {

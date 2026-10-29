@@ -61,13 +61,18 @@
             <v-chip-group
               :model-value="subscription.outputs"
               :aria-label="t('outputs')"
+              role="group"
+              column
               multiple
               @update:model-value="(outputs: Subscription['outputs']) => saveOutputs.execute(subscription, outputs)"
             >
+              <!-- vuetify gives a filter chip no role nor state: a screen reader could not tell if it is on -->
               <v-chip
                 v-for="output of ['devices', 'email'] as const"
                 :key="output"
                 :value="output"
+                :aria-checked="subscription.outputs.includes(output)"
+                role="checkbox"
                 :prepend-icon="output === 'email' ? mdiEmail : mdiCellphone"
                 size="small"
                 variant="outlined"

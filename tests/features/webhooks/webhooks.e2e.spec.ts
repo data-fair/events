@@ -6,8 +6,8 @@ import { closedPortUrl } from '../../support/hook-server.ts'
 const pageUrl = (keys: string[], titles: string[]) =>
   `/events/embed/subscribe-webhooks?key=${keys.join(',')}&title=${titles.join(',')}&sender=user:test-user1`
 
-const saveButton = (page: Page) => page.getByRole('button', { name: 'Enregistrer' }).first()
-const addButton = (page: Page) => page.getByRole('button', { name: 'Ajouter', exact: true })
+const saveButton = (page: Page) => page.getByRole('button', { name: 'Save' }).first()
+const addButton = (page: Page) => page.getByRole('button', { name: 'Add', exact: true })
 
 test.describe('Webhooks UI', () => {
   test.beforeEach(clean)
@@ -17,11 +17,11 @@ test.describe('Webhooks UI', () => {
     await page.getByRole('button', { name: 'Add a webhook' }).click()
     await expect(addButton(page)).toBeDisabled()
 
-    await page.getByLabel('Libellé').fill('My webhook')
+    await page.getByLabel('Label', { exact: true }).fill('My webhook')
     await page.getByLabel('URL').fill('https://example.com/hook')
     await addButton(page).click()
     // several topics are proposed, none is preselected
-    await expect(page.getByText('Ce paramètre est requis')).toBeVisible()
+    await expect(page.getByText('This parameter is required')).toBeVisible()
 
     await page.locator('.v-select').click()
     await page.getByRole('option', { name: 'TopicTwo' }).click()
@@ -35,17 +35,17 @@ test.describe('Webhooks UI', () => {
   test('tests a webhook before adding it', async ({ page, goToWithAuth }) => {
     await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
     await page.getByRole('button', { name: 'Add a webhook' }).click()
-    await page.getByLabel('Libellé').fill('Not yet added')
+    await page.getByLabel('Label', { exact: true }).fill('Not yet added')
     await page.getByLabel('URL').fill(`${closedPortUrl}/hook`)
-    await page.getByRole('button', { name: 'Tester' }).click()
-    await expect(page.getByText(/L'envoi a échoué : connect ECONNREFUSED/)).toBeVisible()
+    await page.getByRole('button', { name: 'Test', exact: true }).click()
+    await expect(page.getByText(/Sending failed: connect ECONNREFUSED/)).toBeVisible()
     expect((await (await axiosAuth('test-user1')).get('/api/webhook-subscriptions')).data.count).toBe(0)
   })
 
   test('does not propose a topic selector for a single topic', async ({ page, goToWithAuth }) => {
     await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
     await page.getByRole('button', { name: 'Add a webhook' }).click()
-    await expect(page.getByLabel('Libellé')).toBeVisible()
+    await expect(page.getByLabel('Label', { exact: true })).toBeVisible()
     await expect(page.locator('.v-select')).toHaveCount(0)
   })
 
@@ -62,7 +62,7 @@ test.describe('Webhooks UI', () => {
     await page.getByRole('button', { name: /Existing webhook/ }).click()
     await expect(saveButton(page)).toBeDisabled()
 
-    await page.getByLabel('Libellé').first().fill('Renamed webhook')
+    await page.getByLabel('Label', { exact: true }).first().fill('Renamed webhook')
     await expect(saveButton(page)).toBeEnabled()
     await page.locator('.v-select').first().click()
     await page.getByRole('option', { name: 'TopicTwo' }).click()
@@ -90,7 +90,7 @@ test.describe('Webhooks UI', () => {
 
     await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
     await page.getByRole('button', { name: /Doomed webhook/ }).click()
-    await page.getByRole('button', { name: 'Supprimer' }).click()
+    await page.getByRole('button', { name: 'Delete' }).click()
     await page.getByRole('button', { name: 'Yes', exact: true }).click()
     await expect(page.getByText('Doomed webhook')).toHaveCount(0)
     expect((await user1.get('/api/webhook-subscriptions')).data.count).toBe(0)
@@ -112,7 +112,7 @@ test.describe('Webhooks UI', () => {
 
     let listRequests = 0
     page.on('request', req => { if (req.url().includes('/api/webhooks?')) listRequests++ })
-    await page.getByRole('button', { name: 'Tester' }).click()
+    await page.getByRole('button', { name: 'Test', exact: true }).click()
     await expect(page.getByText(/ - waiting| - working/)).toBeVisible()
     const listRequestsAfterTest = listRequests
     // the worker polls every 4s, its outcome is pushed over WS

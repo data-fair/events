@@ -71,15 +71,15 @@
               {{ notification.body }}
             </div>
             <template #append>
-              <template v-if="i < countNew">
-                <v-badge
-                  color="warning"
-                  class="mr-3"
-                  dot
-                  inline
-                />
-                <span class="d-sr-only">{{ t('newNotification') }}</span>
-              </template>
+              <!-- its label is what a screen reader says, as the badge of the bell (default: "Badge") -->
+              <v-badge
+                v-if="i < countNew"
+                :label="t('newNotification')"
+                color="warning"
+                class="mr-3"
+                dot
+                inline
+              />
               <owner-avatar
                 v-if="notification.sender"
                 :owner="avatarOwner(notification.sender)"

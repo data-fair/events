@@ -45,7 +45,12 @@ test.describe('Subscriptions UI', () => {
     const outputs = async () => (await user1.get('/api/subscriptions')).data.results.map((s: any) => s.outputs.sort())
 
     await goToWithAuth('/events/subscriptions', 'test-user1')
-    await page.getByText('By email', { exact: true }).click()
+    // the outputs are checkboxes for a screen reader, with their state
+    const email = page.getByRole('group', { name: 'Also receive' }).getByRole('checkbox', { name: 'By email' })
+    await expect(page.getByRole('checkbox', { name: 'On my devices' })).toBeChecked()
+    await expect(email).not.toBeChecked()
+    await email.click()
+    await expect(email).toBeChecked()
     await expect.poll(outputs).toEqual([['devices', 'email']])
 
     await page.getByRole('button', { name: 'Unsubscribe' }).click()

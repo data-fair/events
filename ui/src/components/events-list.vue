@@ -59,11 +59,12 @@
               :size="28"
             />
           </template>
-          <!-- the date on the line of the title: aligned on top, not centered on an item of several lines -->
-          <v-list-item-title class="d-flex align-baseline ga-4">
+          <!-- the date on the line of the title: aligned on top, not centered on an item of several lines;
+               under the title on a phone, where it would leave the title a narrow column -->
+          <v-list-item-title class="d-flex flex-wrap flex-sm-nowrap align-baseline gc-4">
             <span class="text-wrap flex-grow-1">{{ event.title || event.topic.title }}</span>
-            <!-- both, without hovering: how long ago at a glance, the exact date for the traceability -->
-            <span class="text-body-small text-medium-emphasis text-no-wrap">{{ dayjs(event.date).fromNow() }} · {{ dayjs(event.date).format('lll') }}</span>
+            <!-- both, without hovering: how long ago at a glance, the exact date for the traceability (alone on a phone) -->
+            <span class="text-body-small text-medium-emphasis text-no-wrap"><span class="d-none d-sm-inline">{{ dayjs(event.date).fromNow() }} · </span>{{ dayjs(event.date).format('lll') }}</span>
           </v-list-item-title>
           <v-list-item-subtitle>
             <span>{{ originatorLabel(event) }}</span>

@@ -49,5 +49,8 @@ test.describe('Notifications UI', () => {
     // the second page moved the pointer again, only the first listing tells what is new
     await expect(page.locator('.v-list-item--active')).toHaveCount(1)
     await expect(page.locator('.v-list-item--active')).toContainText('fresh notification')
+    // the dot is said once, by its label
+    await expect(page.locator('.v-list-item--active').getByRole('status', { name: 'New notification' })).toHaveCount(1)
+    await expect(page.getByText('New notification')).toHaveCount(0)
   })
 })
