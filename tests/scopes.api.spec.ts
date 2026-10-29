@@ -2,6 +2,7 @@ import type { AxiosInstance } from 'axios'
 import { test, expect } from '@playwright/test'
 import WebSocket from 'ws'
 import { axios, clean, devBaseURL } from './support/axios.ts'
+import { closedPortUrl } from './support/hook-server.ts'
 import { nhiSession, scopeNhiId } from './support/nhi.ts'
 import { scopedOperations, acceptedScopes } from '../api/src/shared/scopes.ts'
 
@@ -12,7 +13,7 @@ const webhookSubscription = {
   title: 'Test webhook sub',
   topic: { key: 'topic1' },
   sender: { type: 'organization', id: 'test1' },
-  url: 'http://localhost:19876/hook'
+  url: `${closedPortUrl}/hook`
 }
 
 const scopeError = { status: 403, data: expect.stringMatching(/insufficient scope/) }
@@ -104,7 +105,7 @@ test.describe('scope enforcement', () => {
     }
   })
 
-  test('routes that need no session work with a scoped session', async () => {
+  test('routes that need no session work with a scoped session', { tag: '@smoke' }, async () => {
     const { cookieAx } = await nhiSession('notifications:read')
     expect((await cookieAx.get('/api/push/vapidkey')).status).toBe(200)
     const spa = await cookieAx.get('/embed/subscriptions')
