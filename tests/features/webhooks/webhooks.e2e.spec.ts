@@ -91,7 +91,9 @@ test.describe('Webhooks UI', () => {
     await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
     await page.getByRole('button', { name: /Doomed webhook/ }).click()
     await page.getByRole('button', { name: 'Delete' }).click()
-    await page.getByRole('button', { name: 'Yes', exact: true }).click()
+    await expect(page.getByText('The webhook "Doomed webhook" will no longer be called.', { exact: false })).toBeVisible()
+    // the confirmation, on the right of Cancel
+    await page.getByRole('button', { name: 'Delete' }).last().click()
     await expect(page.getByText('Doomed webhook')).toHaveCount(0)
     expect((await user1.get('/api/webhook-subscriptions')).data.count).toBe(0)
   })

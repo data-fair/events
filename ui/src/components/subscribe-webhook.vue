@@ -6,7 +6,11 @@
   />
   <template v-else>
     <div class="d-flex align-center flex-wrap ga-2 mb-4">
-      <span class="text-title-medium">{{ t('webhooks', { count: subscriptions.length }, subscriptions.length) }}</span>
+      <!-- none: the empty text below says it -->
+      <span
+        v-if="subscriptions.length"
+        class="text-title-medium"
+      >{{ t('webhooks', { count: subscriptions.length }, subscriptions.length) }}</span>
       <v-spacer />
       <v-btn
         v-if="!creating"

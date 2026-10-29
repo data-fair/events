@@ -84,10 +84,52 @@
       >
         {{ t('test') }}
       </v-btn>
-      <confirm-menu
+      <!-- min-height: an iframe sized to its content grows to show the menu, as for the removal of a device -->
+      <v-menu
         v-if="modelValue._id"
-        @confirm="remove.execute()"
-      />
+        :close-on-content-click="false"
+        max-width="500"
+        min-height="180"
+        location="bottom end"
+      >
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            color="warning"
+            variant="flat"
+          >
+            {{ t('delete') }}
+          </v-btn>
+        </template>
+        <template #default="{ isActive }">
+          <v-card
+            :title="t('deleteTitle')"
+            data-iframe-height
+          >
+            <v-card-text>
+              {{ t('deleteText', { title: modelValue.title }) }}
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn
+                :disabled="remove.loading.value"
+                variant="text"
+                @click="isActive.value = false"
+              >
+                {{ t('cancel') }}
+              </v-btn>
+              <v-btn
+                :loading="remove.loading.value"
+                color="warning"
+                variant="flat"
+                @click="remove.execute()"
+              >
+                {{ t('delete') }}
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </template>
+      </v-menu>
       <v-btn
         color="primary"
         variant="flat"
@@ -124,6 +166,10 @@ fr:
   testReceived: "Le message de test a été reçu (réponse HTTP {status})."
   testHttpError: "L'URL a répondu par une erreur HTTP {status}."
   testFailed: "L'envoi a échoué : {error}"
+  delete: Supprimer
+  deleteTitle: Supprimer ce webhook
+  deleteText: "Le webhook « {title} » ne sera plus appelé. Pour le retrouver, il faudra le déclarer de nouveau."
+  cancel: Annuler
 en:
   topic: Event
   title: Label
@@ -137,6 +183,10 @@ en:
   testReceived: "The test message was received (HTTP response {status})."
   testHttpError: "The URL answered with an HTTP error {status}."
   testFailed: "Sending failed: {error}"
+  delete: Delete
+  deleteTitle: Delete this webhook
+  deleteText: "The webhook \"{title}\" will no longer be called. To get it back, it will have to be declared again."
+  cancel: Cancel
 </i18n>
 
 <script lang="ts" setup>
