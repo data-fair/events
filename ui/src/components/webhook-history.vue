@@ -5,7 +5,7 @@
     class="mt-4"
   >
     <div class="d-flex align-center ga-2">
-      <span class="text-subtitle-1">{{ t('history') }}</span>
+      <span class="text-body-large">{{ t('history') }}</span>
       <v-spacer />
       <v-btn
         color="primary"

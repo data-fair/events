@@ -18,7 +18,7 @@ export default defineConfig({
   optimizeDeps: { include: ['debug', '@data-fair/lib-vue/owner.js'] },
   resolve: {
     alias: {
-      '~': path.resolve(__dirname, 'src/')
+      '~': path.resolve(import.meta.dirname, 'src/')
     },
   },
   html: {
@@ -47,13 +47,13 @@ export default defineConfig({
         'src/composables'
       ]
     }),
-    Components(),
+    Components({ dts: './dts/components.d.ts' }),
     {
       name: 'inject-site-context',
       async transformIndexHtml (html) {
         // in production this injection will be performed by an express middleware
         if (process.env.NODE_ENV !== 'development') return html
-        const { uiConfig } = await import('../api/src/config')
+        const { uiConfig } = await import('../api/src/config.ts')
         return microTemplate(html, { SITE_PATH: '', UI_CONFIG: JSON.stringify(uiConfig) })
       }
     }
