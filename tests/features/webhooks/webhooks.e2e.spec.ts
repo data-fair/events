@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test'
-import { test } from './fixtures/login.ts'
-import { axiosAuth, clean } from './support/axios.ts'
-import { closedPortUrl } from './support/hook-server.ts'
+import { test } from '../../fixtures/login.ts'
+import { axiosAuth, clean } from '../../support/axios.ts'
+import { closedPortUrl } from '../../support/hook-server.ts'
 
 const pageUrl = (keys: string[], titles: string[]) =>
   `/events/embed/subscribe-webhooks?key=${keys.join(',')}&title=${titles.join(',')}&sender=user:test-user1`

@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
-import { test } from './fixtures/login.ts'
-import { axiosAuth, clean, devBaseURL, axios } from './support/axios.ts'
+import { test } from '../../fixtures/login.ts'
+import { axiosAuth, clean, devBaseURL, axios } from '../../support/axios.ts'
 
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 

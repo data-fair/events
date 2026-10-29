@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { describeUserAgent } from '../api/src/shared/user-agent.ts'
+import { describeUserAgent } from '../../../api/src/shared/user-agent.ts'
 
 test.describe('describeUserAgent', () => {
   test('describes a desktop chrome on windows', () => {

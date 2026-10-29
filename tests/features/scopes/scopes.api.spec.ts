@@ -1,10 +1,10 @@
 import type { AxiosInstance } from 'axios'
 import { test, expect } from '@playwright/test'
 import WebSocket from 'ws'
-import { axios, clean, devBaseURL } from './support/axios.ts'
-import { closedPortUrl } from './support/hook-server.ts'
-import { nhiSession, scopeNhiId } from './support/nhi.ts'
-import { scopedOperations, acceptedScopes } from '../api/src/shared/scopes.ts'
+import { axios, clean, devBaseURL } from '../../support/axios.ts'
+import { closedPortUrl } from '../../support/hook-server.ts'
+import { nhiSession, scopeNhiId } from '../../support/nhi.ts'
+import { scopedOperations, acceptedScopes } from '../../../api/src/shared/scopes.ts'
 
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 

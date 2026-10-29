@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import WebSocket from 'ws'
-import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
+import { axios, axiosAuth, clean, devBaseURL } from '../../support/axios.ts'
 
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')

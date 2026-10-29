@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { backoffMinutes } from '../api/src/shared/operations.ts'
+import { backoffMinutes } from '../../../api/src/shared/operations.ts'
 
 test.describe('backoffMinutes', () => {
   test('returns 1 for 1 error', () => {

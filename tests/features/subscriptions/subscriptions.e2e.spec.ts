@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
-import { test } from './fixtures/login.ts'
-import { axiosAuth, clean } from './support/axios.ts'
+import { test } from '../../fixtures/login.ts'
+import { axiosAuth, clean } from '../../support/axios.ts'
 
 test.describe('Subscriptions UI', () => {
   test.beforeEach(clean)

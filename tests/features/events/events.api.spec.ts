@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { axios, axiosAuth, clean, baseURL, devBaseURL } from './support/axios.ts'
-import { closedPortUrl } from './support/hook-server.ts'
+import { axios, axiosAuth, clean, baseURL, devBaseURL } from '../../support/axios.ts'
+import { closedPortUrl } from '../../support/hook-server.ts'
 
 const axAno = axios()
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import WebSocket from 'ws'
-import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
-import { startHookServer, closedPortUrl } from './support/hook-server.ts'
+import { axios, axiosAuth, clean, devBaseURL } from '../../support/axios.ts'
+import { startHookServer, closedPortUrl } from '../../support/hook-server.ts'
 
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })

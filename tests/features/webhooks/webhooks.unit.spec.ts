@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { coalesceAction, nextAttemptDate, failedAttemptPatch } from '../api/src/webhooks/operations.ts'
+import { coalesceAction, nextAttemptDate, failedAttemptPatch } from '../../../api/src/webhooks/operations.ts'
 
 test.describe('coalesceAction', () => {
   test('inserts when nothing is pending', () => {
