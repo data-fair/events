@@ -29,9 +29,6 @@ test.describe('Notifications UI', () => {
       sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
 
-    // wait a bit for notification processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
     await goToWithAuth('/events/embed/notifications', 'test-user1')
     await expect(page.getByText('Test notification title')).toBeVisible()
     await expect(page.getByText('1 notification')).toBeVisible()

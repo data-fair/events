@@ -29,9 +29,6 @@ test.describe('DfNotificationQueue on dev page', () => {
       sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
 
-    // wait for notification processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
     await goToWithAuth('/events/dev', 'test-user1')
     await page.getByRole('button', { name: 'Open notification list' }).click()
     await expect(page.getByText('Dev page notification title')).toBeVisible()

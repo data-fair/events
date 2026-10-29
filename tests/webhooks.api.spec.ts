@@ -96,8 +96,8 @@ test.describe('webhooks', () => {
 
       await postMatchingEvent('webhook delivery test')
 
-      // wait for the webhook worker to process (polls every 4s)
-      await new Promise(resolve => setTimeout(resolve, 8000))
+      // the webhook worker polls every 4s
+      await expect.poll(async () => (await admin1.get('/api/webhooks')).data.results[0]?.status, { timeout: 12000 }).toBe('ok')
 
       expect(received.length).toBe(1)
       expect(received[0].body.title).toBe('webhook delivery test')
@@ -132,8 +132,8 @@ test.describe('webhooks', () => {
 
       await postMatchingEvent('retry test')
 
-      // wait for the first attempt
-      await new Promise(resolve => setTimeout(resolve, 8000))
+      // the first attempt
+      await expect.poll(async () => (await admin1.get('/api/webhooks')).data.results[0]?.status, { timeout: 12000 }).toBe('error')
 
       expect(callCount).toBe(1)
 
@@ -181,7 +181,7 @@ test.describe('webhooks', () => {
         nextAttempt: new Date(Date.now() - 1000).toISOString()
       })
 
-      await new Promise(resolve => setTimeout(resolve, 8000))
+      await expect.poll(async () => (await axDev.get('/api/test-env/webhooks/test-max-retries')).data?.nbAttempts, { timeout: 12000 }).toBe(10)
 
       const webhook = (await axDev.get('/api/test-env/webhooks/test-max-retries')).data
       expect(webhook?.status).toBe('error')
@@ -268,8 +268,8 @@ test.describe('webhooks', () => {
 
     await postMatchingEvent('manual retry')
 
-    // wait for the worker to try (will fail because no server is listening)
-    await new Promise(resolve => setTimeout(resolve, 8000))
+    // the worker tries and fails: nothing listens there
+    await expect.poll(async () => (await admin1.get('/api/webhooks')).data.results[0]?.status, { timeout: 12000 }).toBe('error')
 
     const list = await admin1.get('/api/webhooks')
     expect(list.data.results[0].status).toBe('error')

@@ -342,8 +342,7 @@ test.describe('subscriptions', () => {
       title: 'notif direct 1',
       recipient: { id: 'test-user1' }
     })
-    await new Promise(resolve => setTimeout(resolve, 200))
-    expect(messages.length).toBe(1)
+    await expect.poll(() => messages.length).toBe(1)
     expect(messages[0].data.title).toBe('notif direct 1')
 
     await axPush.post('/api/notifications', {
@@ -352,8 +351,7 @@ test.describe('subscriptions', () => {
       title: 'notif direct 2',
       recipient: { id: 'test-user1' }
     })
-    await new Promise(resolve => setTimeout(resolve, 200))
-    expect(messages.length).toBe(2)
+    await expect.poll(() => messages.length).toBe(2)
     expect(messages[1].data.title).toBe('notif direct 2')
 
     // a duplicate should not produce a WS message
@@ -364,8 +362,7 @@ test.describe('subscriptions', () => {
       title: 'notif dedup',
       recipient: { id: 'test-user1' }
     })
-    await new Promise(resolve => setTimeout(resolve, 200))
-    expect(messages.length).toBe(3)
+    await expect.poll(() => messages.length).toBe(3)
 
     await axPush.post('/api/notifications', {
       eventId: 'ws-dedup',
@@ -374,6 +371,7 @@ test.describe('subscriptions', () => {
       title: 'notif dedup',
       recipient: { id: 'test-user1' }
     })
+    // nothing must come: give it the time a message took above
     await new Promise(resolve => setTimeout(resolve, 200))
     expect(messages.length).toBe(3)
 
