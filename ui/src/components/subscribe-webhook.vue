@@ -21,7 +21,7 @@
             <div>{{ subscription.title }}</div>
             <div
               v-if="topics.length > 1"
-              class="text-caption text-medium-emphasis"
+              class="text-body-small text-medium-emphasis"
             >
               {{ subscription.topic.title ?? subscription.topic.key }}
             </div>

@@ -1,10 +1,10 @@
-import type { Subscription } from '../api/types/index.js'
+import type { Subscription } from '../../../api/types/index.js'
 
 import { test, expect } from '@playwright/test'
-import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
+import { axios, axiosAuth, clean, devBaseURL } from '../../support/axios.ts'
 
-const axIdentities = axios({ params: { key: 'SECRET_IDENTITIES' }, baseURL: devBaseURL })
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axIdentities = axios({ headers: { 'x-secret-key': 'secret-identities' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')
 const admin1 = await axiosAuth('test1-admin1')
 admin1.setOrg('test1')

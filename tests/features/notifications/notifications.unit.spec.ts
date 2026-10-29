@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { buildNotificationMail, prepareSubscriptionNotification } from '../api/src/notifications/operations.ts'
+import { buildNotificationMail, prepareSubscriptionNotification } from '../../../api/src/notifications/operations.ts'
 
 const makeEvent = (overrides: any = {}) => ({
   _id: 'evt1',

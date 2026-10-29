@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
-import { test } from './fixtures/login.ts'
-import { axiosAuth, clean } from './support/axios.ts'
+import { test } from '../../fixtures/login.ts'
+import { axiosAuth, clean } from '../../support/axios.ts'
 
 test.describe('Subscriptions UI', () => {
   test.beforeEach(clean)
@@ -10,7 +10,7 @@ test.describe('Subscriptions UI', () => {
     await expect(page.getByText('No subscription')).toBeVisible()
   })
 
-  test('shows subscriptions after creating one via API', async ({ page, goToWithAuth }) => {
+  test('shows subscriptions after creating one via API', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
     const user1 = await axiosAuth('test-user1')
     await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },

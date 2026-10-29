@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test'
-import { test } from './fixtures/login.ts'
-import { axiosAuth, clean, devBaseURL, axios } from './support/axios.ts'
+import { test } from '../../fixtures/login.ts'
+import { axiosAuth, clean, devBaseURL, axios } from '../../support/axios.ts'
 
-const axPush = axios({ headers: { 'x-secret-key': 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 
 test.describe('Notifications UI', () => {
   test.beforeEach(clean)
@@ -12,7 +12,7 @@ test.describe('Notifications UI', () => {
     await expect(page.getByText('No notification')).toBeVisible()
   })
 
-  test('shows notifications after events are sent with subscription', async ({ page, goToWithAuth }) => {
+  test('shows notifications after events are sent with subscription', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
     // create a subscription for test-user1
     const user1 = await axiosAuth('test-user1')
     await user1.post('/api/subscriptions', {
@@ -28,9 +28,6 @@ test.describe('Notifications UI', () => {
       title: 'Test notification title',
       sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
-
-    // wait a bit for notification processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
 
     await goToWithAuth('/events/embed/notifications', 'test-user1')
     await expect(page.getByText('Test notification title')).toBeVisible()

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { coalesceAction, nextAttemptDate } from '../api/src/webhooks/operations.ts'
+import { coalesceAction, nextAttemptDate, failedAttemptPatch } from '../../../api/src/webhooks/operations.ts'
 
 test.describe('coalesceAction', () => {
   test('inserts when nothing is pending', () => {
@@ -52,5 +52,24 @@ test.describe('nextAttemptDate', () => {
     const now = new Date('2026-01-01T00:00:00.000Z')
     // backoffMinutes(1) = 1
     expect(nextAttemptDate(1, now)).toBe('2026-01-01T00:01:00.000Z')
+  })
+})
+
+test.describe('failedAttemptPatch', () => {
+  const now = new Date('2026-01-01T00:00:00.000Z')
+  const attempt = { date: now.toISOString(), status: 500 }
+
+  test('schedules the next attempt with the backoff of its rank', () => {
+    expect(failedAttemptPatch(0, attempt, now)).toEqual({
+      $set: { status: 'error', lastAttempt: attempt, nextAttempt: nextAttemptDate(1, now) },
+      $inc: { nbAttempts: 1 }
+    })
+  })
+
+  test('gives up after the 10th attempt', () => {
+    const patch = failedAttemptPatch(9, attempt, now)
+    expect(patch.$set.nextAttempt).toBeUndefined()
+    expect(patch.$unset).toEqual({ nextAttempt: '' })
+    expect(failedAttemptPatch(8, attempt, now).$set.nextAttempt).toBe(nextAttemptDate(9, now))
   })
 })

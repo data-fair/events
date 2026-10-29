@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { axios, axiosAuth, clean, baseURL, devBaseURL } from './support/axios.ts'
+import { axios, axiosAuth, clean, baseURL, devBaseURL } from '../../support/axios.ts'
+import { closedPortUrl } from '../../support/hook-server.ts'
 
 const axAno = axios()
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')
 const admin1 = await axiosAuth('test1-admin1')
@@ -15,14 +16,14 @@ test.describe('events', () => {
   })
 
   test('should reject posting with bad secret key', async () => {
-    await expect(axPush.post('/api/events', {}, { params: { key: 'badkey' } })).rejects.toMatchObject({ status: 401 })
+    await expect(axPush.post('/api/events', {}, { headers: { 'x-secret-key': 'badkey' } })).rejects.toMatchObject({ status: 401 })
   })
 
   test('should reject anonymous user', async () => {
     await expect(axAno.get('/api/events')).rejects.toMatchObject({ status: 401 })
   })
 
-  test('should send an event', async () => {
+  test('should send an event', { tag: '@smoke' }, async () => {
     let res = await axPush.post('/api/events', [{
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
@@ -55,6 +56,18 @@ test.describe('events', () => {
     expect(res.data.results.length).toBe(1)
     expect(res.data.results[0]._id).not.toBe(id1)
     expect(res.data.next).toBeFalsy()
+  })
+
+  test('should paginate over an older event with a greater id', async () => {
+    const sender = { type: 'user', id: 'test-user1', name: 'User 1' }
+    await axPush.post('/api/events', [
+      { _id: 'b-newer', date: '2026-01-02T00:00:00.000Z', topic: { key: 'topic1' }, title: 'newer', sender },
+      { _id: 'z-older', date: '2026-01-01T00:00:00.000Z', topic: { key: 'topic1' }, title: 'older', sender }
+    ])
+    let res = await user1.get('/api/events', { params: { size: 1 } })
+    expect(res.data.results.map((e: any) => e._id)).toEqual(['b-newer'])
+    res = await user1.get(res.data.next)
+    expect(res.data.results.map((e: any) => e._id)).toEqual(['z-older'])
   })
 
   test('should send an internationalized event', async () => {
@@ -102,7 +115,7 @@ test.describe('events', () => {
     const sender = { type: 'user', id: 'test-user1', name: 'User 1' }
     await user1.post('/api/subscriptions', { topic: { key: 'topic1' }, sender })
     await user1.post('/api/webhook-subscriptions', {
-      title: 'channels test', topic: { key: 'topic1' }, sender, url: 'http://localhost:19890/hook'
+      title: 'channels test', topic: { key: 'topic1' }, sender, url: `${closedPortUrl}/hook`
     })
     await axPush.post('/api/events', [{ date: new Date().toISOString(), topic: { key: 'topic1' }, title: 'webhooks only', sender, channels: ['webhooks'] }])
     expect((await user1.get('/api/events')).data.results.length).toBe(0)

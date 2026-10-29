@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { localizeProp, localizeEvent, getSubscriptionsFilter, cleanEvent, buildSearchTexts } from '../api/src/events/operations.ts'
+import { localizeProp, localizeEvent, getSubscriptionsFilter, cleanEvent, buildSearchTexts } from '../../../api/src/events/operations.ts'
 
 test.describe('localizeProp', () => {
   test('returns string prop as-is', () => {

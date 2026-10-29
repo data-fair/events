@@ -9,10 +9,11 @@
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,
+    "erasableSyntaxOnly": true,
+    "types": ["node"],
     "paths": {
       "#shared/*": ["./shared/*"]
     }
   },
-  "exclude": ["node_modules", "types", "ui", "dev"],
-  "types": ["vuetify"]
+  "exclude": ["node_modules", "types", "ui", "dev"]
 }

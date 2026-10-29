@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test'
-import { test } from './fixtures/login.ts'
-import { axiosAuth, clean, devBaseURL, axios } from './support/axios.ts'
+import { test } from '../../fixtures/login.ts'
+import { axiosAuth, clean, devBaseURL, axios } from '../../support/axios.ts'
 
-const axPush = axios({ headers: { 'x-secret-key': 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 
 test.describe('DfNotificationQueue on dev page', () => {
   test.beforeEach(clean)
@@ -28,9 +28,6 @@ test.describe('DfNotificationQueue on dev page', () => {
       title: 'Dev page notification title',
       sender: { type: 'user', id: 'test-user1', name: 'User 1' }
     }])
-
-    // wait for notification processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
 
     await goToWithAuth('/events/dev', 'test-user1')
     await page.getByRole('button', { name: 'Open notification list' }).click()

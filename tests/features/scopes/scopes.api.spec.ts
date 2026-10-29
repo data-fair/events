@@ -1,18 +1,19 @@
 import type { AxiosInstance } from 'axios'
 import { test, expect } from '@playwright/test'
 import WebSocket from 'ws'
-import { axios, clean, devBaseURL } from './support/axios.ts'
-import { nhiSession, scopeNhiId } from './support/nhi.ts'
-import { scopedOperations, acceptedScopes } from '../api/src/shared/scopes.ts'
+import { axios, clean, devBaseURL } from '../../support/axios.ts'
+import { closedPortUrl } from '../../support/hook-server.ts'
+import { nhiSession, scopeNhiId } from '../../support/nhi.ts'
+import { scopedOperations, acceptedScopes } from '../../../api/src/shared/scopes.ts'
 
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 
 const subscription = { topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test1' } }
 const webhookSubscription = {
   title: 'Test webhook sub',
   topic: { key: 'topic1' },
   sender: { type: 'organization', id: 'test1' },
-  url: 'http://localhost:19876/hook'
+  url: `${closedPortUrl}/hook`
 }
 
 const scopeError = { status: 403, data: expect.stringMatching(/insufficient scope/) }
@@ -104,7 +105,7 @@ test.describe('scope enforcement', () => {
     }
   })
 
-  test('routes that need no session work with a scoped session', async () => {
+  test('routes that need no session work with a scoped session', { tag: '@smoke' }, async () => {
     const { cookieAx } = await nhiSession('notifications:read')
     expect((await cookieAx.get('/api/push/vapidkey')).status).toBe(200)
     const spa = await cookieAx.get('/embed/subscriptions')
@@ -166,7 +167,7 @@ test.describe('scope enforcement', () => {
     await expect(brokenCookie.get('/api/notifications', { timeout: 5000 })).rejects.toMatchObject({ status: 401 })
 
     // an internal secret push only depends on the secret, a stray bearer header is ignored
-    const secretWithBearer = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL, headers: { authorization: 'Bearer not-a-token' } })
+    const secretWithBearer = axios({ baseURL: devBaseURL, headers: { 'x-secret-key': 'secret-events', authorization: 'Bearer not-a-token' } })
     const res = await secretWithBearer.post('/api/events', [{ topic: { key: 'topic1' }, title: 'pushed with a stray bearer', sender: { type: 'user', id: 'test-user1', name: 'User 1' } }])
     expect(res.status).toBe(201)
   })

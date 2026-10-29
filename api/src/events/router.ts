@@ -33,9 +33,10 @@ router.get('', requireOperationScope('listEvents'), async (req, res, next) => {
   if (skip) throw httpError(400, 'skip is not supported, use "before" parameter with the date of the last event of the previous page')
   if (req.query.before && typeof req.query.before === 'string') {
     const [beforeDate, beforeId] = req.query.before.split('/')
-    query.date = { $lte: beforeDate }
-    // optional beforeId as a tie-breaker
-    if (beforeId) query._id = { $lt: beforeId }
+    // optional beforeId as a tie-breaker between events of the same date only: ids are random,
+    // an older event can have a greater id
+    if (beforeId) query.$or = [{ date: { $lt: beforeDate } }, { date: beforeDate, _id: { $lt: beforeId } }]
+    else query.date = { $lte: beforeDate }
   }
 
   const events = (await mongo.events.find(query).project(project).limit(size).sort(sort).toArray()) as FullEvent[]

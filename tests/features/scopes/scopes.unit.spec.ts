@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { hasScope } from '@data-fair/lib-common-types/session/index.js'
-import { apiDocs } from '../api/contract/api-docs.ts'
-import { acceptedScopes, scopedOperations, scopeDescriptions, channelScopes, requireOperationScope } from '../api/src/shared/scopes.ts'
+import { apiDocs } from '../../../api/contract/api-docs.ts'
+import { acceptedScopes, scopedOperations, scopeDescriptions, channelScopes, requireOperationScope } from '../../../api/src/shared/scopes.ts'
 
 const state = (scopes?: string[]) => ({ lang: 'fr', scopes }) as any
 

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { equalDeviceRegistrations } from '../api/src/push/operations.ts'
+import { equalDeviceRegistrations } from '../../../api/src/push/operations.ts'
 
 test.describe('equalDeviceRegistrations', () => {
   test('returns false for null first arg', () => {

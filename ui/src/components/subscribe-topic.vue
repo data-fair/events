@@ -63,7 +63,7 @@ const {
   topic: { key: string, title: string }
   icon?: string
   urlTemplate?: string
-  outputs: string[]
+  outputs?: string[]
   sender?: Event['sender']
   noSender: boolean
 }>()

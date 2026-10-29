@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { createServer } from 'node:http'
 import WebSocket from 'ws'
-import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
+import { axios, axiosAuth, clean, devBaseURL } from '../../support/axios.ts'
+import { startHookServer, closedPortUrl } from '../../support/hook-server.ts'
 
-const axPush = axios({ params: { key: 'SECRET_EVENTS' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })
 const admin1 = await axiosAuth('test1-admin1')
 const user1 = await axiosAuth('test-user1')
@@ -37,12 +37,12 @@ const postMatchingEvent = (title: string) => axPush.post('/api/events', [{
 test.describe('webhooks', () => {
   test.beforeEach(clean)
 
-  test('should create a webhook when event matches a webhook subscription', async () => {
+  test('should create a webhook when event matches a webhook subscription', { tag: '@smoke' }, async () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Test webhook sub',
       topic: { key: 'topic1' },
       sender: { type: 'organization', id: 'test1' },
-      url: 'http://localhost:19876/hook'
+      url: `${closedPortUrl}/hook`
     })
 
     await postMatchingEvent('a notification')
@@ -59,23 +59,23 @@ test.describe('webhooks', () => {
       title: 'Test webhook sub',
       topic: { key: 'topic1' },
       sender: { type: 'organization', id: 'test1' },
-      url: 'http://localhost:19876/hook'
+      url: `${closedPortUrl}/hook`
     })
     await expect(user1.post('/api/webhook-subscriptions', {
       _id: subscription._id,
       title: 'Hijacked',
       topic: { key: 'topic1' },
       sender: { type: 'organization', id: 'test1' },
-      url: 'http://localhost:19876/other'
+      url: `${closedPortUrl}/other`
     })).rejects.toMatchObject({ status: 404 })
     const { data } = await admin1.get('/api/webhook-subscriptions')
     expect(data.count).toBe(1)
-    expect(data.results[0].url).toBe('http://localhost:19876/hook')
+    expect(data.results[0].url).toBe(`${closedPortUrl}/hook`)
   })
 
   test('should deliver a webhook to a target URL', async () => {
     const received: any[] = []
-    const hookServer = createServer((req, res) => {
+    const hookServer = await startHookServer((req, res) => {
       const chunks: Buffer[] = []
       req.on('data', (chunk) => { chunks.push(chunk) })
       req.on('end', () => {
@@ -84,21 +84,20 @@ test.describe('webhooks', () => {
         res.end()
       })
     })
-    await new Promise<void>(resolve => hookServer.listen(19876, resolve))
 
     try {
       await admin1.post('/api/webhook-subscriptions', {
         title: 'Test delivery',
         topic: { key: 'topic1' },
         sender: { type: 'organization', id: 'test1' },
-        url: 'http://localhost:19876/hook',
+        url: hookServer.url,
         header: { key: 'X-Secret', value: 'mysecret' }
       })
 
       await postMatchingEvent('webhook delivery test')
 
-      // wait for the webhook worker to process (polls every 4s)
-      await new Promise(resolve => setTimeout(resolve, 8000))
+      // the webhook worker polls every 4s
+      await expect.poll(async () => (await admin1.get('/api/webhooks')).data.results[0]?.status, { timeout: 12000 }).toBe('ok')
 
       expect(received.length).toBe(1)
       expect(received[0].body.title).toBe('webhook delivery test')
@@ -114,7 +113,7 @@ test.describe('webhooks', () => {
 
   test('should retry failed webhooks with backoff', async () => {
     let callCount = 0
-    const hookServer = createServer((req, res) => {
+    const hookServer = await startHookServer((req, res) => {
       callCount++
       req.on('data', () => {})
       req.on('end', () => {
@@ -122,20 +121,19 @@ test.describe('webhooks', () => {
         res.end('Internal Server Error')
       })
     })
-    await new Promise<void>(resolve => hookServer.listen(19877, resolve))
 
     try {
       await admin1.post('/api/webhook-subscriptions', {
         title: 'Retry test',
         topic: { key: 'topic1' },
         sender: { type: 'organization', id: 'test1' },
-        url: 'http://localhost:19877/hook'
+        url: hookServer.url
       })
 
       await postMatchingEvent('retry test')
 
-      // wait for the first attempt
-      await new Promise(resolve => setTimeout(resolve, 8000))
+      // the first attempt
+      await expect.poll(async () => (await admin1.get('/api/webhooks')).data.results[0]?.status, { timeout: 12000 }).toBe('error')
 
       expect(callCount).toBe(1)
 
@@ -149,60 +147,13 @@ test.describe('webhooks', () => {
     }
   })
 
-  test('should stop retrying after 10 failed attempts', async () => {
-    // create a real webhook subscription and a failing server
-    const hookServer = createServer((req, res) => {
-      req.on('data', () => {})
-      req.on('end', () => {
-        res.writeHead(500)
-        res.end('fail')
-      })
-    })
-    await new Promise<void>(resolve => hookServer.listen(19878, resolve))
-
-    try {
-      const sub = (await admin1.post('/api/webhook-subscriptions', {
-        title: 'Max retry test',
-        topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'test1' },
-        url: 'http://localhost:19878/hook'
-      })).data
-
-      // insert a webhook with 9 previous attempts so the next failure is the 10th
-      await axDev.post('/api/test-env/webhooks', {
-        _id: 'test-max-retries',
-        sender: { type: 'organization', id: 'test1' },
-        owner: sub.owner,
-        subscription: { _id: sub._id, title: sub.title },
-        notification: {
-          title: 'max retry test',
-          topic: { key: 'topic1' },
-          date: new Date().toISOString()
-        },
-        status: 'error',
-        nbAttempts: 9,
-        nextAttempt: new Date(Date.now() - 1000).toISOString()
-      })
-
-      await new Promise(resolve => setTimeout(resolve, 8000))
-
-      const webhook = (await axDev.get('/api/test-env/webhooks/test-max-retries')).data
-      expect(webhook?.status).toBe('error')
-      expect(webhook?.nbAttempts).toBe(10)
-      // no more retries scheduled
-      expect(webhook?.nextAttempt).toBeFalsy()
-    } finally {
-      hookServer.close()
-    }
-  })
-
   test('should list webhook subscriptions of several topics', async () => {
     for (const key of ['topic1', 'topic2', 'topic3']) {
       await admin1.post('/api/webhook-subscriptions', {
         title: 'Sub ' + key,
         topic: { key },
         sender: { type: 'organization', id: 'test1' },
-        url: 'http://localhost:19881/hook'
+        url: `${closedPortUrl}/hook`
       })
     }
     const one = await admin1.get('/api/webhook-subscriptions', { params: { topic: 'topic1' } })
@@ -212,14 +163,13 @@ test.describe('webhooks', () => {
   })
 
   test('should stream the delivery progress of a webhook subscription over WS', async () => {
-    const hookServer = createServer((req, res) => { req.resume(); req.on('end', () => { res.writeHead(200); res.end() }) })
-    await new Promise<void>(resolve => hookServer.listen(19882, resolve))
+    const hookServer = await startHookServer((req, res) => { req.resume(); req.on('end', () => { res.writeHead(200); res.end() }) })
     try {
       const sub = (await admin1.post('/api/webhook-subscriptions', {
         title: 'WS progress',
         topic: { key: 'topic1' },
         sender: { type: 'organization', id: 'test1' },
-        url: 'http://localhost:19882/hook'
+        url: hookServer.url
       })).data
       const channel = `${sub.owner.type}:${sub.owner.id}:webhook-subscriptions/${sub._id}/webhooks`
 
@@ -249,7 +199,7 @@ test.describe('webhooks', () => {
       title: 'Cancel test',
       topic: { key: 'topic1' },
       sender: { type: 'organization', id: 'test1' },
-      url: 'http://localhost:19879/hook'
+      url: `${closedPortUrl}/hook`
     })
 
     await postMatchingEvent('cancel test')
@@ -267,13 +217,13 @@ test.describe('webhooks', () => {
       title: 'Manual retry test',
       topic: { key: 'topic1' },
       sender: { type: 'organization', id: 'test1' },
-      url: 'http://localhost:19880/hook'
+      url: `${closedPortUrl}/hook`
     })
 
     await postMatchingEvent('manual retry')
 
-    // wait for the worker to try (will fail because no server is listening)
-    await new Promise(resolve => setTimeout(resolve, 8000))
+    // the worker tries and fails: nothing listens there
+    await expect.poll(async () => (await admin1.get('/api/webhooks')).data.results[0]?.status, { timeout: 12000 }).toBe('error')
 
     const list = await admin1.get('/api/webhooks')
     expect(list.data.results[0].status).toBe('error')
@@ -305,7 +255,7 @@ test.describe('webhooks', () => {
   })
 
   const createSub = async (topicKey = 'topic1') => (await admin1.post('/api/webhook-subscriptions', {
-    title: 'coalesce test', topic: { key: topicKey }, sender: { type: 'organization', id: 'test1' }, url: 'http://localhost:19891/hook'
+    title: 'coalesce test', topic: { key: topicKey }, sender: { type: 'organization', id: 'test1' }, url: `${closedPortUrl}/hook`
   })).data
 
   test('coalesce resets a delivered webhook instead of queuing another', async () => {

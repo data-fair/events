@@ -4,15 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "mkdir -p ../dev/logs && NODE_CONFIG_DIR=../api/config/ vite --port $DEV_UI_PORT 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' | tee ../dev/logs/dev-ui.log",
-    "build": "vue-tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "check-types": "vue-tsc",
     "lint": "eslint .",
     "lint-fix": "eslint --fix ."
   },
   "dependencies": {
-    "@data-fair/frame": "^0.18.7",
+    "@data-fair/frame": "^0.19.0",
     "@data-fair/lib-utils": "^1.14.0",
     "@data-fair/lib-vue": "^1.31.1",
     "@data-fair/lib-vuetify": "^2.5.1",

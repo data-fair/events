@@ -1,6 +1,7 @@
 import { expect, type Page } from '@playwright/test'
-import { test } from './fixtures/login.ts'
-import { axiosAuth, clean } from './support/axios.ts'
+import { test } from '../../fixtures/login.ts'
+import { axiosAuth, clean } from '../../support/axios.ts'
+import { closedPortUrl } from '../../support/hook-server.ts'
 
 const pageUrl = (keys: string[], titles: string[]) =>
   `/events/embed/subscribe-webhooks?key=${keys.join(',')}&title=${titles.join(',')}&sender=user:test-user1`
@@ -91,7 +92,7 @@ test.describe('Webhooks UI', () => {
       topic: { key: 'topic1', title: 'TopicOne' },
       sender: { type: 'user', id: 'test-user1' },
       // nothing listens there, the delivery ends in error
-      url: 'http://localhost:19898/closed'
+      url: `${closedPortUrl}/closed`
     })
 
     await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')

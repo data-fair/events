@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { canSubscribePrivate } from '../api/src/subscriptions/operations.ts'
+import { canSubscribePrivate } from '../../../api/src/subscriptions/operations.ts'
 
 const makeUser = (overrides: any = {}) => ({
   id: 'test-user1',

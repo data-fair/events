@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 dotenv.config({ path: import.meta.resolve('../../.env').replace('file://', '') })
 
-if (!process.env.DEV_API_PORT) throw new Error('missing DEV_API_PORT env variable, use "dotenv -- npm run dev" or configure .env file')
+if (!process.env.DEV_API_PORT) throw new Error('missing DEV_API_PORT env variable, run "npx --no df-dev setup"')
 
 export default {
   port: process.env.DEV_API_PORT,
@@ -12,8 +12,8 @@ export default {
     port: 9092
   },
   secretKeys: {
-    identities: 'SECRET_IDENTITIES',
-    events: 'SECRET_EVENTS',
-    sendMails: 'SECRET_SENDMAILS'
+    identities: 'secret-identities',
+    events: 'secret-events',
+    sendMails: 'secret-sendmails'
   }
 }

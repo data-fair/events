@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { decodeJwt, decodeProtectedHeader } from 'jose'
-import { clean } from './support/axios.ts'
-import { nhiSession } from './support/nhi.ts'
+import { clean } from '../../support/axios.ts'
+import { nhiSession } from '../../support/nhi.ts'
 
 test.describe('test NHI sessions', () => {
   test.beforeEach(clean)
