@@ -88,29 +88,22 @@
         </v-list-item>
       </template>
     </v-list>
-    <v-btn
+    <!-- the API pages by date with a next link, not with skip as useLoadMore -->
+    <load-more-btn
       v-if="events.next"
       :loading="fetchNextEvents.loading.value"
-      variant="text"
-      color="primary"
-      class="mt-2"
-      block
       @click="fetchNextEvents.execute()"
-    >
-      {{ t('seeMore') }}
-    </v-btn>
+    />
   </template>
 </template>
 
 <i18n lang="yaml">
 fr:
-  seeMore: Voir plus
   noEvents: Aucune activité pour le moment.
   admin: Administrateur
   internalProcess: Processus interne
   apiKey: Clé d'API
 en:
-  seeMore: See more
   noEvents: No activity yet.
   admin: Administrator
   internalProcess: Internal process

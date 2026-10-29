@@ -88,17 +88,11 @@
           </v-list-item>
         </template>
       </v-list>
-      <v-btn
+      <load-more-btn
         v-if="notifications.length < count"
-        :loading="fetchMore.loading.value"
-        variant="text"
-        color="primary"
-        class="mt-2"
-        block
-        @click="fetchMore.execute()"
-      >
-        {{ t('seeMore') }}
-      </v-btn>
+        :loading="more.loading.value"
+        @click="more.execute()"
+      />
     </template>
   </v-container>
 </template>
@@ -109,14 +103,12 @@ fr:
   new: "{count} nouvelle | {count} nouvelle | {count} nouvelles"
   newNotification: Nouvelle notification
   noNotifications: Vous n'avez pas encore reçu de notification.
-  seeMore: Voir plus
   manageSubscriptions: Gérer mes abonnements
 en:
   notifications: "No notification | {count} notification | {count} notifications"
   new: "{count} new | {count} new | {count} new"
   newNotification: New notification
   noNotifications: You have not received any notifications yet.
-  seeMore: See more
   manageSubscriptions: Manage my subscriptions
 </i18n>
 
@@ -128,31 +120,15 @@ import LayoutEmptyState from '@data-fair/lib-vuetify/layout-empty-state.vue'
 
 type NotificationsRes = { results: Notification[], count: number, countNew: number }
 
-const size = 20
-
 const { t } = useI18n()
 const session = useSessionAuthenticated()
 const { dayjs } = useLocaleDayjs()
 
-const notifications = ref<Notification[] | null>(null)
-const count = ref(0)
+const { items: notifications, count, first, more } = useLoadMore<Notification, NotificationsRes>('notifications', () => ({}))
 // each listing moves the read pointer of the user: only the first one tells which ones are new,
 // and as the list is sorted by date they are the first countNew ones
 const countNew = ref(0)
-
-const fetchFirst = useAsyncAction(async () => {
-  const res = await $fetch<NotificationsRes>('notifications', { query: { size } })
-  notifications.value = res.results
-  count.value = res.count
-  countNew.value = res.countNew
-})
-fetchFirst.execute()
-
-const fetchMore = useAsyncAction(async () => {
-  if (!notifications.value) return
-  const res = await $fetch<NotificationsRes>('notifications', { query: { size, skip: notifications.value.length, count: 'false' } })
-  notifications.value = notifications.value.concat(res.results)
-})
+watch(first, (res) => { countNew.value = res?.countNew ?? 0 })
 
 useWS($apiPath + '/')?.subscribe<Notification>(`user:${session.state.user.id}:notifications`, (notification) => {
   if (!notifications.value) return

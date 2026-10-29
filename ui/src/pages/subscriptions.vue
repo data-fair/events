@@ -123,17 +123,11 @@
           </v-list-item>
         </template>
       </v-list>
-      <v-btn
+      <load-more-btn
         v-if="subscriptions.length < count"
-        :loading="fetchMore.loading.value"
-        variant="text"
-        color="primary"
-        class="mt-2"
-        block
-        @click="fetchMore.execute()"
-      >
-        {{ t('seeMore') }}
-      </v-btn>
+        :loading="more.loading.value"
+        @click="more.execute()"
+      />
     </template>
   </v-container>
 </template>
@@ -151,7 +145,6 @@ fr:
   unsubscribe: Se désabonner
   unsubscribeText: Vous ne recevrez plus ces notifications. Pour vous réabonner, il faudra retourner sur la page où vous vous étiez abonné, cette liste ne le permet pas.
   cancel: Annuler
-  seeMore: Voir plus
   seeNotifications: Voir mes notifications
 en:
   intro: All your subscriptions, wherever you made them. Their notifications arrive in the bell; choose here whether you also receive them by email or on your devices.
@@ -165,7 +158,6 @@ en:
   unsubscribe: Unsubscribe
   unsubscribeText: You will no longer receive these notifications. To subscribe again, you will have to go back to the page where you subscribed, this list does not allow it.
   cancel: Cancel
-  seeMore: See more
   seeNotifications: See my notifications
 </i18n>
 
@@ -174,29 +166,10 @@ import type { Subscription } from '#api/types'
 import OwnerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
 import LayoutEmptyState from '@data-fair/lib-vuetify/layout-empty-state.vue'
 
-type SubscriptionsRes = { results: Subscription[], count: number }
-
-const size = 20
-
 const { t, locale } = useI18n()
 const session = useSessionAuthenticated()
 
-const subscriptions = ref<Subscription[] | null>(null)
-const count = ref(0)
-const query = (skip: number) => ({ recipient: session.state.user.id, sort: 'created.date:-1', size, skip })
-
-const fetchFirst = useAsyncAction(async () => {
-  const res = await $fetch<SubscriptionsRes>('subscriptions', { query: query(0) })
-  subscriptions.value = res.results
-  count.value = res.count
-})
-fetchFirst.execute()
-
-const fetchMore = useAsyncAction(async () => {
-  if (!subscriptions.value) return
-  const res = await $fetch<SubscriptionsRes>('subscriptions', { query: query(subscriptions.value.length) })
-  subscriptions.value = subscriptions.value.concat(res.results)
-})
+const { items: subscriptions, count, more } = useLoadMore<Subscription>('subscriptions', () => ({ recipient: session.state.user.id, sort: 'created.date:-1' }))
 
 // subscriptions imported from the former notify service can have localized titles
 const localized = (value: string | Record<string, string> | undefined) => {
@@ -227,7 +200,7 @@ const saveOutputs = useAsyncAction(async (subscription: Subscription, outputs: S
 
 const unsubscribe = useAsyncAction(async (subscription: Subscription) => {
   await $fetch('subscriptions/' + subscription._id, { method: 'DELETE' })
-  subscriptions.value = subscriptions.value?.filter(s => s._id !== subscription._id) ?? null
+  subscriptions.value = subscriptions.value?.filter(s => s._id !== subscription._id)
   count.value -= 1
 })
 </script>
