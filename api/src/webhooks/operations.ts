@@ -25,3 +25,14 @@ export const coalesceAction = (existing: CoalesceTarget[]): CoalesceAction => {
 export const nextAttemptDate = (nbAttempts: number, now = new Date()): string => {
   return new Date(now.getTime() + backoffMinutes(nbAttempts) * 60 * 1000).toISOString()
 }
+
+// after a failed delivery: retry with a progressive backoff, give up after the 10th attempt
+export const failedAttemptPatch = (nbAttempts: number, attempt: NonNullable<Webhook['lastAttempt']>, now = new Date()) => {
+  const patch: { $set: Partial<Webhook>, $inc: { nbAttempts: 1 }, $unset?: { nextAttempt: '' } } = {
+    $set: { status: 'error', lastAttempt: attempt },
+    $inc: { nbAttempts: 1 }
+  }
+  if (nbAttempts >= 9) patch.$unset = { nextAttempt: '' }
+  else patch.$set.nextAttempt = nextAttemptDate(nbAttempts + 1, now)
+  return patch
+}

@@ -8,7 +8,7 @@ import mongo from '#mongo'
 import axios from '@data-fair/lib-node/axios.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import locks from '@data-fair/lib-node/locks.js'
-import { nextAttemptDate } from './operations.ts'
+import { failedAttemptPatch } from './operations.ts'
 import { emitWebhook } from './service.ts'
 
 const debug = Debug('webhooks-worker')
@@ -77,20 +77,8 @@ const loop = async () => {
       const attempt: Webhook['lastAttempt'] = { date }
       if (err.status) attempt.status = err.status
       else attempt.error = err.message
-      const patch: any = {
-        $set: {
-          status: 'error',
-          lastAttempt: attempt
-        },
-        $inc: { nbAttempts: 1 }
-      }
-      if (webhook.nbAttempts >= 9) {
-        debug('webhook failed 10 times, no more attempts')
-        patch.$unset = { nextAttempt: '' }
-      } else {
-        patch.$set.nextAttempt = nextAttemptDate(webhook.nbAttempts + 1)
-        debug('webhook failed, progressively backoff', patch.$set.nextAttempt)
-      }
+      const patch = failedAttemptPatch(webhook.nbAttempts, attempt)
+      debug('webhook failed', patch.$set.nextAttempt ? 'progressively backoff ' + patch.$set.nextAttempt : 'for the 10th time, no more attempts')
       await emitWebhook(await mongo.webhooks.findOneAndUpdate({ _id: webhook._id }, patch, { returnDocument: 'after' }))
     }
   }

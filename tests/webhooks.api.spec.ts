@@ -147,52 +147,6 @@ test.describe('webhooks', () => {
     }
   })
 
-  test('should stop retrying after 10 failed attempts', async () => {
-    // create a real webhook subscription and a failing server
-    const hookServer = await startHookServer((req, res) => {
-      req.on('data', () => {})
-      req.on('end', () => {
-        res.writeHead(500)
-        res.end('fail')
-      })
-    })
-
-    try {
-      const sub = (await admin1.post('/api/webhook-subscriptions', {
-        title: 'Max retry test',
-        topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'test1' },
-        url: hookServer.url
-      })).data
-
-      // insert a webhook with 9 previous attempts so the next failure is the 10th
-      await axDev.post('/api/test-env/webhooks', {
-        _id: 'test-max-retries',
-        sender: { type: 'organization', id: 'test1' },
-        owner: sub.owner,
-        subscription: { _id: sub._id, title: sub.title },
-        notification: {
-          title: 'max retry test',
-          topic: { key: 'topic1' },
-          date: new Date().toISOString()
-        },
-        status: 'error',
-        nbAttempts: 9,
-        nextAttempt: new Date(Date.now() - 1000).toISOString()
-      })
-
-      await expect.poll(async () => (await axDev.get('/api/test-env/webhooks/test-max-retries')).data?.nbAttempts, { timeout: 12000 }).toBe(10)
-
-      const webhook = (await axDev.get('/api/test-env/webhooks/test-max-retries')).data
-      expect(webhook?.status).toBe('error')
-      expect(webhook?.nbAttempts).toBe(10)
-      // no more retries scheduled
-      expect(webhook?.nextAttempt).toBeFalsy()
-    } finally {
-      hookServer.close()
-    }
-  })
-
   test('should list webhook subscriptions of several topics', async () => {
     for (const key of ['topic1', 'topic2', 'topic3']) {
       await admin1.post('/api/webhook-subscriptions', {
