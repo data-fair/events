@@ -8,7 +8,7 @@
     "build-types": "df-build-types ./",
     "stop-dev-deps": "docker compose --profile '*' stop",
     "dev-zellij": "df-dev zellij",
-    "dev-send-notifications": "NODE_ENV=development node --experimental-strip-types dev/scripts/send-notifications.ts",
+    "dev-send-notifications": "NODE_ENV=development node dev/scripts/send-notifications.ts",
     "lint": "eslint . && npm -w ui run lint",
     "lint-fix": "eslint --fix . && npm -w ui run lint-fix",
     "test": "playwright test --max-failures=1",
