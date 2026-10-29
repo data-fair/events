@@ -1,51 +1,42 @@
 <template>
-  <v-col class="py-0 px-1">
+  <div>
     <v-switch
-      class="mt-1"
       :loading="loading"
       :disabled="loading"
       :label="topic.title"
+      :model-value="!!subscription"
       color="primary"
       hide-details
       density="compact"
-      :model-value="!!subscription"
       @update:model-value="switchSubscription"
     />
-
-    <template v-if="subscription">
+    <!-- aligned on the label of the switch -->
+    <div
+      v-if="subscription && outputs.length"
+      class="d-flex flex-wrap gc-4 ml-12 mt-n2"
+    >
       <v-checkbox
-        v-if="outputs.includes('devices')"
+        v-for="output of outputs"
+        :key="output"
         v-model="subscription.outputs"
+        :label="t(output)"
+        :value="output"
         color="primary"
         density="compact"
         hide-details
-        class="ml-10 mt-0"
-        :label="t('devices')"
-        value="devices"
         @update:model-value="sendSubscription.execute(subscription)"
       />
-      <v-checkbox
-        v-if="outputs.includes('email')"
-        v-model="subscription.outputs"
-        color="primary"
-        density="compact"
-        hide-details
-        class="ml-10 mt-0"
-        :label="t('email')"
-        value="email"
-        @update:model-value="sendSubscription.execute(subscription)"
-      />
-    </template>
-  </v-col>
+    </div>
+  </div>
 </template>
 
 <i18n lang="yaml">
 fr:
-  devices: notification sur appareils configurés
-  email: email
-  sendError: "L'enregistrement de l'abonnement a échoué: "
+  devices: sur mes appareils
+  email: par e-mail
 en:
-  sendError: "Saving subscription failed : "
+  devices: on my devices
+  email: by email
 </i18n>
 
 <script lang="ts" setup>
@@ -55,15 +46,14 @@ const {
   topic,
   icon,
   urlTemplate,
-
-  outputs = ['email', 'devices'],
+  outputs,
   sender,
   noSender
 } = defineProps<{
   topic: { key: string, title: string }
   icon?: string
   urlTemplate?: string
-  outputs?: string[]
+  outputs: string[]
   sender?: Event['sender']
   noSender: boolean
 }>()
@@ -87,6 +77,15 @@ watch(subscription, () => {
   else delete topicsSubscriptions[topic.key]
 })
 
+// the hosts pass the sender as type:id[:department] in the URL: its name, when the session knows it,
+// keeps the subscription readable in the recap of the user's subscriptions
+const withName = (sender: Required<Subscription>['sender']) => {
+  if (sender.name) return sender
+  const user = session.state.user
+  const name = sender.type === 'user' ? (sender.id === user.id ? user.name : undefined) : user.organizations.find(o => o.id === sender.id)?.name
+  return name ? { ...sender, name } : sender
+}
+
 const switching = ref(false)
 const loading = computed(() => switching.value || !fetchSubscriptions.data?.value)
 
@@ -99,7 +98,7 @@ const switchSubscription = async () => {
       outputs: [],
       locale: locale.value as Subscription['locale']
     }
-    if (!noSender) subscription.sender = sender || session.state.account
+    if (!noSender) subscription.sender = withName(sender || session.state.account)
     if (icon) subscription.icon = icon
     if (urlTemplate) subscription.urlTemplate = urlTemplate
     await sendSubscription.execute(subscription)
@@ -115,6 +114,3 @@ const sendSubscription = useAsyncAction(async (subscription: Partial<Subscriptio
   await $fetch('subscriptions', { method: 'POST', body: subscription })
 })
 </script>
-
-<style lang="css" scoped>
-</style>

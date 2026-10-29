@@ -7,7 +7,7 @@ test.describe('Subscriptions UI', () => {
 
   test('shows empty state when no subscriptions', async ({ page, goToWithAuth }) => {
     await goToWithAuth('/events/embed/subscriptions', 'test-user1')
-    await expect(page.getByText('No subscription')).toBeVisible()
+    await expect(page.getByText('You are not subscribed to any notification.')).toBeVisible()
   })
 
   test('shows subscriptions after creating one via API', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
@@ -32,5 +32,25 @@ test.describe('Subscriptions UI', () => {
     const user1 = await axiosAuth('test-user1')
     await expect.poll(async () => (await user1.get('/api/subscriptions', { params: { topic: 'topic2' } })).data.results.map((s: any) => `${s.sender?.type}:${s.sender?.id}`))
       .toEqual(['organization:test1'])
+  })
+
+  test('the recap edits the outputs and unsubscribes', async ({ page, goToWithAuth }) => {
+    const user1 = await axiosAuth('test-user1')
+    await user1.post('/api/subscriptions', {
+      topic: { key: 'topic1' },
+      title: 'My test subscription',
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      outputs: ['devices']
+    })
+    const outputs = async () => (await user1.get('/api/subscriptions')).data.results.map((s: any) => s.outputs.sort())
+
+    await goToWithAuth('/events/subscriptions', 'test-user1')
+    await page.getByText('By email', { exact: true }).click()
+    await expect.poll(outputs).toEqual([['devices', 'email']])
+
+    await page.getByRole('button', { name: 'Unsubscribe' }).click()
+    await page.getByRole('button', { name: 'Unsubscribe' }).last().click()
+    await expect(page.getByText('You are not subscribed to any notification.')).toBeVisible()
+    await expect.poll(outputs).toEqual([])
   })
 })

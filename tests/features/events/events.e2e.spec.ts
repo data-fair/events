@@ -9,7 +9,7 @@ test.describe('Events UI', () => {
 
   test('shows empty state when no events', async ({ page, goToWithAuth }) => {
     await goToWithAuth('/events/embed/events', 'test-user1')
-    await expect(page.getByText('Aucun résultat')).toBeVisible()
+    await expect(page.getByText('No activity yet.')).toBeVisible()
   })
 
   test('shows events after they are posted', async ({ page, goToWithAuth }) => {
