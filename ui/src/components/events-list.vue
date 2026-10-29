@@ -120,6 +120,10 @@ import LayoutEmptyState from '@data-fair/lib-vuetify/layout-empty-state.vue'
 type EventsRes = { results: LocalizedEvent[], next?: string }
 type Resource = Required<LocalizedEvent>['resource']
 
+const pageSize = 20
+// the embed in a tab of the host grows with its content: a short first page, the next ones as everywhere
+const { firstPageSize = pageSize } = defineProps<{ firstPageSize?: number }>()
+
 const { t } = useI18n()
 useSessionAuthenticated()
 const { dayjs } = useLocaleDayjs()
@@ -130,14 +134,15 @@ const resourceFilter = useStringSearchParam('resource')
 const events = ref<EventsRes | null>(null)
 
 const fetchEvents = useAsyncAction(async () => {
-  events.value = await $fetch<EventsRes>('events', { query: { q: search.value || undefined, resource: resourceFilter.value || undefined } })
+  events.value = await $fetch<EventsRes>('events', { query: { q: search.value || undefined, resource: resourceFilter.value || undefined, size: firstPageSize } })
 })
 fetchEvents.execute()
 watch(search, () => fetchEvents.execute())
 
 const fetchNextEvents = useAsyncAction(async () => {
   if (!events.value?.next) return
-  const nextEvents = await $fetch<EventsRes>(events.value.next)
+  // the next link repeats the size of the first page
+  const nextEvents = await $fetch<EventsRes>(events.value.next, { query: { size: pageSize } })
   events.value.results = events.value.results.concat(nextEvents.results)
   events.value.next = nextEvents.next
 })

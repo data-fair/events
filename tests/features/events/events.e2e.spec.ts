@@ -23,4 +23,24 @@ test.describe('Events UI', () => {
     await goToWithAuth('/events/embed/events', 'test-user1')
     await expect(page.getByText('My test event')).toBeVisible()
   })
+
+  test('the embed starts with 5 events, the full page with 20', async ({ page, goToWithAuth }) => {
+    const now = Date.now()
+    await axPush.post('/api/events', Array.from({ length: 30 }, (_, i) => ({
+      date: new Date(now - i * 1000).toISOString(),
+      topic: { key: 'topic1' },
+      title: `event ${i}`,
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+    })))
+    const events = page.getByText(/^event \d+$/)
+
+    // a tab of a resource page, the iframe grows with the list
+    await goToWithAuth('/events/embed/events', 'test-user1')
+    await expect(events).toHaveCount(5)
+    await page.getByRole('button', { name: 'See more' }).click()
+    await expect(events).toHaveCount(25)
+
+    await goToWithAuth('/events/events', 'test-user1')
+    await expect(events).toHaveCount(20)
+  })
 })

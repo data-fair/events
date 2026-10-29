@@ -152,7 +152,7 @@ const datasetTopics = { key: 'dataset-finalized,dataset-error', title: 'Jeu de d
 
 // copied from the hosts on 2026-10-29, sync-path left out: it would navigate this page
 const scenarios: Scenario[] = [
-  { id: 'df-events', title: 'data-fair, traceability page', source: 'data-fair/ui/src/pages/events.vue', wrapper: 'page', page: 'embed/events', attrs: { resize: 'no', 'sync-params': '', 'emit-iframe-messages': '' } },
+  { id: 'df-events', title: 'data-fair, traceability page', source: 'data-fair/ui/src/pages/events.vue', wrapper: 'page', page: 'events', attrs: { resize: 'no', 'sync-params': '', 'emit-iframe-messages': '' } },
   { id: 'df-events-tab', title: 'data-fair, dataset traceability tab', source: 'data-fair/ui/src/components/common/event-traceability.vue', wrapper: 'tab', tab: 'Traçabilité', page: 'embed/events', params: { resource: 'dataset/communes' }, attrs: { 'sync-params': '' } },
   { id: 'df-subscribe-tab', title: 'data-fair, dataset notifications tab', source: 'data-fair/ui/src/components/common/event-notifications.vue', wrapper: 'tab', tab: 'Notifications', page: 'embed/subscribe', params: { ...datasetTopics, 'url-template': '/data-fair/dataset/communes', sender, register: 'false' } },
   { id: 'df-webhooks-tab', title: 'data-fair, dataset webhooks tab', source: 'data-fair/ui/src/components/common/event-webhooks.vue', wrapper: 'tab', tab: 'Webhooks', page: 'embed/subscribe-webhooks', params: { ...datasetTopics, sender } },
@@ -163,7 +163,6 @@ const scenarios: Scenario[] = [
   { id: 'portal-bell', title: 'portal, dataset bell', source: 'portals/portal/app/components/dataset/dataset-notifications.vue', wrapper: 'dialog', page: 'embed/subscribe', params: { ...datasetTopics, 'url-template': '/datasets/communes', register: 'false', sender, outputs: 'auto' }, attrs: { scrolling: 'no', 'aspect-ratio': '' } },
   { id: 'service-bell', title: 'processings, catalogs, simple-directory: bell menu', source: 'processings/ui/src/components/processings-actions.vue', wrapper: 'menu', page: 'embed/subscribe', params: { ...datasetTopics, sender, register: 'false' } },
   // full pages without a host yet, hosted the way data-fair hosts processings and catalogs
-  { id: 'events-page', title: 'traceability, full page (no host yet)', source: 'events/ui/src/pages/events.vue', wrapper: 'page', page: 'events', attrs: { resize: 'no', 'sync-params': '' } },
   { id: 'notifications-page', title: 'notifications, full page (no host yet)', source: 'events/ui/src/pages/notifications.vue', wrapper: 'page', page: 'notifications', attrs: { resize: 'no' } },
   { id: 'subscriptions-page', title: 'subscriptions, full page (no host yet)', source: 'events/ui/src/pages/subscriptions.vue', wrapper: 'page', page: 'subscriptions', attrs: { resize: 'no' } }
 ]

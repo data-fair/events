@@ -7,11 +7,7 @@
   >
     <events-list />
     <navigation-right>
-      <!-- alone in the menu of narrow screens, the field would shrink to its icon -->
-      <events-search
-        v-model="search"
-        min-width="240"
-      />
+      <events-search v-model="search" />
     </navigation-right>
   </v-container>
 </template>

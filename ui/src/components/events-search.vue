@@ -1,9 +1,16 @@
 <template>
-  <search-field v-model="input" />
+  <!-- alone in the menu of narrow screens it would shrink to its icon, in the drawer the drawer sets its width -->
+  <search-field
+    v-model="input"
+    :min-width="display.lgAndUp.value ? undefined : 240"
+  />
 </template>
 
 <script lang="ts" setup>
 import SearchField from '@data-fair/lib-vuetify/search-field.vue'
+import { useDisplay } from 'vuetify'
+
+const display = useDisplay()
 
 const search = defineModel<string>({ default: '' })
 
