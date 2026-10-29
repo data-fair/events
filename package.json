@@ -18,7 +18,7 @@
     "test-e2e": "playwright test --project e2e",
     "check-types": "tsc && npm -w ui run check-types",
     "prepare": "husky || true",
-    "quality": "npm run lint && npm run build-types && npm run check-types && npm -w ui run build && npm run test && npm audit --omit=dev --audit-level=critical"
+    "quality": "npm run lint && npm run build-types && npm -w ui run build && npm run check-types && npm run test && npm audit --omit=dev --audit-level=critical"
   },
   "repository": {
     "type": "git",

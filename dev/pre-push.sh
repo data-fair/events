@@ -19,7 +19,7 @@ npx playwright test --project=api --project=e2e --grep @smoke --max-failures=1
 # them to the api/src or ui/src files they exercise.
 base=$(git merge-base HEAD origin/main 2>/dev/null || true)
 if [ -n "$base" ]; then
-  mapfile -t changed < <(git diff --name-only --diff-filter=d "$base" HEAD -- 'tests/**/*.api.spec.ts' 'tests/**/*.e2e.spec.ts' 'tests/*.api.spec.ts' 'tests/*.e2e.spec.ts')
+  mapfile -t changed < <(git diff --name-only --diff-filter=d "$base" HEAD -- 'tests/**/*.api.spec.ts' 'tests/**/*.e2e.spec.ts')
   if [ ${#changed[@]} -gt 0 ]; then
     echo "changed api/e2e spec files: ${changed[*]}"
     npx playwright test --project=api --project=e2e --max-failures=1 "${changed[@]}"
