@@ -23,4 +23,14 @@ test.describe('Subscriptions UI', () => {
     await expect(page.getByText('1 subscription')).toBeVisible()
     await expect(page.getByText('My test subscription')).toBeVisible()
   })
+
+  test('a single sender applies to every topic of the subscribe page', async ({ page, goToWithAuth }) => {
+    // the personal account is active: a topic left without the sender would fall back to user:test-user1
+    await goToWithAuth('/events/embed/subscribe?key=topic1,topic2&title=Topic 1,Topic 2&sender=organization:test1', 'test-user1')
+    await page.getByLabel('Topic 2').check()
+
+    const user1 = await axiosAuth('test-user1')
+    await expect.poll(async () => (await user1.get('/api/subscriptions', { params: { topic: 'topic2' } })).data.results.map((s: any) => `${s.sender?.type}:${s.sender?.id}`))
+      .toEqual(['organization:test1'])
+  })
 })

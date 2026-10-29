@@ -37,7 +37,7 @@
           :icon="reactiveSearchParams.icon"
           :url-template="reactiveSearchParams['url-template']"
           :outputs="outputs"
-          :sender="senders[i] || null"
+          :sender="(senders.length === 1 ? senders[0] : senders[i]) || null"
         />
       </v-row>
     </template>
