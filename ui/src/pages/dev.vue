@@ -34,8 +34,7 @@ const links = [
   ['/events/embed/subscriptions', 'User subscriptions'],
   ['/events/embed/subscribe-webhooks?key=topic&title=Topic', 'Subscribe webhooks to a topic'],
   ['/events/embed/notifications', 'User notifications'],
-  ['/events/embed/devices', 'User devices'],
-  ['/built/events/embed/devices', 'Built version']
+  ['/events/embed/devices', 'User devices']
 ]
 </script>
 
