@@ -12,10 +12,18 @@ import { autoImports, settingsPath } from '@data-fair/lib-vuetify/vite.js'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/events',
-  // owner.js is only imported from lib-vuetify's owner-avatar.vue (via lib-vuetify-events), and the
-  // dependency scan does not crawl .vue files inside node_modules: without this it is served raw and
-  // its import chain reaches the CommonJS ajv-formats, which breaks the /events/dev page.
-  optimizeDeps: { include: ['debug', '@data-fair/lib-vue/owner.js'] },
+  optimizeDeps: {
+    // no discovery: a dependency found while browsing reloads the page, which breaks cold e2e runs;
+    // ESM dependencies are served as is, only the commonjs ones must be listed here, with the
+    // exact import specifier
+    noDiscovery: true,
+    include: [
+      'debug',
+      // owner.js is only imported from lib-vuetify's owner-avatar.vue (via lib-vuetify-events): its
+      // import chain reaches the CommonJS ajv-formats, which breaks the /events/dev page served raw
+      '@data-fair/lib-vue/owner.js'
+    ]
+  },
   resolve: {
     alias: {
       '~': path.resolve(import.meta.dirname, 'src/')
