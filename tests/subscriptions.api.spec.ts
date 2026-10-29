@@ -33,7 +33,7 @@ test.describe('subscriptions', () => {
     expect(data.topic.key).toBe('topic1')
   })
 
-  test('should send a public notification to any subscribed user', async () => {
+  test('should send a public notification to any subscribed user', { tag: '@smoke' }, async () => {
     const subscription = {
       topic: { key: 'topic1' },
       sender: { type: 'user', id: 'test-user1' },

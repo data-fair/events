@@ -12,7 +12,7 @@ test.describe('Notifications UI', () => {
     await expect(page.getByText('No notification')).toBeVisible()
   })
 
-  test('shows notifications after events are sent with subscription', async ({ page, goToWithAuth }) => {
+  test('shows notifications after events are sent with subscription', { tag: '@smoke' }, async ({ page, goToWithAuth }) => {
     // create a subscription for test-user1
     const user1 = await axiosAuth('test-user1')
     await user1.post('/api/subscriptions', {
