@@ -10,7 +10,7 @@ setup('warmup heavy dev routes', async ({ page, goToWithAuth }) => {
   await expect(page.getByRole('button', { name: 'Open notification list' })).toBeVisible({ timeout: 60_000 })
 
   // embed routes exercised by the other e2e specs
-  for (const route of ['/events/embed/events', '/events/embed/notifications', '/events/embed/subscriptions']) {
+  for (const route of ['/events/embed/events', '/events/embed/notifications', '/events/embed/subscriptions', '/events/embed/subscribe-webhooks']) {
     await goToWithAuth(route, 'test-user1')
   }
 })
