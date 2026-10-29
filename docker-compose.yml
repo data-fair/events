@@ -51,6 +51,10 @@ services:
       - MANAGE_NHIS=true
       # dev only: the test NHI issuer is not a real https issuer
       - NHIS_ALLOW_INSECURE_ISSUERS=true
+      # every theme offered, so that the embeds can be checked in each of them (/events/dev/integrations)
+      - THEME_DARK=true
+      - THEME_HC=true
+      - THEME_HC_DARK=true
     volumes:
       - ./dev/resources/users.json:/app/data/users.json
       - ./dev/resources/organizations.json:/app/data/organizations.json
