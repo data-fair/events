@@ -39,13 +39,16 @@ router.get('', requireOperationScope('listEvents'), async (req, res, next) => {
     else query.date = { $lte: beforeDate }
   }
 
-  const events = (await mongo.events.find(query).project(project).limit(size).sort(sort).toArray()) as FullEvent[]
+  // one more than asked: a next page is offered only when there really is one
+  const events = (await mongo.events.find(query).project(project).limit(size + 1).sort(sort).toArray()) as FullEvent[]
+  const hasMore = events.length > size
+  if (hasMore) events.pop()
 
   const results = events.map(event => cleanEvent(localizeEvent(event, lang || config.i18n.defaultLocale, config.i18n.defaultLocale), sessionState))
 
   const response: any = { results }
 
-  if (results.length === size) {
+  if (hasMore && results.length) {
     const next = new URL(req.originalUrl, reqOrigin(req))
     next.searchParams.set('before', results[results.length - 1].date + '/' + results[results.length - 1]._id)
     response.next = next.href
