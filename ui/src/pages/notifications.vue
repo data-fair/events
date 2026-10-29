@@ -6,20 +6,36 @@
       indeterminate
       color="primary"
     />
-    <layout-empty-state
-      v-else-if="!notifications.length"
-      :icon="mdiBellOutline"
-      :no-data-text="t('noNotifications')"
-    />
     <template v-else>
-      <div class="text-title-medium mb-4">
-        {{ t('notifications', { count }, count) }}<span
-          v-if="countNew"
-          class="text-warning"
-        > · {{ t('new', { count: countNew }, countNew) }}</span>
+      <div class="d-flex align-center flex-wrap ga-2 mb-4">
+        <span
+          v-if="notifications.length"
+          class="text-title-medium"
+        >
+          {{ t('notifications', { count }, count) }}<span
+            v-if="countNew"
+            class="text-warning"
+          > · {{ t('new', { count: countNew }, countNew) }}</span>
+        </span>
+        <v-spacer />
+        <v-btn
+          :prepend-icon="mdiRss"
+          to="/subscriptions"
+          variant="text"
+          color="primary"
+          size="small"
+        >
+          {{ t('manageSubscriptions') }}
+        </v-btn>
       </div>
+      <layout-empty-state
+        v-if="!notifications.length"
+        :icon="mdiBellOutline"
+        :no-data-text="t('noNotifications')"
+      />
       <!-- no role="list": its items are links, as in the bell -->
       <v-list
+        v-else
         class="py-0 border-sm rounded"
         :role="undefined"
       >
@@ -94,12 +110,14 @@ fr:
   newNotification: Nouvelle notification
   noNotifications: Vous n'avez pas encore reçu de notification.
   seeMore: Voir plus
+  manageSubscriptions: Gérer mes abonnements
 en:
   notifications: "No notification | {count} notification | {count} notifications"
   new: "{count} new | {count} new | {count} new"
   newNotification: New notification
   noNotifications: You have not received any notifications yet.
   seeMore: See more
+  manageSubscriptions: Manage my subscriptions
 </i18n>
 
 <script lang="ts" setup>

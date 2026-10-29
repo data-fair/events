@@ -2,7 +2,6 @@
   <v-container
     fluid
     data-iframe-height
-    class="bg-surface"
   >
     <v-alert
       v-if="!session.state.user"

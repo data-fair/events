@@ -9,16 +9,32 @@
       indeterminate
       color="primary"
     />
-    <layout-empty-state
-      v-else-if="!subscriptions.length"
-      :icon="mdiRss"
-      :no-data-text="t('noSubscriptions')"
-    />
     <template v-else>
-      <div class="text-title-medium mb-4">
-        {{ t('subscriptions', { count }, count) }}
+      <div class="d-flex align-center flex-wrap ga-2 mb-4">
+        <span
+          v-if="subscriptions.length"
+          class="text-title-medium"
+        >{{ t('subscriptions', { count }, count) }}</span>
+        <v-spacer />
+        <v-btn
+          :prepend-icon="mdiBell"
+          to="/notifications"
+          variant="text"
+          color="primary"
+          size="small"
+        >
+          {{ t('seeNotifications') }}
+        </v-btn>
       </div>
-      <v-list class="py-0 border-sm rounded">
+      <layout-empty-state
+        v-if="!subscriptions.length"
+        :icon="mdiRss"
+        :no-data-text="t('noSubscriptions')"
+      />
+      <v-list
+        v-else
+        class="py-0 border-sm rounded"
+      >
         <template
           v-for="(subscription, i) of subscriptions"
           :key="subscription._id"
@@ -136,6 +152,7 @@ fr:
   unsubscribeText: Vous ne recevrez plus ces notifications. Pour vous réabonner, il faudra retourner sur la page où vous vous étiez abonné, cette liste ne le permet pas.
   cancel: Annuler
   seeMore: Voir plus
+  seeNotifications: Voir mes notifications
 en:
   intro: All your subscriptions, wherever you made them. Their notifications arrive in the bell; choose here whether you also receive them by email or on your devices.
   subscriptions: "No subscription | {count} subscription | {count} subscriptions"
@@ -149,6 +166,7 @@ en:
   unsubscribeText: You will no longer receive these notifications. To subscribe again, you will have to go back to the page where you subscribed, this list does not allow it.
   cancel: Cancel
   seeMore: See more
+  seeNotifications: See my notifications
 </i18n>
 
 <script lang="ts" setup>
