@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { axios, axiosAuth, clean, baseURL, devBaseURL } from './support/axios.ts'
 
 const axAno = axios()
-const axPush = axios({ params: { key: 'secret-events' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')
 const admin1 = await axiosAuth('test1-admin1')
@@ -15,7 +15,7 @@ test.describe('events', () => {
   })
 
   test('should reject posting with bad secret key', async () => {
-    await expect(axPush.post('/api/events', {}, { params: { key: 'badkey' } })).rejects.toMatchObject({ status: 401 })
+    await expect(axPush.post('/api/events', {}, { headers: { 'x-secret-key': 'badkey' } })).rejects.toMatchObject({ status: 401 })
   })
 
   test('should reject anonymous user', async () => {

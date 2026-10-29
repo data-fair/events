@@ -3,7 +3,7 @@ import { createServer } from 'node:http'
 import WebSocket from 'ws'
 import { axios, axiosAuth, clean, devBaseURL } from './support/axios.ts'
 
-const axPush = axios({ params: { key: 'secret-events' }, baseURL: devBaseURL })
+const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })
 const admin1 = await axiosAuth('test1-admin1')
 const user1 = await axiosAuth('test-user1')
