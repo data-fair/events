@@ -29,8 +29,9 @@
       </v-btn>
     </div>
     <p class="text-body-medium text-medium-emphasis mb-4">
-      Each block reproduces a real host: same d-frame attributes, same query params, a similar container.
-      Switch the theme in the app bar (the whole page reloads). Under each frame: its height and the events it emits.
+      The components of @data-fair/lib-vuetify-events and the embed pages of events, each alone in a plain d-frame:
+      no host is reproduced. The widths check narrow containers, the theme switches in the app bar (the whole page
+      reloads). Under each frame: its height and the events it emits.
     </p>
     <v-chip-group
       v-model="selected"
@@ -61,65 +62,22 @@
       <div class="text-body-small text-medium-emphasis">
         {{ scenario.source }}
       </div>
-      <code class="d-block text-body-small text-break my-2">{{ frameTag(scenario) }}</code>
+      <code class="d-block text-body-small text-break my-2">{{ scenario.page ? frameTag(scenario) : scenario.component }}</code>
 
       <!-- mounted when scrolled to: the dev server cannot serve the modules of every frame at once -->
       <v-lazy min-height="150">
+        <!-- the components of @data-fair/lib-vuetify-events alone, the host gives them their container -->
         <v-sheet
-          v-if="scenario.wrapper === 'page'"
-          height="600"
-          border
+          v-if="scenario.id === 'recent-activity'"
+          max-width="400"
+          color="transparent"
         >
-          <DevFrame :scenario="scenario" />
+          <df-recent-activity :events-url="$eventsUrl" />
         </v-sheet>
-        <v-card
-          v-else-if="scenario.wrapper === 'tab'"
-          min-height="550"
-        >
-          <v-tabs
-            :model-value="0"
-            density="compact"
-          >
-            <v-tab>{{ scenario.tab }}</v-tab>
-          </v-tabs>
-          <v-divider />
-          <div class="pa-4">
-            <DevFrame :scenario="scenario" />
-          </div>
-        </v-card>
-        <v-sheet
-          v-else-if="scenario.wrapper === 'narrow'"
-          max-width="600"
-          color="background"
-        >
-          <DevFrame :scenario="scenario" />
-        </v-sheet>
-        <v-card
-          v-else-if="scenario.wrapper === 'dialog'"
-          max-width="500"
-          title="Notifications"
-        >
-          <DevFrame :scenario="scenario" />
-        </v-card>
-        <v-menu
-          v-else-if="scenario.wrapper === 'menu'"
-          :close-on-content-click="false"
-          max-width="500"
-        >
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              :prepend-icon="mdiBell"
-              variant="outlined"
-            >
-              Open the bell menu
-            </v-btn>
-          </template>
-          <v-card width="500">
-            <v-card-title>Notifications</v-card-title>
-            <DevFrame :scenario="scenario" />
-          </v-card>
-        </v-menu>
+        <df-notification-queue
+          v-else-if="scenario.id === 'notification-queue'"
+          :events-url="$eventsUrl"
+        />
         <DevFrame
           v-else
           :scenario="scenario"
@@ -134,37 +92,30 @@
 <script setup lang="ts">
 import { h, type FunctionalComponent } from 'vue'
 import '@data-fair/frame/lib/d-frame.js'
+import { DfNotificationQueue, DfRecentActivity } from '@data-fair/lib-vuetify-events'
+import { $eventsUrl } from '../../context.ts'
 
 type Scenario = {
   id: string
   title: string
   source: string
-  wrapper: 'page' | 'tab' | 'narrow' | 'dialog' | 'menu' | 'block'
-  tab?: string
-  page: string
+  // a component of @data-fair/lib-vuetify-events, or an embed page in a d-frame
+  component?: string
+  page?: string
   params?: Record<string, string>
-  attrs?: Record<string, string>
 }
 
 const sender = 'organization:test1'
 // hosts pass topic titles in the language of the session, as data-fair does with its settings schema
-const datasetTopics = { key: 'dataset-finalized,dataset-error', title: 'Jeu de données finalisé,Erreur sur le jeu de données' }
+const topics = { key: 'dataset-finalized,dataset-error', title: 'Jeu de données finalisé,Erreur sur le jeu de données' }
 
-// copied from the hosts on 2026-10-29, sync-path left out: it would navigate this page
 const scenarios: Scenario[] = [
-  { id: 'df-events', title: 'data-fair, traceability page', source: 'data-fair/ui/src/pages/events.vue', wrapper: 'page', page: 'events', attrs: { resize: 'no', 'sync-params': '', 'emit-iframe-messages': '' } },
-  { id: 'df-events-tab', title: 'data-fair, dataset traceability tab', source: 'data-fair/ui/src/components/common/event-traceability.vue', wrapper: 'tab', tab: 'Traçabilité', page: 'embed/events', params: { resource: 'dataset/communes' }, attrs: { 'sync-params': '' } },
-  { id: 'df-subscribe-tab', title: 'data-fair, dataset notifications tab', source: 'data-fair/ui/src/components/common/event-notifications.vue', wrapper: 'tab', tab: 'Notifications', page: 'embed/subscribe', params: { ...datasetTopics, 'url-template': '/data-fair/dataset/communes', sender, register: 'false' } },
-  { id: 'df-webhooks-tab', title: 'data-fair, dataset webhooks tab', source: 'data-fair/ui/src/components/common/event-webhooks.vue', wrapper: 'tab', tab: 'Webhooks', page: 'embed/subscribe-webhooks', params: { ...datasetTopics, sender } },
-  { id: 'df-devices', title: 'data-fair, notifications page: devices', source: 'data-fair/ui/src/pages/notifications.vue', wrapper: 'block', page: 'embed/devices', attrs: { resize: '' } },
-  { id: 'df-subscribe-page', title: 'data-fair, notifications page: topics', source: 'data-fair/ui/src/pages/notifications.vue', wrapper: 'block', page: 'embed/subscribe', params: { ...datasetTopics, 'url-template': '/data-fair/dataset/{id}', register: 'false', header: 'no' }, attrs: { resize: '' } },
-  { id: 'portal-me', title: 'portal, personal space: topics', source: 'portals/portal/app/pages/me/notifications.vue', wrapper: 'narrow', page: 'embed/subscribe', params: { ...datasetTopics, 'url-template': '/datasets/{id}', sender, outputs: 'auto' } },
-  { id: 'portal-me-devices', title: 'portal, personal space: devices', source: 'portals/portal/app/pages/me/notifications.vue', wrapper: 'narrow', page: 'embed/devices' },
-  { id: 'portal-bell', title: 'portal, dataset bell', source: 'portals/portal/app/components/dataset/dataset-notifications.vue', wrapper: 'dialog', page: 'embed/subscribe', params: { ...datasetTopics, 'url-template': '/datasets/communes', register: 'false', sender, outputs: 'auto' }, attrs: { scrolling: 'no', 'aspect-ratio': '' } },
-  { id: 'service-bell', title: 'processings, catalogs, simple-directory: bell menu', source: 'processings/ui/src/components/processings-actions.vue', wrapper: 'menu', page: 'embed/subscribe', params: { ...datasetTopics, sender, register: 'false' } },
-  // full pages without a host yet, hosted the way data-fair hosts processings and catalogs
-  { id: 'notifications-page', title: 'notifications, full page (no host yet)', source: 'events/ui/src/pages/notifications.vue', wrapper: 'page', page: 'notifications', attrs: { resize: 'no' } },
-  { id: 'subscriptions-page', title: 'subscriptions, full page (no host yet)', source: 'events/ui/src/pages/subscriptions.vue', wrapper: 'page', page: 'subscriptions', attrs: { resize: 'no' } }
+  { id: 'recent-activity', title: 'DfRecentActivity', source: 'lib-vuetify/DfRecentActivity.vue', component: '<df-recent-activity :events-url="$sitePath + \'/events\'" />' },
+  { id: 'notification-queue', title: 'DfNotificationQueue', source: 'lib-vuetify/DfNotificationQueue.vue', component: '<df-notification-queue :events-url="$sitePath + \'/events\'" />' },
+  { id: 'events', title: 'Traceability of a resource', source: 'ui/src/pages/embed/events.vue', page: 'embed/events', params: { resource: 'dataset/communes' } },
+  { id: 'subscribe', title: 'Subscribe to topics', source: 'ui/src/pages/embed/subscribe.vue', page: 'embed/subscribe', params: { ...topics, sender, 'url-template': '/data-fair/dataset/communes' } },
+  { id: 'subscribe-webhooks', title: 'Webhooks of topics', source: 'ui/src/pages/embed/subscribe-webhooks.vue', page: 'embed/subscribe-webhooks', params: { ...topics, sender } },
+  { id: 'devices', title: 'Devices', source: 'ui/src/pages/embed/devices.vue', page: 'embed/devices' }
 ]
 
 const widths = ['400px', '600px', '960px', 'none']
@@ -177,10 +128,7 @@ const frameSrc = (scenario: Scenario) => {
   return `${$sitePath}/events/${scenario.page}${query}`
 }
 
-const frameTag = (scenario: Scenario) => {
-  const attrs = Object.entries(scenario.attrs ?? {}).map(([name, value]) => value ? `${name}="${value}"` : name)
-  return `<d-frame src="${decodeURIComponent(frameSrc(scenario).replace(/\+/g, ' '))}"${attrs.map(a => ' ' + a).join('')}>`
-}
+const frameTag = (scenario: Scenario) => `<d-frame src="${decodeURIComponent(frameSrc(scenario).replace(/\+/g, ' '))}">`
 
 const logs = reactive<Record<string, string[]>>({})
 const log = (id: string, type: string, detail?: unknown) => {
@@ -200,9 +148,7 @@ const observeHeight = (id: string, el: Element) => {
 
 const DevFrame: FunctionalComponent<{ scenario: Scenario }> = ({ scenario }) => h('d-frame', {
   key: `${scenario.id}-${reloadKey.value}`,
-  ...scenario.attrs,
   src: frameSrc(scenario),
-  class: scenario.wrapper === 'page' ? 'fill-height' : undefined,
   onReady: () => log(scenario.id, 'ready'),
   onNotif: (e: CustomEvent) => log(scenario.id, 'notif', e.detail),
   onMessage: (e: CustomEvent) => log(scenario.id, 'message', e.detail),

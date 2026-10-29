@@ -43,4 +43,33 @@ test.describe('Events UI', () => {
     await goToWithAuth('/events/events', 'test-user1')
     await expect(events).toHaveCount(20)
   })
+
+  test('the recent activity of the dashboard shows the 5 last events and their author', async ({ page, goToWithAuth }) => {
+    const now = Date.now()
+    const event = (i: number, originator: object) => ({
+      date: new Date(now - i * 1000).toISOString(),
+      topic: { key: 'topic1' },
+      title: `activity ${i}`,
+      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      originator
+    })
+    await axPush.post('/api/events', [
+      event(0, { internalProcess: { id: 'worker', title: 'Worker' } }),
+      event(1, { apiKey: { id: 'key1', title: 'Import key' } }),
+      // the API hides the identity of a platform admin
+      event(2, { user: { id: 'superadmin', name: 'Super Admin', admin: true } }),
+      event(3, { user: { id: 'test-user1', name: 'User 1' } }),
+      event(4, {}),
+      event(5, {})
+    ])
+
+    // DfRecentActivity of @data-fair/lib-vuetify-events, first block of the integrations dev page
+    await goToWithAuth('/events/dev/integrations', 'test-user1')
+    const timeline = page.locator('.v-timeline')
+    await expect(timeline.getByText(/^activity \d$/)).toHaveCount(5)
+    await expect(timeline.getByText('activity 5')).toHaveCount(0)
+    for (const author of ['Worker', 'Import key', 'Administrator', 'User 1']) {
+      await expect(timeline.getByText(new RegExp(`^${author} ·`))).toBeVisible()
+    }
+  })
 })
