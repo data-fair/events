@@ -103,6 +103,45 @@ test.describe('webhooks', () => {
     expect((await admin1.get('/api/webhooks')).data.count).toBe(0)
   })
 
+  test('should not send the secret header of a webhook to another origin it redirects to', async () => {
+    const secrets: Record<string, unknown> = {}
+    let otherBody: any
+    const other = await startHookServer((req, res) => {
+      secrets.other = req.headers['x-secret']
+      const chunks: Buffer[] = []
+      req.on('data', (chunk) => { chunks.push(chunk) })
+      req.on('end', () => {
+        otherBody = JSON.parse(Buffer.concat(chunks).toString())
+        res.writeHead(200)
+        res.end()
+      })
+    })
+    // /hook -> /moved on the same origin -> the other server, under another host name of the loopback
+    const target = await startHookServer((req, res) => {
+      if (req.url === '/moved') secrets.moved = req.headers['x-secret']
+      res.writeHead(307, { location: req.url === '/hook' ? '/moved' : other.url.replace('localhost', '127.0.0.1') })
+      res.end()
+    })
+
+    try {
+      const { data } = await admin1.post('/api/webhook-subscriptions/_test', {
+        title: 'Redirected',
+        topic: { key: 'topic1' },
+        sender: { type: 'organization', id: 'test1' },
+        url: target.url,
+        header: { key: 'X-Secret', value: 'mysecret' }
+      })
+      expect(data).toEqual({ status: 200 })
+      // kept on the same origin, dropped on another one, the message itself follows the 307 redirects
+      expect(secrets.moved).toBe('mysecret')
+      expect(secrets.other).toBeUndefined()
+      expect(otherBody.title).toBe('Test webhook')
+    } finally {
+      target.close()
+      other.close()
+    }
+  })
+
   test('should deliver a webhook to a target URL', async () => {
     const received: any[] = []
     const hookServer = await startHookServer((req, res) => {

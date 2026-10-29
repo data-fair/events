@@ -27,7 +27,8 @@ export const webhookNotification = (event: LocalizedEvent): Webhook['notificatio
 export const postWebhook = (subscription: Pick<WebhookSubscription, 'url' | 'header'>, notification: Webhook['notification']) => {
   const headers: Record<string, string> = {}
   if (subscription.header?.key && subscription.header.value) headers[subscription.header.key] = subscription.header.value
-  return axios.post(subscription.url, notification, { headers, timeout: 2000 })
+  // the secret header is for the target only: dropped if it redirects to another origin
+  return axios.post(subscription.url, notification, { headers, timeout: 2000, sensitiveHeaders: Object.keys(headers) })
 }
 
 export const createWebhook = async (event: LocalizedEvent, webhookSubscription: WebhookSubscription, opts: { coalesce?: boolean } = {}) => {
