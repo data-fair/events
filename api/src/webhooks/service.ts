@@ -2,6 +2,7 @@ import type { LocalizedEvent, Webhook, WebhookSubscription } from '#types'
 
 import { nanoid } from 'nanoid'
 import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
+import axios from '@data-fair/lib-node/axios.js'
 import mongo from '#mongo'
 import { coalesceAction, type CoalesceTarget } from './operations.ts'
 
@@ -13,15 +14,24 @@ export const emitWebhook = async (webhook: Webhook | null) => {
   if (webhook) await wsEmitter.emit(webhooksChannel(webhook.owner, webhook.subscription._id), webhook)
 }
 
+export const webhookNotification = (event: LocalizedEvent): Webhook['notification'] => ({
+  title: event.title,
+  body: event.body,
+  topic: event.topic,
+  // url: event.url,
+  date: event.date,
+  extra: event.extra
+})
+
+// the default client of lib-node is the public one: its agents refuse private addresses (SSRF)
+export const postWebhook = (subscription: Pick<WebhookSubscription, 'url' | 'header'>, notification: Webhook['notification']) => {
+  const headers: Record<string, string> = {}
+  if (subscription.header?.key && subscription.header.value) headers[subscription.header.key] = subscription.header.value
+  return axios.post(subscription.url, notification, { headers, timeout: 2000 })
+}
+
 export const createWebhook = async (event: LocalizedEvent, webhookSubscription: WebhookSubscription, opts: { coalesce?: boolean } = {}) => {
-  const notification: Webhook['notification'] = {
-    title: event.title,
-    body: event.body,
-    topic: event.topic,
-    // url: event.url,
-    date: event.date,
-    extra: event.extra
-  }
+  const notification = webhookNotification(event)
 
   if (opts.coalesce) {
     const existing = await mongo.webhooks

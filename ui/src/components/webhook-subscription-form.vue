@@ -74,7 +74,16 @@
         />
       </v-col>
     </v-row>
-    <div class="d-flex justify-end ga-2 mt-4">
+    <div class="d-flex flex-wrap justify-end ga-2 mt-4">
+      <v-btn
+        :append-icon="mdiSend"
+        :loading="test.loading.value"
+        color="primary"
+        variant="text"
+        @click="test.execute()"
+      >
+        Tester
+      </v-btn>
       <confirm-menu
         v-if="modelValue._id"
         @confirm="remove.execute()"
@@ -86,9 +95,18 @@
         :disabled="!changed || save.loading.value"
         @click="save.execute()"
       >
-        Enregistrer
+        {{ modelValue._id ? 'Enregistrer' : 'Ajouter' }}
       </v-btn>
     </div>
+    <v-alert
+      v-if="testResult"
+      :type="testResult.ok ? 'success' : 'error'"
+      variant="outlined"
+      density="compact"
+      class="mt-4"
+    >
+      {{ testResult.message }}
+    </v-alert>
   </v-form>
 </template>
 
@@ -128,6 +146,23 @@ const save = useAsyncAction(async () => {
   if (!valid) return
   await $fetch<WebhookSubscription>('webhook-subscriptions', { method: 'POST', body: subscription })
   emit('saved')
+})
+
+// a saved and unchanged webhook is tested through the delivery queue, its result arrives in the history below;
+// otherwise the values of the form are tested at once and the result shows here
+const testResult = ref<{ ok: boolean, message: string }>()
+watch(subscription, () => { testResult.value = undefined })
+const test = useAsyncAction(async () => {
+  testResult.value = undefined
+  if (subscription._id && !changed.value) {
+    await $fetch(`webhook-subscriptions/${subscription._id}/_test`, { method: 'POST' })
+    return
+  }
+  const valid = (await form.value?.validate())?.valid
+  if (!valid) return
+  const { status, error } = await $fetch<{ status?: number, error?: string }>('webhook-subscriptions/_test', { method: 'POST', body: subscription })
+  if (status && status < 400) testResult.value = { ok: true, message: `Le message de test a été reçu (réponse HTTP ${status}).` }
+  else testResult.value = { ok: false, message: status ? `L'URL a répondu par une erreur HTTP ${status}.` : `L'envoi a échoué : ${error}` }
 })
 
 const remove = useAsyncAction(async () => {
