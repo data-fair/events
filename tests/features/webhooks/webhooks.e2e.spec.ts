@@ -6,35 +6,46 @@ import { closedPortUrl } from '../../support/hook-server.ts'
 const pageUrl = (keys: string[], titles: string[]) =>
   `/events/embed/subscribe-webhooks?key=${keys.join(',')}&title=${titles.join(',')}&sender=user:test-user1`
 
-const saveButton = (page: Page) => page.getByRole('button', { name: 'Enregistrer' }).first()
+const saveButton = (page: Page) => page.getByRole('button', { name: 'Save' }).first()
+const addButton = (page: Page) => page.getByRole('button', { name: 'Add', exact: true })
 
 test.describe('Webhooks UI', () => {
   test.beforeEach(clean)
 
   test('creates a webhook on a chosen topic', async ({ page, goToWithAuth }) => {
     await goToWithAuth(pageUrl(['topic1', 'topic2'], ['TopicOne', 'TopicTwo']), 'test-user1')
-    await page.getByText('Declare a new webhook').click()
-    await expect(saveButton(page)).toBeDisabled()
+    await page.getByRole('button', { name: 'Add a webhook' }).click()
+    await expect(addButton(page)).toBeDisabled()
 
-    await page.getByLabel('Libellé').fill('My webhook')
+    await page.getByLabel('Label', { exact: true }).fill('My webhook')
     await page.getByLabel('URL').fill('https://example.com/hook')
-    await saveButton(page).click()
+    await addButton(page).click()
     // several topics are proposed, none is preselected
-    await expect(page.getByText('Ce paramètre est requis')).toBeVisible()
+    await expect(page.getByText('This parameter is required')).toBeVisible()
 
     await page.locator('.v-select').click()
     await page.getByRole('option', { name: 'TopicTwo' }).click()
-    await saveButton(page).click()
+    await addButton(page).click()
 
     await expect(page.getByText('This webhook has not been called yet.')).toBeVisible()
-    await expect(page.getByRole('button', { name: /My webhook\s*TopicTwo/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /My webhook.*TopicTwo/ })).toBeVisible()
     await expect(saveButton(page)).toBeDisabled()
+  })
+
+  test('tests a webhook before adding it', async ({ page, goToWithAuth }) => {
+    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
+    await page.getByRole('button', { name: 'Add a webhook' }).click()
+    await page.getByLabel('Label', { exact: true }).fill('Not yet added')
+    await page.getByLabel('URL').fill(`${closedPortUrl}/hook`)
+    await page.getByRole('button', { name: 'Test', exact: true }).click()
+    await expect(page.getByText(/Sending failed: connect ECONNREFUSED/)).toBeVisible()
+    expect((await (await axiosAuth('test-user1')).get('/api/webhook-subscriptions')).data.count).toBe(0)
   })
 
   test('does not propose a topic selector for a single topic', async ({ page, goToWithAuth }) => {
     await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
-    await page.getByText('Declare a new webhook').click()
-    await expect(page.getByLabel('Libellé')).toBeVisible()
+    await page.getByRole('button', { name: 'Add a webhook' }).click()
+    await expect(page.getByLabel('Label', { exact: true })).toBeVisible()
     await expect(page.locator('.v-select')).toHaveCount(0)
   })
 
@@ -51,7 +62,7 @@ test.describe('Webhooks UI', () => {
     await page.getByRole('button', { name: /Existing webhook/ }).click()
     await expect(saveButton(page)).toBeDisabled()
 
-    await page.getByLabel('Libellé').first().fill('Renamed webhook')
+    await page.getByLabel('Label', { exact: true }).first().fill('Renamed webhook')
     await expect(saveButton(page)).toBeEnabled()
     await page.locator('.v-select').first().click()
     await page.getByRole('option', { name: 'TopicTwo' }).click()
@@ -59,7 +70,7 @@ test.describe('Webhooks UI', () => {
     await saveButton(page).click()
     expect((await saved).status()).toBe(200)
     // the refreshed subscription (new "updated" date) is not a change to save
-    await expect(page.getByRole('button', { name: /Renamed webhook\s*TopicTwo/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Renamed webhook.*TopicTwo/ })).toBeVisible()
     await expect(saveButton(page)).toBeDisabled()
 
     const res = await user1.get('/api/webhook-subscriptions')
@@ -79,8 +90,10 @@ test.describe('Webhooks UI', () => {
 
     await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
     await page.getByRole('button', { name: /Doomed webhook/ }).click()
-    await page.getByRole('button', { name: 'Supprimer' }).click()
-    await page.getByRole('button', { name: 'Yes', exact: true }).click()
+    await page.getByRole('button', { name: 'Delete' }).click()
+    await expect(page.getByText('The webhook "Doomed webhook" will no longer be called.', { exact: false })).toBeVisible()
+    // the confirmation, on the right of Cancel
+    await page.getByRole('button', { name: 'Delete' }).last().click()
     await expect(page.getByText('Doomed webhook')).toHaveCount(0)
     expect((await user1.get('/api/webhook-subscriptions')).data.count).toBe(0)
   })

@@ -22,6 +22,7 @@ const summaries: Record<keyof typeof scopedOperations, string> = {
   listWebhookSubscriptions: 'Lister les abonnements webhooks du compte actif',
   postWebhookSubscription: 'Créer ou modifier un abonnement webhook',
   deleteWebhookSubscription: 'Supprimer un abonnement webhook',
+  testNewWebhookSubscription: "Tester l'envoi d'un abonnement webhook avant de l'enregistrer",
   testWebhookSubscription: "Tester l'envoi d'un abonnement webhook",
   listWebhooks: 'Lister les envois de webhooks du compte actif',
   retryWebhook: "Relancer l'envoi d'un webhook",
@@ -39,7 +40,8 @@ const parameters: Partial<Record<keyof typeof scopedOperations, any[]>> = {
 }
 const bodies: Partial<Record<keyof typeof scopedOperations, string>> = {
   postSubscription: 'Un abonnement (schéma https://github.com/data-fair/events/subscription)',
-  postWebhookSubscription: 'Un abonnement webhook (schéma https://github.com/data-fair/events/webhook-subscription)'
+  postWebhookSubscription: 'Un abonnement webhook (schéma https://github.com/data-fair/events/webhook-subscription)',
+  testNewWebhookSubscription: 'Un abonnement webhook pas encore enregistré (schéma https://github.com/data-fair/events/webhook-subscription)'
 }
 
 export const apiDocs = (locale: 'fr' | 'en') => {

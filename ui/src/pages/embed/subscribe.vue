@@ -2,44 +2,40 @@
   <v-container
     fluid
     data-iframe-height
-    class="bg-surface"
   >
     <v-alert
       v-if="!session.state.user"
       type="error"
+      variant="outlined"
       class="my-1"
     >
-      Vous devez être connecté pour pouvoir recevoir des notifications.
+      {{ t('loginRequired') }}
     </v-alert>
     <template v-else>
-      <v-row v-if="hasDeviceOutput && reactiveSearchParams.register !== 'false' && fetchRegistrations.data.value">
-        <register-device
-          :registrations="fetchRegistrations.data.value"
-          @registration="fetchRegistrations.refresh()"
-        />
-      </v-row>
-      <v-row v-if="header">
-        <v-col>
-          <div class="text-label-large">
-            {{ header }}
-          </div>
-        </v-col>
-      </v-row>
-      <v-row
-        v-for="(topic, i) in topics"
-        :key="topic.key"
-        class="ma-0"
+      <register-device
+        v-if="hasDeviceOutput && reactiveSearchParams.register !== 'false' && fetchRegistrations.data.value"
+        :registrations="fetchRegistrations.data.value"
+        class="mb-4"
+        @registration="fetchRegistrations.refresh()"
+      />
+      <div
+        v-if="header"
+        class="text-label-large mb-2"
       >
+        {{ header }}
+      </div>
+      <template v-if="outputs">
         <subscribe-topic
-          v-if="outputs"
+          v-for="(topic, i) in topics"
+          :key="topic.key"
           :topic="topic"
           :no-sender="!!reactiveSearchParams.noSender"
           :icon="reactiveSearchParams.icon"
           :url-template="reactiveSearchParams['url-template']"
           :outputs="outputs"
-          :sender="senders[i] || null"
+          :sender="(senders.length === 1 ? senders[0] : senders[i]) || null"
         />
-      </v-row>
+      </template>
     </template>
   </v-container>
 </template>
@@ -47,8 +43,10 @@
 <i18n lang="yaml">
 fr:
   notifyMe: "Paramètre manquant | Me notifier de cet évènement : | Me notifier de ces évènements :"
+  loginRequired: Vous devez être connecté pour recevoir des notifications.
 en:
-  notifyMe: "Missing parameter | Send me notifications for this event : | Send me notifications for these events :"
+  notifyMe: "Missing parameter | Send me notifications for this event: | Send me notifications for these events:"
+  loginRequired: You must be logged in to receive notifications.
 </i18n>
 
 <script setup lang="ts">
@@ -78,9 +76,8 @@ const fetchRegistrations = useFetch<DeviceRegistration[]>($apiPath + '/push/regi
 const outputs = computed(() => {
   if (!fetchRegistrations.data.value) return null
   if (reactiveSearchParams.outputs === 'auto') {
-    const outputs = ['email']
-    if (fetchRegistrations.data.value.find(r => !r.disabled)) outputs.push('devices')
-    return outputs
+    // always devices then email, whatever the mode
+    return fetchRegistrations.data.value.find(r => !r.disabled) ? ['devices', 'email'] : ['email']
   } else {
     return ['devices', 'email']
   }

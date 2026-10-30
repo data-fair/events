@@ -33,6 +33,34 @@ test.describe('subscriptions', () => {
     expect(data.topic.key).toBe('topic1')
   })
 
+  test('should keep the origin of a subscription edited from another site', async () => {
+    // subscribed on a portal, its outputs edited later on the subscriptions page of the back-office
+    const portalHost = `portal.localhost:${process.env.NGINX_PORT}`
+    const { data: subscription } = await user1.post('/api/subscriptions', {
+      topic: { key: 'topic1' },
+      sender: { type: 'user', id: 'test-user1' }
+    }, { headers: { host: portalHost } })
+    expect(subscription.origin).toBe(`http://${portalHost}`)
+
+    const { data } = await user1.post('/api/subscriptions', { ...subscription, outputs: ['email'] })
+    expect(data.outputs).toEqual(['email'])
+    expect(data.origin).toBe(`http://${portalHost}`)
+    expect((await user1.get('/api/subscriptions/' + subscription._id)).data.origin).toBe(`http://${portalHost}`)
+  })
+
+  test('should filter subscriptions on the department of the sender', async () => {
+    for (const department of [undefined, '*', 'dep1']) {
+      await user1.post('/api/subscriptions', { topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test2', ...(department && { department }) } })
+    }
+    const departments = async (sender: string) => (await user1.get('/api/subscriptions', { params: { sender } })).data.results
+      .map((s: any) => s.sender.department ?? '').sort()
+    expect(await departments('organization:test2')).toEqual(['', '*', 'dep1'])
+    expect(await departments('organization:test2:')).toEqual([''])
+    expect(await departments('organization:test2:-')).toEqual([''])
+    expect(await departments('organization:test2:*')).toEqual(['*'])
+    expect(await departments('organization:test2:dep1')).toEqual(['dep1'])
+  })
+
   test('should send a public notification to any subscribed user', { tag: '@smoke' }, async () => {
     const subscription = {
       topic: { key: 'topic1' },

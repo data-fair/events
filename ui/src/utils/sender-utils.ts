@@ -19,3 +19,14 @@ export const serializeSender = (sender: Required<Subscription>['sender']) => {
   if (sender.role) str += `:${sender.role}`
   return str
 }
+
+// the avatar of '*' (every department) would show an unknown department, the organization says it all;
+// subscriptions made before their sender had a name only carry its id, the tooltip would say "undefined"
+export const avatarOwner = <T extends { id: string, name?: string, department?: string, departmentName?: string }>(sender: T): T => {
+  const owner = { ...sender, name: sender.name || sender.id }
+  if (owner.department === '*') {
+    delete owner.department
+    delete owner.departmentName
+  }
+  return owner
+}

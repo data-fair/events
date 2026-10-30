@@ -73,6 +73,75 @@ test.describe('webhooks', () => {
     expect(data.results[0].url).toBe(`${closedPortUrl}/hook`)
   })
 
+  test('should test a webhook subscription before saving it', async () => {
+    const received: any[] = []
+    const hookServer = await startHookServer((req, res) => {
+      const chunks: Buffer[] = []
+      req.on('data', (chunk) => { chunks.push(chunk) })
+      req.on('end', () => {
+        received.push({ headers: req.headers, body: JSON.parse(Buffer.concat(chunks).toString()) })
+        res.writeHead(200)
+        res.end()
+      })
+    })
+    const subscription = { title: 'Unsaved', topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test1' } }
+
+    try {
+      const { data } = await admin1.post('/api/webhook-subscriptions/_test', { ...subscription, url: hookServer.url, header: { key: 'X-Secret', value: 'mysecret' } })
+      expect(data).toEqual({ status: 200 })
+      expect(received.length).toBe(1)
+      expect(received[0].body.title).toBe('Test webhook')
+      expect(received[0].headers['x-secret']).toBe('mysecret')
+    } finally {
+      hookServer.close()
+    }
+
+    const { data } = await admin1.post('/api/webhook-subscriptions/_test', { ...subscription, url: `${closedPortUrl}/hook` })
+    expect(data.error).toMatch(/ECONNREFUSED/)
+    // nothing was saved nor queued
+    expect((await admin1.get('/api/webhook-subscriptions')).data.count).toBe(0)
+    expect((await admin1.get('/api/webhooks')).data.count).toBe(0)
+  })
+
+  test('should not send the secret header of a webhook to another origin it redirects to', async () => {
+    const secrets: Record<string, unknown> = {}
+    let otherBody: any
+    const other = await startHookServer((req, res) => {
+      secrets.other = req.headers['x-secret']
+      const chunks: Buffer[] = []
+      req.on('data', (chunk) => { chunks.push(chunk) })
+      req.on('end', () => {
+        otherBody = JSON.parse(Buffer.concat(chunks).toString())
+        res.writeHead(200)
+        res.end()
+      })
+    })
+    // /hook -> /moved on the same origin -> the other server, under another host name of the loopback
+    const target = await startHookServer((req, res) => {
+      if (req.url === '/moved') secrets.moved = req.headers['x-secret']
+      res.writeHead(307, { location: req.url === '/hook' ? '/moved' : other.url.replace('localhost', '127.0.0.1') })
+      res.end()
+    })
+
+    try {
+      const { data } = await admin1.post('/api/webhook-subscriptions/_test', {
+        title: 'Redirected',
+        topic: { key: 'topic1' },
+        sender: { type: 'organization', id: 'test1' },
+        url: target.url,
+        header: { key: 'X-Secret', value: 'mysecret' }
+      })
+      expect(data).toEqual({ status: 200 })
+      // kept on the same origin, dropped on another one, the message itself follows the 307 redirects
+      expect(secrets.moved).toBe('mysecret')
+      expect(secrets.other).toBeUndefined()
+      expect(otherBody.title).toBe('Test webhook')
+    } finally {
+      target.close()
+      other.close()
+    }
+  })
+
   test('should deliver a webhook to a target URL', async () => {
     const received: any[] = []
     const hookServer = await startHookServer((req, res) => {
