@@ -1,5 +1,5 @@
 <template>
-  <v-app :class="{ 'bg-transparent': embedded }">
+  <v-app :class="{ 'bg-transparent': embed }">
     <v-main>
       <RouterView />
       <ui-notif />
@@ -10,6 +10,8 @@
 <script setup lang="ts">
 import uiNotif from '@data-fair/lib-vuetify/ui-notif.vue'
 
-// in an iframe (a d-frame or not) the host paints the background: a card, a menu, a portal page
-const embedded = window.self !== window.top
+// as in data-fair, the embed pages let their host paint the background (a card, a menu, a portal page),
+// the other pages keep the theme background
+const route = useRoute()
+const embed = computed(() => route.path.startsWith('/embed/'))
 </script>
