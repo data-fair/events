@@ -28,37 +28,9 @@
     >
       <!-- the icons of the traceability list of events -->
       <template #icon>
-        <v-avatar
-          v-if="event.originator?.user?.admin"
-          :icon="mdiShieldAlert"
-          :size="28"
-          color="admin"
-        />
-        <v-avatar
-          v-else-if="event.originator?.internalProcess"
-          :icon="mdiCogRefresh"
-          :size="28"
-          color="primary"
-        />
-        <v-avatar
-          v-else-if="event.originator?.apiKey"
-          :icon="mdiApi"
-          :size="28"
-          color="primary"
-        />
-        <owner-avatar
-          v-else-if="otherOrganization(event)"
-          :owner="{ type: 'organization', id: '', ...event.originator!.organization! }"
-        />
-        <owner-avatar
-          v-else-if="event.originator?.user"
-          :owner="{ type: 'user', id: '', ...event.originator.user }"
-        />
-        <v-avatar
-          v-else
-          :icon="mdiHistory"
-          :size="28"
-          color="primary"
+        <event-originator-avatar
+          :event="event"
+          fallback-color="primary"
         />
       </template>
       <div class="text-body-medium">
@@ -78,8 +50,7 @@
 import type { Event } from '@data-fair/lib-common-types/event/index.js'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { mdiApi, mdiCogRefresh, mdiHistory, mdiShieldAlert } from '@mdi/js'
-import OwnerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
+import EventOriginatorAvatar from './EventOriginatorAvatar.vue'
 import useFetch from '@data-fair/lib-vue/fetch.js'
 import useLocaleDayjs from '@data-fair/lib-vue/locale-dayjs.js'
 
@@ -94,12 +65,6 @@ const { dayjs } = useLocaleDayjs()
 // the events of the active account, an admin only API: the host shows this block to its admins
 const eventsFetch = useFetch<{ results: LocalizedEvent[] }>(`${eventsUrl}/api/events`, { query: { size: 5 } })
 const events = computed(() => eventsFetch.data.value?.results)
-
-// an organization different from the sender: a partner, or a user acting from another account
-const otherOrganization = (event: LocalizedEvent) => {
-  const organization = event.originator?.organization
-  return !!organization && (event.sender?.type !== 'organization' || organization.id !== event.sender.id)
-}
 
 // the API hides the name of a platform admin from the other users
 const originatorName = (event: LocalizedEvent) => {

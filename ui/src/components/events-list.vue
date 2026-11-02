@@ -24,40 +24,7 @@
         <v-divider v-if="i > 0" />
         <v-list-item lines="two">
           <template #prepend>
-            <v-avatar
-              v-if="event.originator?.user?.admin"
-              v-tooltip="t('admin')"
-              :icon="mdiShieldAlert"
-              :size="28"
-              color="admin"
-            />
-            <v-avatar
-              v-else-if="event.originator?.internalProcess"
-              v-tooltip="t('internalProcess')"
-              :icon="mdiCogRefresh"
-              :size="28"
-              color="primary"
-            />
-            <v-avatar
-              v-else-if="event.originator?.apiKey"
-              v-tooltip="t('apiKey')"
-              :icon="mdiApi"
-              :size="28"
-              color="primary"
-            />
-            <owner-avatar
-              v-else-if="otherOrganization(event)"
-              :owner="{ type: 'organization', ...event.originator!.organization! }"
-            />
-            <owner-avatar
-              v-else-if="event.originator?.user"
-              :owner="{ type: 'user', ...event.originator.user }"
-            />
-            <v-avatar
-              v-else
-              :icon="mdiHistory"
-              :size="28"
-            />
+            <event-originator-avatar :event="event" />
           </template>
           <!-- the date on the line of the title: aligned on top, not centered on an item of several lines;
                under the title on a phone, where it would leave the title a narrow column -->
@@ -114,8 +81,9 @@ en:
 
 <script lang="ts" setup>
 import type { LocalizedEvent } from '#api/types'
-import { mdiApi, mdiCogRefresh, mdiHistory, mdiShieldAlert } from '@mdi/js'
-import OwnerAvatar from '@data-fair/lib-vuetify/owner-avatar.vue'
+import { mdiHistory } from '@mdi/js'
+import EventOriginatorAvatar from '@data-fair/lib-vuetify-events/EventOriginatorAvatar.vue'
+import { otherOrganization } from '@data-fair/lib-vuetify-events/originator.js'
 import LayoutEmptyState from '@data-fair/lib-vuetify/layout-empty-state.vue'
 
 type EventsRes = { results: LocalizedEvent[], next?: string }
@@ -153,12 +121,6 @@ const fetchNextEvents = useAsyncAction(async () => {
   events.value.results = events.value.results.concat(nextEvents.results)
   events.value.next = nextEvents.next
 })
-
-// an organization different from the sender: a partner, or a user acting from another account
-const otherOrganization = (event: LocalizedEvent) => {
-  const organization = event.originator?.organization
-  return !!organization && (event.sender?.type !== 'organization' || organization.id !== event.sender.id)
-}
 
 // a name alone is ambiguous in a traceability log: always followed by the id (or the email of a user)
 const withId = (name: string | undefined, id: string | undefined) => {
