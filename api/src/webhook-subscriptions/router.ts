@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid'
 import { session, mongoSort, mongoPagination, httpError } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
 import * as postReq from '#doc/webhook-subscriptions/post-req/index.ts'
-import { createWebhook } from '../webhooks/service.ts'
+import { createWebhook, postWebhook, webhookNotification } from '../webhooks/service.ts'
 import { requireOperationScope } from '../shared/scopes.ts'
 
 const router = Router()
@@ -94,6 +94,30 @@ router.delete('/:id', requireOperationScope('deleteWebhookSubscription'), async 
   res.status(204).send()
 })
 
+const testEvent = (sender: WebhookSubscription['sender']) => ({
+  _id: 'test-webhook',
+  sender: { ...sender, name: 'Test' },
+  visibility: 'private' as const,
+  title: 'Test webhook',
+  topic: { key: 'test', title: 'Test' },
+  date: new Date().toISOString()
+})
+
+// test a webhook subscription before saving it: the same test message, sent at once to the url of the form,
+// the answer comes back in the response as there is no delivery history yet
+router.post('/_test', requireOperationScope('testNewWebhookSubscription'), async (req, res, next) => {
+  const { user, accountRole } = await session.reqAuthenticated(req)
+  if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
+
+  const { body } = postReq.returnValid(req, { name: 'req' })
+  try {
+    const response = await postWebhook(body, webhookNotification(testEvent(body.sender)))
+    res.json({ status: response.status })
+  } catch (err: any) {
+    res.json(err.status ? { status: err.status } : { error: err.message })
+  }
+})
+
 router.post('/:id/_test', requireOperationScope('testWebhookSubscription'), async (req, res, next) => {
   const { user, account, accountRole } = await session.reqAuthenticated(req)
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
@@ -101,13 +125,6 @@ router.post('/:id/_test', requireOperationScope('testWebhookSubscription'), asyn
   const filter = { _id: req.params.id, 'owner.type': account.type, 'owner.id': account.id }
   const subscription = await mongo.webhookSubscriptions.findOne(filter)
   if (!subscription) return res.status(404).send()
-  await createWebhook({
-    _id: 'test-webhook',
-    sender: { ...subscription.sender, name: 'Test' },
-    visibility: 'private',
-    title: 'Test webhook',
-    topic: { key: 'test', title: 'Test' },
-    date: new Date().toISOString()
-  }, subscription)
+  await createWebhook(testEvent(subscription.sender), subscription)
   res.status(204).send()
 })

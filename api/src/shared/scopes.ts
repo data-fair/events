@@ -51,6 +51,7 @@ export const scopedOperations = {
   listWebhookSubscriptions: { method: 'get', path: '/webhook-subscriptions', family: 'webhooks', tier: 'read' },
   postWebhookSubscription: { method: 'post', path: '/webhook-subscriptions', family: 'webhooks', tier: 'admin' },
   deleteWebhookSubscription: { method: 'delete', path: '/webhook-subscriptions/{id}', family: 'webhooks', tier: 'admin' },
+  testNewWebhookSubscription: { method: 'post', path: '/webhook-subscriptions/_test', family: 'webhooks', tier: 'admin' },
   testWebhookSubscription: { method: 'post', path: '/webhook-subscriptions/{id}/_test', family: 'webhooks', tier: 'admin' },
   listWebhooks: { method: 'get', path: '/webhooks', family: 'webhooks', tier: 'read' },
   retryWebhook: { method: 'post', path: '/webhooks/{id}/_retry', family: 'webhooks', tier: 'admin' },

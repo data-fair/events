@@ -5,11 +5,10 @@ import config from '#config'
 import Debug from 'debug'
 import type { Webhook } from '#types'
 import mongo from '#mongo'
-import axios from '@data-fair/lib-node/axios.js'
 import { internalError } from '@data-fair/lib-node/observer.js'
 import locks from '@data-fair/lib-node/locks.js'
 import { failedAttemptPatch } from './operations.ts'
-import { emitWebhook } from './service.ts'
+import { emitWebhook, postWebhook } from './service.ts'
 
 const debug = Debug('webhooks-worker')
 
@@ -57,12 +56,8 @@ const loop = async () => {
     }
     debug('found matching subscription', subscription)
     try {
-      const headers: Record<string, string> = {}
-      if (subscription.header && subscription.header.key && subscription.header.value) {
-        headers[subscription.header.key] = subscription.header.value
-      }
       debug('send webhook', subscription.url, webhook.notification)
-      const res = await axios.post(subscription.url, webhook.notification, { headers, timeout: 2000 })
+      const res = await postWebhook(subscription, webhook.notification)
       debug('webhook success')
       await emitWebhook(await mongo.webhooks.findOneAndUpdate({ _id: webhook._id }, {
         $set: {

@@ -37,34 +37,17 @@
     </v-list-item-subtitle>
 
     <template #append>
-      <v-menu
+      <v-btn
         v-if="webhook.status !== 'waiting' && webhook.status !== 'working'"
-        location="left"
-      >
-        <template #activator="{ props }">
-          <v-btn
-            icon
-            variant="flat"
-            v-bind="props"
-          >
-            <v-icon :icon="mdiDotsVertical" />
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item @click="retry.execute()">
-            <template #append>
-              <v-icon
-                color="primary"
-                :icon="mdiSend"
-              />
-            </template>
-
-            <v-list-item-title>
-              {{ t('retry') }}
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+        :icon="mdiSend"
+        :title="t('retry')"
+        :aria-label="t('retry')"
+        :loading="retry.loading.value"
+        color="primary"
+        variant="text"
+        size="small"
+        @click="retry.execute()"
+      />
     </template>
   </v-list-item>
 </template>
@@ -79,7 +62,7 @@ fr:
   nbAttempts: "Aucune tentative | 1 tentative | {nbAttempts} tentatives"
   lastAttempt: "dernière {date}"
   nextAttempt: "prochaine {date}"
-  retry: renvoyer
+  retry: Renvoyer
   cancel: annuler
 en:
   waiting: waiting
@@ -90,7 +73,7 @@ en:
   nbAttempts: "No attempt | 1 attempt | {nbAttempts} attempts"
   lastAttempt: "last {date}"
   nextAttempt: "next {date}"
-  retry: retry
+  retry: Send again
   cancel: cancel
 </i18n>
 
@@ -105,7 +88,7 @@ const { dayjs } = useLocaleDayjs()
 
 const description = computed(() => {
   const parts = []
-  parts.push(t('nbAttempts', webhook.nbAttempts, { plural: webhook.nbAttempts }))
+  parts.push(t('nbAttempts', { nbAttempts: webhook.nbAttempts }, webhook.nbAttempts))
   if (webhook.lastAttempt) parts.push(t('lastAttempt', { date: dayjs(webhook.lastAttempt.date).format('LLL') }))
   if (webhook.nextAttempt) parts.push(t('nextAttempt', { date: dayjs(webhook.nextAttempt).format('LLL') }))
   return parts.join(' - ')

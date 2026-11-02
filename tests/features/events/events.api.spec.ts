@@ -56,6 +56,10 @@ test.describe('events', () => {
     expect(res.data.results.length).toBe(1)
     expect(res.data.results[0]._id).not.toBe(id1)
     expect(res.data.next).toBeFalsy()
+    // exactly a full page left: no next page that would come back empty
+    res = await user1.get('/api/events', { params: { size: 3 } })
+    expect(res.data.results.length).toBe(3)
+    expect(res.data.next).toBeFalsy()
   })
 
   test('should paginate over an older event with a greater id', async () => {

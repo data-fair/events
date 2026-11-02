@@ -35,7 +35,7 @@ export default defineConfig({
   plugins: [
     VueRouter({
       dts: './dts/typed-router.d.ts',
-      exclude: process.env.NODE_ENV === 'development' ? [] : ['src/pages/dev.vue']
+      exclude: process.env.NODE_ENV === 'development' ? [] : ['src/pages/dev.vue', 'src/pages/dev/**']
     }),
     Vue(),
     VueI18nPlugin(),

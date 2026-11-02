@@ -10,20 +10,21 @@
   </v-alert>
   <v-alert
     v-else-if="ready && !pushManagerSubscription"
-    color="accent"
+    :icon="mdiBellRing"
+    color="primary"
     density="compact"
     variant="outlined"
-    class="py-0 pr-0"
   >
     {{ t('registerDevice') }}
     <template #append>
       <v-btn
-        variant="text"
-        class="ml-1"
-        :disabled="register.loading.value"
+        :loading="register.loading.value"
+        color="primary"
+        variant="flat"
+        size="small"
         @click="register.execute()"
       >
-        {{ t('ok') }}
+        {{ t('register') }}
       </v-btn>
     </template>
   </v-alert>
@@ -31,12 +32,20 @@
 
 <i18n lang="yaml">
 fr:
-  ok: ok
-  registerDevice: Ajouter cet appareil comme destinataire permanent de vos notifications ?
+  register: Recevoir ici
+  registerDevice: Ce navigateur ne reçoit pas encore vos notifications.
+  blocked: Les notifications sont bloquées pour ce site dans votre navigateur. Autorisez-les dans les paramètres du site (icône à gauche de l'adresse), puis rechargez la page.
+  unsupported: L'envoi d'une notification à ce navigateur a échoué, il ne prend peut-être pas en charge les notifications push.
+en:
+  register: Receive here
+  registerDevice: This browser does not receive your notifications yet.
+  blocked: Notifications are blocked for this site in your browser. Allow them in the site settings (icon left of the address), then reload the page.
+  unsupported: Sending a notification to this browser failed, it may not support push notifications.
 </i18n>
 
 <script lang="ts" setup>
 import type { DeviceRegistration } from '#api/types'
+import { mdiBellRing } from '@mdi/js'
 import debugModule from 'debug'
 
 const debug = debugModule('webpush')
@@ -62,7 +71,9 @@ const prepareServiceWorker = async () => {
     return console.warn('Notifications are not supported')
   }
   if (Notification.permission === 'denied') {
-    return console.warn('The user has blocked permissions')
+    // blocked before, the browser will not ask again: say how to unblock instead of showing nothing
+    error.value = t('blocked')
+    return
   }
   if (!('serviceWorker' in navigator)) {
     return console.warn('Service workers are not supported')
@@ -128,10 +139,10 @@ const register = useAsyncAction(async () => {
     if (Notification.permission === 'denied') {
       ready.value = false
       console.warn('The user has blocked permissions')
-      error.value = 'Les notifications sont bloquées sur cet appareil pour cette application.'
+      error.value = t('blocked')
     } else {
       console.error('Error while subscribing to service worker', err)
-      error.value = 'Échec lors de l\'envoi d\'une notification à cet appareil. Votre navigateur n\'est peut-être pas compatible avec la fonctionnalité "push messaging".'
+      error.value = t('unsupported')
     }
   }
 })

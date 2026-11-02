@@ -39,7 +39,10 @@ router.get('', requireOperationScope('listSubscriptions'), async (req, res, next
     const senderParts = req.query.sender.split(':')
     query['sender.type'] = senderParts[0]
     query['sender.id'] = senderParts[1]
-    if (senderParts[2]) query['sender.department'] = senderParts[2]
+    // type:id matches every department, type:id: and type:id:- only the subscriptions without one
+    // (the subscribe page always serializes 3 parts, it must not take over a '*' or a departmental subscription)
+    if (senderParts[2] && senderParts[2] !== '-') query['sender.department'] = senderParts[2]
+    else if (senderParts.length > 2) query['sender.department'] = { $in: [null, ''] }
     if (senderParts[3]) query['sender.role'] = senderParts[3]
   }
 
@@ -85,6 +88,9 @@ router.post('', requireOperationScope('postSubscription'), async (req, res, next
       throw httpError(403, 'Impossible de modifier un abonnement pour un autre utilisateur')
     }
     subscription.created = existingSubscription.created
+    // the links of the notifications are built on this site, editing the outputs from another site
+    // (the subscriptions page of the back-office for a portal subscription) must not move them
+    subscription.origin = existingSubscription.origin ?? subscription.origin
   }
 
   if (!canSubscribePrivate(body.sender, user)) {
