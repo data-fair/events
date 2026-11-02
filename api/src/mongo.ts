@@ -53,6 +53,11 @@ export class EventsMongo {
           { 'sender.type': 1, 'sender.id': 1, '_search.text': 'text', date: -1 },
           { default_language: config.i18n.defaultLocale }
         ],
+        // a text index is only used by a $text query: the list without a search, and each of its next
+        // pages, scanned the whole collection and sorted it in memory
+        'sender-date': { 'sender.type': 1, 'sender.id': 1, date: -1, _id: -1 },
+        // the traceability tab of a resource
+        'sender-resource-date': { 'sender.type': 1, 'sender.id': 1, 'resource.type': 1, 'resource.id': 1, date: -1, _id: -1 },
         // identity webhooks rewrite the events triggered by a user or an organization
         'originator-user': [{ 'originator.user.id': 1 }, { sparse: true }],
         'originator-organization': [{ 'originator.organization.id': 1 }, { sparse: true }],

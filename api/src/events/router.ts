@@ -35,8 +35,10 @@ router.get('', requireOperationScope('listEvents'), async (req, res, next) => {
     const [beforeDate, beforeId] = req.query.before.split('/')
     // optional beforeId as a tie-breaker between events of the same date only: ids are random,
     // an older event can have a greater id
+    query.date = { $lte: beforeDate }
+    // the date bound above is kept: it starts the index scan at the page, the $or alone is a filter
+    // applied after reading every newer event
     if (beforeId) query.$or = [{ date: { $lt: beforeDate } }, { date: beforeDate, _id: { $lt: beforeId } }]
-    else query.date = { $lte: beforeDate }
   }
 
   // one more than asked: a next page is offered only when there really is one
