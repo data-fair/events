@@ -21,4 +21,7 @@ watch(input, (value) => {
   clearTimeout(timeout)
   timeout = setTimeout(() => { search.value = value ?? '' }, 300)
 })
+// the query can also change from outside (history, the host of the embed)
+watch(search, (value) => { if (value !== (input.value ?? '')) input.value = value })
+onBeforeUnmount(() => clearTimeout(timeout))
 </script>

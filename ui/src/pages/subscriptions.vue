@@ -192,15 +192,31 @@ const details = (subscription: Subscription) => {
     parts.push(department ? `${name} (${department})` : name)
   }
   // the links of its notifications point to this site: worth knowing when it is not this one
-  if (subscription.origin && new URL(subscription.origin).origin !== window.location.origin) {
-    parts.push(t('subscribedOn', { host: new URL(subscription.origin).host }))
-  }
+  const origin = originUrl(subscription.origin)
+  if (origin && origin.origin !== window.location.origin) parts.push(t('subscribedOn', { host: origin.host }))
   return parts.filter(Boolean).join(' · ')
 }
 
+// an origin that is not an absolute url (older subscriptions) is not worth breaking the whole list
+const originUrl = (origin: string | undefined) => {
+  if (!origin) return
+  try {
+    return new URL(origin)
+  } catch {}
+}
+
+// the chips show the new outputs at once and the saves of a subscription run one after the other,
+// each with the outputs of the time it is sent: fast toggles do not start from a stale value nor race
+const saving: Record<string, Promise<unknown>> = {}
 const saveOutputs = useAsyncAction(async (subscription: Subscription, outputs: Subscription['outputs']) => {
-  const saved = await $fetch<Subscription>('subscriptions', { method: 'POST', body: { ...subscription, outputs } })
-  subscription.outputs = saved.outputs
+  subscription.outputs = outputs
+  const save = (saving[subscription._id] ?? Promise.resolve()).catch(() => {}).then(() => $fetch<Subscription>('subscriptions', {
+    method: 'POST',
+    // the API only takes a string title, not the localized ones of the subscriptions imported from notify
+    body: { ...subscription, title: localized(subscription.title) }
+  }))
+  saving[subscription._id] = save
+  await save
 })
 
 const unsubscribe = useAsyncAction(async (subscription: Subscription) => {

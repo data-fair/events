@@ -90,8 +90,9 @@
       </template>
     </v-list>
     <!-- the API pages by date with a next link, not with skip as useLoadMore -->
+    <!-- hidden while a new search loads: its next page would be appended to the results of the new one -->
     <load-more-btn
-      v-if="events.next"
+      v-if="events.next && !fetchEvents.loading.value"
       :loading="fetchNextEvents.loading.value"
       @click="fetchNextEvents.execute()"
     />
@@ -133,16 +134,22 @@ const resourceFilter = useStringSearchParam('resource')
 
 const events = ref<EventsRes | null>(null)
 
+// a response that comes back after a newer search started (or a next page after any reload) is dropped
+let fetchId = 0
 const fetchEvents = useAsyncAction(async () => {
-  events.value = await $fetch<EventsRes>('events', { query: { q: search.value || undefined, resource: resourceFilter.value || undefined, size: firstPageSize } })
+  const id = ++fetchId
+  const res = await $fetch<EventsRes>('events', { query: { q: search.value || undefined, resource: resourceFilter.value || undefined, size: firstPageSize } })
+  if (id === fetchId) events.value = res
 })
 fetchEvents.execute()
 watch(search, () => fetchEvents.execute())
 
 const fetchNextEvents = useAsyncAction(async () => {
   if (!events.value?.next) return
+  const id = fetchId
   // the next link repeats the size of the first page
   const nextEvents = await $fetch<EventsRes>(events.value.next, { query: { size: pageSize } })
+  if (id !== fetchId || !events.value) return
   events.value.results = events.value.results.concat(nextEvents.results)
   events.value.next = nextEvents.next
 })
