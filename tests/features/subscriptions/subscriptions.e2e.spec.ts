@@ -53,8 +53,12 @@ test.describe('Subscriptions UI', () => {
     await expect(email).toBeChecked()
     await expect.poll(outputs).toEqual([['devices', 'email']])
 
-    await page.getByRole('button', { name: 'Unsubscribe' }).click()
-    await page.getByRole('button', { name: 'Unsubscribe' }).last().click()
+    const unsubscribe = page.getByRole('button', { name: 'Unsubscribe' })
+    await unsubscribe.click()
+    // the confirmation of the menu: .last() alone resolves to the button of the list while the menu
+    // is still opening, and clicking it again closes the menu
+    await expect(unsubscribe).toHaveCount(2)
+    await unsubscribe.last().click()
     await expect(page.getByText('You are not subscribed to any notification.')).toBeVisible()
     await expect.poll(outputs).toEqual([])
   })

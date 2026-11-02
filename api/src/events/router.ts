@@ -33,10 +33,12 @@ router.get('', requireOperationScope('listEvents'), async (req, res, next) => {
   if (skip) throw httpError(400, 'skip is not supported, use "before" parameter with the date of the last event of the previous page')
   if (req.query.before && typeof req.query.before === 'string') {
     const [beforeDate, beforeId] = req.query.before.split('/')
+    // the date bound is kept with a beforeId: it starts the index scan at the page,
+    // the $or alone is a filter applied after reading every newer event
+    query.date = { $lte: beforeDate }
     // optional beforeId as a tie-breaker between events of the same date only: ids are random,
     // an older event can have a greater id
     if (beforeId) query.$or = [{ date: { $lt: beforeDate } }, { date: beforeDate, _id: { $lt: beforeId } }]
-    else query.date = { $lte: beforeDate }
   }
 
   // one more than asked: a next page is offered only when there really is one
