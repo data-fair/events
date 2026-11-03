@@ -14,16 +14,25 @@ export default router
 
 router.get('', requireOperationScope('listEvents'), async (req, res, next) => {
   const sessionState = await session.reqAuthenticated(req)
-  const { account, lang, accountRole } = sessionState
-  if (accountRole !== 'admin') throw httpError(403, 'admin only')
+  const { account, lang, accountRole, user } = sessionState
+  if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'admin only')
 
-  const query: Filter<FullEvent> = { 'sender.type': account.type, 'sender.id': account.id }
-  if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q, $language: lang || config.i18n.defaultLocale }
+  const query: Filter<FullEvent> = {}
   if (typeof req.query.resource === 'string') {
     const [type, id] = req.query.resource.split('/')
     query['resource.type'] = type
     query['resource.id'] = id
   }
+  if (req.query.q && typeof req.query.q === 'string') query.$text = { $search: req.query.q, $language: lang || config.i18n.defaultLocale }
+
+  // a super admin reads the traceability of a resource of any account without switching to it: the events
+  // of its current owner (the one of its last event), the indexes, the text one too, start with the sender
+  const owner = (user.adminMode && query['resource.type'] && (await mongo.events.findOne(
+    { 'resource.type': query['resource.type'], 'resource.id': query['resource.id'] },
+    { projection: { sender: 1 }, sort: { date: -1 } }
+  ))?.sender) || account
+  query['sender.type'] = owner.type
+  query['sender.id'] = owner.id
 
   const project = mongoProjection(req.query.select, ['_search', '_needsSearch', 'htmlBody'])
 

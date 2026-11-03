@@ -7,6 +7,7 @@ const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: de
 const axDev = axios({ baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')
 const admin1 = await axiosAuth('test1-admin1')
+const superadmin = await axiosAuth('superadmin', { adminMode: true })
 
 test.describe('events', () => {
   test.beforeEach(clean)
@@ -147,5 +148,33 @@ test.describe('events', () => {
     expect(stored.title).toBe('stored')
     expect(stored.channels).toBeUndefined()
     expect(stored.coalesce).toBeUndefined()
+  })
+
+  test('a super admin reads the events of a resource of another account', async () => {
+    await axPush.post('/api/events', [
+      { date: '2026-01-01T00:00:00.000Z', topic: { key: 'topic1' }, title: 'dataset event', sender: { type: 'organization', id: 'test1', name: 'Test 1' }, resource: { type: 'dataset', id: 'ds1' } },
+      { date: '2026-01-02T00:00:00.000Z', topic: { key: 'topic1' }, title: 'other dataset', sender: { type: 'organization', id: 'test1', name: 'Test 1' }, resource: { type: 'dataset', id: 'ds2' } }
+    ])
+    // the active account of the super admin is not the owner of the dataset
+    let res = await superadmin.get('/api/events', { params: { resource: 'dataset/ds1' } })
+    expect(res.data.results.map((e: any) => e.title)).toEqual(['dataset event'])
+    res = await superadmin.get('/api/events', { params: { resource: 'dataset/ds1', q: 'dataset' } })
+    expect(res.data.results.map((e: any) => e.title)).toEqual(['dataset event'])
+    // without the resource filter, the active account only
+    res = await superadmin.get('/api/events')
+    expect(res.data.results).toHaveLength(0)
+    // a regular user still only sees the events of the active account
+    res = await user1.get('/api/events', { params: { resource: 'dataset/ds1' } })
+    expect(res.data.results).toHaveLength(0)
+  })
+
+  test('a super admin reads the events of the current owner of a resource', async () => {
+    const resource = { type: 'dataset', id: 'moved-ds' }
+    await axPush.post('/api/events', [
+      { date: '2026-01-01T00:00:00.000Z', topic: { key: 'topic1' }, title: 'created by user1', sender: { type: 'user', id: 'test-user1', name: 'User 1' }, resource },
+      { date: '2026-01-02T00:00:00.000Z', topic: { key: 'topic1' }, title: 'updated by test1', sender: { type: 'organization', id: 'test1', name: 'Test 1' }, resource }
+    ])
+    const res = await superadmin.get('/api/events', { params: { resource: 'dataset/moved-ds' } })
+    expect(res.data.results.map((e: any) => e.title)).toEqual(['updated by test1'])
   })
 })
