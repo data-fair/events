@@ -66,16 +66,9 @@
 
       <!-- mounted when scrolled to: the dev server cannot serve the modules of every frame at once -->
       <v-lazy min-height="150">
-        <!-- the components of @data-fair/lib-vuetify-events alone, the host gives them their container -->
-        <v-sheet
-          v-if="scenario.id === 'recent-activity'"
-          max-width="400"
-          color="transparent"
-        >
-          <df-recent-activity :events-url="$eventsUrl" />
-        </v-sheet>
+        <!-- the component of @data-fair/lib-vuetify-events alone, the host gives it its container -->
         <df-notification-queue
-          v-else-if="scenario.id === 'notification-queue'"
+          v-if="scenario.id === 'notification-queue'"
           :events-url="$eventsUrl"
         />
         <DevFrame
@@ -92,7 +85,7 @@
 <script setup lang="ts">
 import { h, type FunctionalComponent } from 'vue'
 import '@data-fair/frame/lib/d-frame.js'
-import { DfNotificationQueue, DfRecentActivity } from '@data-fair/lib-vuetify-events'
+import { DfNotificationQueue } from '@data-fair/lib-vuetify-events'
 import { $eventsUrl } from '../../context.ts'
 
 type Scenario = {
@@ -110,8 +103,8 @@ const sender = 'organization:test1'
 const topics = { key: 'dataset-finalized,dataset-error', title: 'Jeu de données finalisé,Erreur sur le jeu de données' }
 
 const scenarios: Scenario[] = [
-  { id: 'recent-activity', title: 'DfRecentActivity', source: 'lib-vuetify/DfRecentActivity.vue', component: '<df-recent-activity :events-url="$sitePath + \'/events\'" />' },
   { id: 'notification-queue', title: 'DfNotificationQueue', source: 'lib-vuetify/DfNotificationQueue.vue', component: '<df-notification-queue :events-url="$sitePath + \'/events\'" />' },
+  { id: 'events-compact', title: 'Recent activity', source: 'ui/src/pages/embed/events-compact.vue', page: 'embed/events-compact' },
   { id: 'events', title: 'Traceability of a resource', source: 'ui/src/pages/embed/events.vue', page: 'embed/events', params: { resource: 'dataset/communes' } },
   { id: 'subscribe', title: 'Subscribe to topics', source: 'ui/src/pages/embed/subscribe.vue', page: 'embed/subscribe', params: { ...topics, sender, 'url-template': '/data-fair/dataset/communes' } },
   { id: 'subscribe-webhooks', title: 'Webhooks of topics', source: 'ui/src/pages/embed/subscribe-webhooks.vue', page: 'embed/subscribe-webhooks', params: { ...topics, sender } },

@@ -63,8 +63,7 @@ test.describe('Events UI', () => {
       event(5, {})
     ])
 
-    // DfRecentActivity of @data-fair/lib-vuetify-events, first block of the integrations dev page
-    await goToWithAuth('/events/dev/integrations', 'test-user1')
+    await goToWithAuth('/events/embed/events-compact', 'test-user1')
     const timeline = page.locator('.v-timeline')
     await expect(timeline.getByText(/^activity \d$/)).toHaveCount(5)
     await expect(timeline.getByText('activity 5')).toHaveCount(0)
