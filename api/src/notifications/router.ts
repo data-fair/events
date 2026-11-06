@@ -10,7 +10,7 @@ import log from '@data-fair/lib-node/log.js'
 import * as eventsPostSingleReq from '#doc/events/post-single-req/index.ts'
 import * as notificationsPostReq from '#doc/notifications/post-req/index.ts'
 import { postEvents } from '../events/service.ts'
-import { sendNotification } from './service.ts'
+import { dropUnsafeUrl, sendNotification } from './service.ts'
 import { nanoid } from 'nanoid'
 import { requireOperationScope } from '../shared/scopes.ts'
 
@@ -87,7 +87,7 @@ router.post('', async (req, res, next) => {
       ...body,
     }
 
-    await sendNotification(notification)
+    await sendNotification(dropUnsafeUrl(notification))
     res.status(200).json(notification)
   }
 })

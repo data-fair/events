@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { buildNotificationMail, prepareSubscriptionNotification } from '../../../api/src/notifications/operations.ts'
+import { buildNotificationMail, isSafeLink, prepareSubscriptionNotification } from '../../../api/src/notifications/operations.ts'
 
 const makeEvent = (overrides: any = {}) => ({
   _id: 'evt1',
@@ -20,6 +20,16 @@ const makeSubscription = (overrides: any = {}) => ({
   created: { date: '2024-01-01' },
   updated: { date: '2024-01-01' },
   ...overrides
+})
+
+test.describe('isSafeLink', () => {
+  test('accepts http(s) urls and the paths of the site', () => {
+    for (const url of ['https://example.com/a', 'http://example.com', '/data-fair/dataset/communes']) expect(isSafeLink(url), url).toBe(true)
+  })
+
+  test('refuses the other schemes, whatever their case or leading spaces', () => {
+    for (const url of ['javascript:alert(1)', 'JaVaScRiPt:alert(1)', ' javascript:alert(1)', 'data:text/html,x', 'not an url']) expect(isSafeLink(url), url).toBe(false)
+  })
 })
 
 test.describe('prepareSubscriptionNotification', () => {

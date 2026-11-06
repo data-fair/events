@@ -10,13 +10,23 @@ import config from '#config'
 import * as metrics from './metrics.js'
 import * as pushService from '../push/service.ts'
 import { MongoError } from 'mongodb'
-import { buildNotificationMail } from './operations.ts'
+import { buildNotificationMail, isSafeLink } from './operations.ts'
 
 export { prepareSubscriptionNotification } from './operations.ts'
 
 const debug = Debug('notifications')
 
 const directoryUrl = config.privateDirectoryUrl
+
+// the url comes from the producer of the event or from the url template of a subscription, and ends
+// in a href: without it the notification stays readable, with a javascript: link it is an attack
+export const dropUnsafeUrl = (notification: Notification) => {
+  if (notification.url && !isSafeLink(notification.url)) {
+    log.alert('a notification had an unsafe url, it was removed', { code: 'bad-notif-url', notificationId: notification._id, url: notification.url.slice(0, 1000) })
+    delete notification.url
+  }
+  return notification
+}
 
 export const sendNotification = async (notification: Notification, skipInsert = false) => {
   // global.events.emit('saveNotification', notification)

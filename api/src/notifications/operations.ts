@@ -35,6 +35,9 @@ const parseSafeUrl = (url: string) => {
   return parsedUrl
 }
 
+// what the link of a notification can open: an http(s) url or a path of the site
+export const isSafeLink = (url: string) => url.startsWith('/') || !!parseSafeUrl(url)
+
 /**
  * Build the subject, text and html parts of the mail sent for a notification.
  * htmlBody is the explicit and deliberate html channel, it is used as is.
