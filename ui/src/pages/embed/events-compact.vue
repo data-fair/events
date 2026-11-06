@@ -2,14 +2,14 @@
   <!-- the last events of the account in a card of a host (data-fair dashboard): the host holds the title and the
        link to the traceability page, the iframe grows with its content -->
   <div data-iframe-height>
-    <v-progress-linear
-      v-if="!events"
-      :active="eventsFetch.loading.value"
-      indeterminate
-      color="primary"
-    />
     <p
-      v-else-if="!events.length"
+      v-if="eventsFetch.error.value"
+      class="text-body-medium text-medium-emphasis"
+    >
+      {{ t('loadError') }}
+    </p>
+    <p
+      v-else-if="events && !events.length"
       class="text-body-medium text-medium-emphasis"
     >
       {{ t('noEvents') }}
@@ -21,6 +21,22 @@
       side="end"
       truncate-line="start"
     >
+      <!-- same lines as the events: the iframe announces its final height from the first render -->
+      <template v-if="!events">
+        <v-timeline-item
+          v-for="i in size"
+          :key="i"
+          dot-color="surface-light"
+          size="small"
+          fill-dot
+        >
+          <v-skeleton-loader
+            class="mx-n4 my-n1"
+            type="text@2"
+            width="80vw"
+          />
+        </v-timeline-item>
+      </template>
       <v-timeline-item
         v-for="event in events"
         :key="event._id"
@@ -57,7 +73,8 @@ const { t } = useI18n()
 const { dayjs } = useLocaleDayjs()
 
 // the events of the active account, an admin only API: the host shows this page to its admins
-const eventsFetch = useFetch<{ results: LocalizedEvent[] }>(`${$apiPath}/events`, { query: { size: 5 } })
+const size = 5
+const eventsFetch = useFetch<{ results: LocalizedEvent[] }>(`${$apiPath}/events`, { query: { size } })
 const events = computed(() => eventsFetch.data.value?.results)
 
 // the API hides the name of a platform admin from the other users
@@ -71,9 +88,11 @@ const originatorName = (event: LocalizedEvent) => {
 <i18n lang="yaml">
   en:
     noEvents: No recent activity.
+    loadError: The recent activity could not be loaded.
     admin: Administrator
 
   fr:
     noEvents: Aucune activité récente.
+    loadError: L'activité récente n'a pas pu être chargée.
     admin: Administrateur
 </i18n>
