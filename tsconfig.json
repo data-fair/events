@@ -10,10 +10,7 @@
     "checkJs": true,
     "skipLibCheck": true,
     "erasableSyntaxOnly": true,
-    "types": ["node"],
-    "paths": {
-      "#shared/*": ["./shared/*"]
-    }
+    "types": ["node"]
   },
-  "exclude": ["node_modules", "types", "ui", "dev"]
+  "exclude": ["node_modules", ".type", "ui", "dev"]
 }

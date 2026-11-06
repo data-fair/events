@@ -15,7 +15,6 @@ import webhookSubscriptionsRouter from './webhook-subscriptions/router.ts'
 import uiLogsRouter from './ui-logs/router.ts'
 import adminRouter from './admin/router.ts'
 import { uiConfig } from '#config'
-import eventsMongo from './mongo.ts'
 
 const app = express()
 export default app
@@ -67,25 +66,7 @@ app.use('/api/v1/notifications', sessionContext, notificationsRouter)
 app.use('/api/v1/subscriptions', sessionContext, subscriptionsRouter)
 
 if (process.env.NODE_ENV === 'development') {
-  app.delete('/api/test-env', async (req, res) => {
-    const testFilter = /^test/
-    for (const name of ['notifications', 'subscriptions']) {
-      await eventsMongo.db.collection(name).deleteMany({ 'recipient.id': testFilter })
-    }
-    await eventsMongo.db.collection('events').deleteMany({ 'sender.id': testFilter })
-    for (const name of ['webhooks', 'webhook-subscriptions', 'pushSubscriptions']) {
-      await eventsMongo.db.collection(name).deleteMany({ 'owner.id': testFilter })
-    }
-    res.send()
-  })
-  app.post('/api/test-env/:collection', async (req, res) => {
-    await eventsMongo.db.collection(req.params.collection).insertOne(req.body)
-    res.send()
-  })
-  app.get('/api/test-env/:collection/:id', async (req, res) => {
-    const doc = await eventsMongo.db.collection(req.params.collection).findOne({ _id: req.params.id as any })
-    res.json(doc)
-  })
+  app.use('/api/test-env', (await import('./test-env/router.ts')).default)
 }
 
 // public and the same for every caller, merged by data-fair with the documents of the other services
