@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test'
 import { test } from '../../fixtures/login.ts'
 import { axiosAuth, clean } from '../../support/axios.ts'
-import { closedPortUrl } from '../../support/hook-server.ts'
+import { closedPortUrl, startHookServer } from '../../support/hook-server.ts'
 
 const pageUrl = (keys: string[], titles: string[]) =>
   `/events/embed/subscribe-webhooks?key=${keys.join(',')}&title=${titles.join(',')}&sender=user:test-user1`
@@ -99,13 +99,15 @@ test.describe('Webhooks UI', () => {
   })
 
   test('shows the progress of a test call without refreshing', async ({ page, goToWithAuth }) => {
+    const target = await startHookServer(req => { req.resume() })
     const user1 = await axiosAuth('test-user1')
     await user1.post('/api/webhook-subscriptions', {
       title: 'Tested webhook',
       topic: { key: 'topic1', title: 'TopicOne' },
       sender: { type: 'user', id: 'test-user1' },
-      // nothing listens there, the delivery ends in error
-      url: `${closedPortUrl}/closed`
+      // never answers: the delivery stays visible as working until its timeout, then ends in error.
+      // A closed port fails at once, the worker could go through both statuses before an assertion
+      url: target.url
     })
 
     await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
@@ -120,5 +122,6 @@ test.describe('Webhooks UI', () => {
     // the worker polls every 4s, its outcome is pushed over WS
     await expect(page.getByText(/ - error/)).toBeVisible({ timeout: 15000 })
     expect(listRequests).toBe(listRequestsAfterTest)
+    target.close()
   })
 })
