@@ -27,6 +27,9 @@ const processNext = async () => {
       debug('lock was not available, wait for interval', config.worker.loopInterval)
       return false
     }
+    // only the holder of the lock works on webhooks: what is still working was interrupted, by a
+    // restart in the middle of a delivery, and nothing would ever pick it up
+    await mongo.webhooks.updateMany({ status: 'working' }, { $set: { status: 'waiting' } })
   }
   const webhook = (await mongo.webhooks.findOneAndUpdate({
     $or: [
