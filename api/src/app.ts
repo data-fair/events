@@ -14,7 +14,7 @@ import webhooksRouter from './webhooks/router.ts'
 import webhookSubscriptionsRouter from './webhook-subscriptions/router.ts'
 import uiLogsRouter from './ui-logs/router.ts'
 import adminRouter from './admin/router.ts'
-import { uiConfig } from '#config'
+import config, { uiConfig } from '#config'
 
 const app = express()
 export default app
@@ -84,7 +84,8 @@ app.use('/push-sw.js', (req, res, next) => {
   next()
 })
 app.use(await createSpaMiddleware(resolve(import.meta.dirname, '../../ui/dist'), uiConfig, {
-  csp: { nonce: true, header: true }
+  csp: { nonce: true, header: true },
+  privateDirectoryUrl: config.privateDirectoryUrl
 }))
 
 app.use(errorHandler)

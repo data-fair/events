@@ -7,10 +7,17 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Vuetify from 'vite-plugin-vuetify'
 import microTemplate from '@data-fair/lib-utils/micro-template.js'
-import { autoImports, settingsPath } from '@data-fair/lib-vuetify/vite.js'
+import { autoImports, componentsResolver, settingsPath } from '@data-fair/lib-vuetify/vite.js'
+
+// dev ports come from .env (declared in dev/dev.json), checked so a missing variable never becomes NaN
+const envPort = (name: string) => {
+  const port = Number(process.env[name])
+  if (!Number.isInteger(port) || port <= 0) throw new Error(`${name} must be set to a port number, run "npx --no df-dev setup"`)
+  return port
+}
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command, isPreview }) => ({
   base: '/events',
   optimizeDeps: {
     // no discovery: a dependency found while browsing reloads the page, which breaks cold e2e runs;
@@ -35,7 +42,8 @@ export default defineConfig({
   plugins: [
     VueRouter({
       dts: './dts/typed-router.d.ts',
-      exclude: process.env.NODE_ENV === 'development' ? [] : ['src/pages/dev.vue', 'src/pages/dev/**']
+      // by the vite command, not NODE_ENV that a build can inherit by mistake
+      exclude: command === 'build' ? ['src/pages/dev.vue', 'src/pages/dev/**'] : []
     }),
     Vue(),
     VueI18nPlugin(),
@@ -55,14 +63,14 @@ export default defineConfig({
         'src/composables'
       ]
     }),
-    Components({ dts: './dts/components.d.ts' }),
+    Components({ dts: './dts/components.d.ts', resolvers: [componentsResolver] }),
     {
       name: 'inject-site-context',
       async transformIndexHtml (html) {
         // in production this injection will be performed by an express middleware
         if (process.env.NODE_ENV !== 'development') return html
         const { uiConfig } = await import('../api/src/config.ts')
-        return microTemplate(html, { SITE_PATH: '', UI_CONFIG: JSON.stringify(uiConfig) })
+        return microTemplate(html, { SITE_PATH: '', UI_CONFIG: JSON.stringify(uiConfig), THEME_CSS_HASH: '', PUBLIC_SITE_INFO_HASH: '' })
       }
     }
   ],
@@ -72,5 +80,8 @@ export default defineConfig({
       return { relative: true }
     }
   },
-  server: { hmr: { port: parseInt(process.env.DEV_UI_HMR_PORT!) } }
-})
+  // vite preview also runs as serve and must not require the dev ports
+  ...(command === 'serve' && !isPreview
+    ? { server: { port: envPort('DEV_UI_PORT'), strictPort: true, hmr: { port: envPort('DEV_UI_HMR_PORT') } } }
+    : {})
+}))
