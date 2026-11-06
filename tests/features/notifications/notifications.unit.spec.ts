@@ -33,6 +33,15 @@ test.describe('prepareSubscriptionNotification', () => {
     expect(notif.origin).toBe('https://example.com')
   })
 
+  test('does not carry the originator, nor the search texts that hold it', () => {
+    const notif = prepareSubscriptionNotification(
+      makeEvent({ originator: { user: { id: 'u1', name: 'Jane Doe' } }, _search: [{ text: 'Jane Doe u1', language: 'fr' }] }),
+      makeSubscription(), {}, 'fr', 'n1'
+    )
+    expect(notif).not.toHaveProperty('originator')
+    expect(notif).not.toHaveProperty('_search')
+  })
+
   test('uses subscription icon', () => {
     const notif = prepareSubscriptionNotification(
       makeEvent(), makeSubscription({ icon: 'https://example.com/icon.png' }),

@@ -1,7 +1,7 @@
 // operations.ts — pure functions only
 // must not import #mongo, #config, or store state
 
-import type { FullEvent, Notification, Subscription } from '#types'
+import type { FullEvent, Notification, SearchableEvent, Subscription } from '#types'
 
 import { parseTemplate } from 'url-template'
 import microTemplate from '@data-fair/lib-utils/micro-template.js'
@@ -62,6 +62,8 @@ export const prepareSubscriptionNotification = (event: FullEvent, subscription: 
   delete localizedEvent.resource
   delete localizedEvent.originator
   delete localizedEvent.urlParams
+  // the search texts hold the originator removed above
+  delete (localizedEvent as Partial<SearchableEvent>)._search
   const notification: Notification = {
     eventId: event._id,
     icon: subscription.icon || defaults.notificationIcon || (subscription.origin + '/events/logo-192x192.png'),
