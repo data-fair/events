@@ -37,6 +37,8 @@ export const init = async () => {
     },
     gcmAPIKey: config.gcmAPIKey,
     agent: pushAgent,
+    // an endpoint is chosen by the user, it must not keep a request pending forever
+    timeout: 10000,
     TTL: 60 * 60 * 24 * 4 // push service should store the message for 4 days
   }
   pushState = { vapidKeys, webPushOptions }

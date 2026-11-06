@@ -103,6 +103,29 @@ test.describe('webhooks', () => {
     expect((await admin1.get('/api/webhooks')).data.count).toBe(0)
   })
 
+  test('a target that drips its answer does not hold the delivery', async () => {
+    const target = await startHookServer((req, res) => {
+      req.resume()
+      res.writeHead(200)
+      // a chunk before the 2 s timeout of axios every time, the answer never ends
+      const interval = setInterval(() => res.write('.'), 500)
+      res.on('close', () => clearInterval(interval))
+    })
+    try {
+      const start = Date.now()
+      const { data } = await admin1.post('/api/webhook-subscriptions/_test', {
+        title: 'Unsaved',
+        topic: { key: 'topic1' },
+        sender: { type: 'organization', id: 'test1' },
+        url: target.url
+      })
+      expect(data.error).toBeDefined()
+      expect(Date.now() - start).toBeLessThan(5000)
+    } finally {
+      target.close()
+    }
+  })
+
   test('should not send the secret header of a webhook to another origin it redirects to', async () => {
     const secrets: Record<string, unknown> = {}
     let otherBody: any

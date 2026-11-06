@@ -52,7 +52,7 @@ export const sendNotification = async (notification: Notification, skipInsert = 
     }
     debug('Send mail notif', notification.recipient, mail, notification)
     metrics.sentNotifications.inc({ output: 'mail' })
-    privateAxiosInstance.post(directoryUrl + '/api/mails', mail, { headers: { 'x-secret-key': config.secretKeys.sendMails } }).catch(err => {
+    privateAxiosInstance.post(directoryUrl + '/api/mails', mail, { headers: { 'x-secret-key': config.secretKeys.sendMails }, maxRedirects: 0 }).catch(err => {
       log.error('failed to send a notification mail', { code: 'notif-mail', err, notificationId: notification._id })
     })
   }
