@@ -4,10 +4,12 @@ import type { WebhookSubscription } from '#types'
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { session, mongoSort, mongoPagination, httpError } from '@data-fair/lib-express/index.js'
+import log from '@data-fair/lib-node/log.js'
 import mongo from '#mongo'
 import * as postReq from '#doc/webhook-subscriptions/post-req/index.ts'
 import { createWebhook, postWebhook, webhookNotification } from '../webhooks/service.ts'
 import { requireOperationScope } from '../shared/scopes.ts'
+import { ownerLogFields, urlHost } from '../shared/log-fields.ts'
 
 const router = Router()
 export default router
@@ -79,6 +81,14 @@ router.post('', requireOperationScope('postWebhookSubscription'), async (req, re
   }
 
   await mongo.webhookSubscriptions.replaceOne({ _id: webhookSubscription._id }, webhookSubscription, { upsert: true })
+  // these send data of the account to an external url
+  log.info('a webhook subscription was saved', {
+    code: body._id ? 'events.webhook-subscriptions.update' : 'events.webhook-subscriptions.create',
+    webhookSubscriptionId: webhookSubscription._id,
+    targetHost: urlHost(webhookSubscription.url),
+    topicKey: webhookSubscription.topic.key,
+    ...ownerLogFields(owner)
+  })
   res.status(200).json(webhookSubscription)
 })
 
@@ -91,6 +101,12 @@ router.delete('/:id', requireOperationScope('deleteWebhookSubscription'), async 
     .findOne(filter)
   if (!subscription) return res.status(404).send()
   await mongo.webhookSubscriptions.deleteOne(filter)
+  log.info('a webhook subscription was deleted', {
+    code: 'events.webhook-subscriptions.delete',
+    webhookSubscriptionId: subscription._id,
+    targetHost: urlHost(subscription.url),
+    ...ownerLogFields(account)
+  })
   res.status(204).send()
 })
 
@@ -110,6 +126,8 @@ router.post('/_test', requireOperationScope('testNewWebhookSubscription'), async
   if (!user.adminMode && accountRole !== 'admin') throw httpError(403, 'Only an admin can manage webhooks')
 
   const { body } = postReq.returnValid(req, { name: 'req' })
+  // a call to a url of the form, sent at once: the only trace of what was tried
+  log.info('a new webhook url was tested', { code: 'events.webhook-subscriptions.test', targetHost: urlHost(body.url) })
   try {
     const response = await postWebhook(body, webhookNotification(testEvent(body.sender)))
     res.json({ status: response.status })

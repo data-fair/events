@@ -6,6 +6,7 @@
 
 import { randomUUID } from 'node:crypto'
 import type { IdentityUpdate, IdentityDelete } from '@data-fair/lib-express/identities/index.js'
+import log from '@data-fair/lib-node/log.js'
 import mongo from '#mongo'
 
 export const updateIdentity = async (identity: IdentityUpdate) => {
@@ -72,6 +73,12 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
       if (!userOrg) {
         // remove private subscription that does not match user orgs anymore
         await mongo.subscriptions.deleteOne({ _id: privateSubscription._id })
+        log.info('a private subscription was removed, its recipient left the sender', {
+          code: 'events.subscriptions.lost-membership',
+          subscriptionId: privateSubscription._id,
+          recipientId: id,
+          topicKey: privateSubscription.topic.key
+        })
       }
     }
   }
@@ -100,4 +107,6 @@ export const deleteIdentity = async (identity: IdentityDelete) => {
   if (type === 'user') {
     await mongo.events.updateMany({ 'originator.user.id': id }, { $set: { _needsSearch: randomUUID() }, $unset: { 'originator.user.name': 1, 'originator.user.email': 1 } })
   }
+  // the trace of the erasure, without a name
+  log.info('the data of a deleted identity was removed', { code: 'events.identities.delete', ownerKey: type + '.' + id })
 }
