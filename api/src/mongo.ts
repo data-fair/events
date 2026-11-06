@@ -68,7 +68,9 @@ export class EventsMongo {
         'main-keys': [
           { 'sender.type': 1, 'sender.id': 1, 'sender.department': 1, 'sender.role': 1, 'recipient.id': 1, 'topic.key': 1 },
           { unique: true }
-        ]
+        ],
+        // the list of a user and the identity webhooks
+        'recipient-keys': { 'recipient.id': 1 }
       },
       notifications: {
         'main-keys': { 'recipient.id': 1, date: -1 },
@@ -81,7 +83,9 @@ export class EventsMongo {
         ]
       },
       'webhook-subscriptions': {
-        'main-keys': { 'sender.type': 1, 'sender.id': 1, 'owner.type': 1, 'owner.id': 1, 'topic.key': 1 }
+        'main-keys': { 'sender.type': 1, 'sender.id': 1, 'owner.type': 1, 'owner.id': 1, 'topic.key': 1 },
+        // the list of an account and the identity webhooks
+        'owner-keys': { 'owner.type': 1, 'owner.id': 1 }
       },
       webhooks: {
         'main-keys': { 'owner.type': 1, 'owner.id': 1, 'subscription._id': 1, 'notification.date': 1 },
