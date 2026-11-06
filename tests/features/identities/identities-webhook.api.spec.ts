@@ -144,6 +144,25 @@ test.describe('identities update webhook on events', () => {
     expect((await testEnv.get('/api/test-env/subscriptions/department-admin')).data?._id).toBe('department-admin')
   })
 
+  test('should not keep the name of a deleted user on what it created for its organization', async () => {
+    const { data: created } = await admin1.post('/api/webhook-subscriptions', {
+      title: 'A webhook',
+      topic: { key: 'topic1' },
+      sender: { type: 'organization', id: 'test1' },
+      url: 'http://localhost:1/hook'
+    })
+    expect(created.created.id).toBe('test1-admin1')
+    expect(created.created.name).toBeUndefined()
+
+    // written by the previous versions
+    const legacy = { name: 'Admin', id: 'test1-admin1', date: new Date().toISOString() }
+    await testEnv.post('/api/test-env/webhook-subscriptions', { ...created, _id: 'test-legacy', created: legacy, updated: legacy })
+    await axIdentities.delete('/api/identities/user/test1-admin1')
+    const { data } = await testEnv.get('/api/test-env/webhook-subscriptions/test-legacy')
+    expect(data.created).toEqual({ id: 'test1-admin1', date: legacy.date })
+    expect(data.updated).toEqual({ id: 'test1-admin1', date: legacy.date })
+  })
+
   test('should rename the sender and originator of events and let the search worker rebuild the search texts', async () => {
     await postEvents()
     await axIdentities.post('/api/identities/user/test-user1', { name: 'Aurélien Lefort' })

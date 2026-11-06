@@ -104,6 +104,14 @@ export const deleteIdentity = async (identity: IdentityDelete) => {
   if (type === 'user') {
     await mongo.events.updateMany({ 'originator.user.id': id }, { $set: { _needsSearch: randomUUID() }, $unset: { 'originator.user.name': 1, 'originator.user.email': 1 } })
   }
+  // what the user created for others stays, the name written there by the previous versions does not
+  if (type === 'user') {
+    for (const collection of [mongo.subscriptions, mongo.webhookSubscriptions]) {
+      await collection.updateMany({ 'created.id': id }, { $unset: { 'created.name': 1 } })
+      await collection.updateMany({ 'updated.id': id }, { $unset: { 'updated.name': 1 } })
+    }
+  }
+
   // the trace of the erasure, without a name
   log.info('the data of a deleted identity was removed', { code: 'events.identities.delete', ownerKey: type + '.' + id })
 }

@@ -73,8 +73,8 @@ router.post('', requireOperationScope('postSubscription'), async (req, res, next
     visibility: 'private',
     ...body,
     origin: reqSiteUrl(req),
-    created: { id: user.id, name: user.name, date },
-    updated: { id: user.id, name: user.name, date }
+    created: { id: user.id, date },
+    updated: { id: user.id, date }
   }
 
   if (subscription.recipient.id !== user.id && !user.adminMode) {
