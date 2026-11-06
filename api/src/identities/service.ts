@@ -7,7 +7,9 @@
 import { randomUUID } from 'node:crypto'
 import type { IdentityUpdate, IdentityDelete } from '@data-fair/lib-express/identities/index.js'
 import log from '@data-fair/lib-node/log.js'
+import type { User } from '@data-fair/lib-express/index.js'
 import mongo from '#mongo'
+import { canSubscribePrivate } from '../subscriptions/operations.ts'
 
 export const updateIdentity = async (identity: IdentityUpdate) => {
   const { type, id, name, departments } = identity
@@ -16,7 +18,8 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
     await mongo.notifications.updateMany({ 'recipient.id': id }, { $set: { 'recipient.name': name } })
     await mongo.subscriptions.updateMany({ 'recipient.id': id }, { $set: { 'recipient.name': name } })
   }
-  // notifications are snapshots taken at delivery, their sender name is not rewritten (no index on sender)
+  // notifications and webhooks are snapshots taken at delivery, with no retention: their names are not
+  // rewritten, and nothing shows them. A deletion does remove them
   await mongo.subscriptions.updateMany({ 'sender.type': type, 'sender.id': id }, { $set: { 'sender.name': name } })
   await mongo.pushSubscriptions.updateMany({ 'owner.type': type, 'owner.id': id }, { $set: { 'owner.name': name } })
   await mongo.webhookSubscriptions.updateMany({ 'sender.type': type, 'sender.id': id }, { $set: { 'sender.name': name } })
@@ -63,14 +66,8 @@ export const updateIdentity = async (identity: IdentityUpdate) => {
       'sender.type': 'organization'
     }
     for await (const privateSubscription of mongo.subscriptions.find(privateSubscriptionFilter)) {
-      let userOrg = identity.organizations.find(o => o.id === privateSubscription.sender?.id && !o.department)
-      if (privateSubscription.sender?.department) {
-        userOrg = userOrg || identity.organizations.find(o => o.id === privateSubscription.sender?.id && o.department === privateSubscription.sender.department)
-      }
-      if (userOrg && privateSubscription.sender?.role && userOrg.role !== privateSubscription.sender.role && userOrg.role !== 'admin') {
-        userOrg = undefined
-      }
-      if (!userOrg) {
+      // the rule of the creation: a private subscription accepted there must not be removed here
+      if (!canSubscribePrivate(privateSubscription.sender, { id, organizations: identity.organizations } as User)) {
         // remove private subscription that does not match user orgs anymore
         await mongo.subscriptions.deleteOne({ _id: privateSubscription._id })
         log.info('a private subscription was removed, its recipient left the sender', {
