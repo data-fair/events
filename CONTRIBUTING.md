@@ -24,7 +24,7 @@ docker compose --profile '*' pull
 
 The UI is a [nuxt](https://nuxt.com/) project.
 
-The API is a small [https://expressjs.com](Express) server.
+The API is a small [Express](https://expressjs.com) server.
 
 The development servers run in a [zellij](https://zellij.dev/) (>= 0.44) session, see `@data-fair/lib-dev`:
 
@@ -34,7 +34,7 @@ npm run dev-zellij
 npm run dev-zellij -- --services maildev
 ```
 
-To send notifications in the dev environment you can edit en run [send-notifications.ts](dev/scripts/send-notifications.ts):
+To send notifications in the dev environment you can edit and run [send-notifications.ts](dev/scripts/send-notifications.ts):
 
 ```
 npm run dev-send-notifications

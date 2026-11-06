@@ -4,6 +4,7 @@ import type { Filter } from 'mongodb'
 import { Router } from 'express'
 import { nanoid } from 'nanoid'
 import { session, mongoSort, mongoPagination, httpError, reqSiteUrl } from '@data-fair/lib-express/index.js'
+import log from '@data-fair/lib-node/log.js'
 import mongo from '#mongo'
 import * as postReq from '#doc/subscriptions/post-req/index.ts'
 import { canSubscribePrivate } from './operations.ts'
@@ -72,8 +73,8 @@ router.post('', requireOperationScope('postSubscription'), async (req, res, next
     visibility: 'private',
     ...body,
     origin: reqSiteUrl(req),
-    created: { id: user.id, name: user.name, date },
-    updated: { id: user.id, name: user.name, date }
+    created: { id: user.id, date },
+    updated: { id: user.id, date }
   }
 
   if (subscription.recipient.id !== user.id && !user.adminMode) {
@@ -98,6 +99,14 @@ router.post('', requireOperationScope('postSubscription'), async (req, res, next
   }
 
   await mongo.subscriptions.replaceOne({ _id: subscription._id }, subscription, { upsert: true })
+  // the private ones reach what the sender keeps for its members, an admin can act for another user
+  log.info('a subscription was saved', {
+    code: body._id ? 'events.subscriptions.update' : 'events.subscriptions.create',
+    subscriptionId: subscription._id,
+    recipientId: subscription.recipient.id,
+    topicKey: subscription.topic.key,
+    visibility: subscription.visibility
+  })
 
   res.status(200).json(subscription)
 })
@@ -128,5 +137,6 @@ router.delete('/:id', requireOperationScope('deleteSubscription'), async (req, r
   }
 
   await mongo.subscriptions.deleteOne({ _id: subscription._id })
+  log.info('a subscription was deleted', { code: 'events.subscriptions.delete', subscriptionId: subscription._id, recipientId: subscription.recipient.id })
   res.status(204).send()
 })

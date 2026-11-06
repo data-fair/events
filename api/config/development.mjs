@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-dotenv.config({ path: import.meta.resolve('../../.env').replace('file://', '') })
+dotenv.config({ path: ['.env', '../.env'], quiet: true })
 
 if (!process.env.DEV_API_PORT) throw new Error('missing DEV_API_PORT env variable, run "npx --no df-dev setup"')
 

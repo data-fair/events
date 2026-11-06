@@ -5,6 +5,7 @@ import { axios, axiosAuth, clean, devBaseURL } from '../../support/axios.ts'
 
 const axIdentities = axios({ headers: { 'x-secret-key': 'secret-identities' }, baseURL: devBaseURL })
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
+const testEnv = axios({ baseURL: devBaseURL })
 const user1 = await axiosAuth('test-user1')
 const admin1 = await axiosAuth('test1-admin1')
 admin1.setOrg('test1')
@@ -121,6 +122,45 @@ test.describe('identities update webhook on events', () => {
     events = (await admin1.get('/api/events')).data.results
     expect(events[0].sender.department).toBe('dep1')
     expect(events[0].sender.departmentName).toBeUndefined()
+  })
+
+  test('should keep a private subscription allowed by the role in a department', async () => {
+    const subscription = (await user1.post('/api/subscriptions', {
+      topic: { key: 'topic1' },
+      sender: { type: 'organization', id: 'test2', department: 'dep1', role: 'user' }
+    })).data
+    expect(subscription.visibility).toBe('private')
+    await testEnv.post('/api/test-env/subscriptions', {
+      ...subscription,
+      _id: 'department-admin',
+      visibility: 'private',
+      sender: { type: 'organization', id: 'test2', department: 'dep1', role: 'admin' }
+    })
+
+    await axIdentities.post('/api/identities/user/test-user1', {
+      name: 'New name',
+      organizations: [{ id: 'test2', role: 'user' }, { id: 'test2', role: 'admin', department: 'dep1' }]
+    })
+    expect((await testEnv.get('/api/test-env/subscriptions/department-admin')).data?._id).toBe('department-admin')
+  })
+
+  test('should not keep the name of a deleted user on what it created for its organization', async () => {
+    const { data: created } = await admin1.post('/api/webhook-subscriptions', {
+      title: 'A webhook',
+      topic: { key: 'topic1' },
+      sender: { type: 'organization', id: 'test1' },
+      url: 'http://localhost:1/hook'
+    })
+    expect(created.created.id).toBe('test1-admin1')
+    expect(created.created.name).toBeUndefined()
+
+    // written by the previous versions
+    const legacy = { name: 'Admin', id: 'test1-admin1', date: new Date().toISOString() }
+    await testEnv.post('/api/test-env/webhook-subscriptions', { ...created, _id: 'test-legacy', created: legacy, updated: legacy })
+    await axIdentities.delete('/api/identities/user/test1-admin1')
+    const { data } = await testEnv.get('/api/test-env/webhook-subscriptions/test-legacy')
+    expect(data.created).toEqual({ id: 'test1-admin1', date: legacy.date })
+    expect(data.updated).toEqual({ id: 'test1-admin1', date: legacy.date })
   })
 
   test('should rename the sender and originator of events and let the search worker rebuild the search texts', async () => {

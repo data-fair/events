@@ -234,6 +234,24 @@ test.describe('subscriptions', () => {
     expect(res.data.count).toBe(0)
   })
 
+  test('should keep the regular links of notifications and remove the unsafe ones', async () => {
+    const sender = { type: 'user', id: 'test-user1', name: 'User 1' }
+    await user1.post('/api/subscriptions', { topic: { key: 'safe' }, sender, urlTemplate: '/data-fair/dataset/communes' })
+    await user1.post('/api/subscriptions', { topic: { key: 'unsafe' }, sender, urlTemplate: 'javascript:alert(1)' })
+    for (const key of ['safe', 'unsafe']) {
+      await axPush.post('/api/events', [{ date: new Date().toISOString(), topic: { key }, title: key, sender }])
+    }
+    await axPush.post('/api/notifications', { topic: { key: 'direct' }, sender, title: 'direct', recipient: { id: 'test-user1' }, url: 'javascript:alert(1)' })
+    await axPush.post('/api/notifications', { topic: { key: 'direct-safe' }, sender, title: 'direct-safe', recipient: { id: 'test-user1' }, url: 'https://example.com/a' })
+
+    const { data } = await user1.get('/api/notifications')
+    const urls = Object.fromEntries(data.results.map((n: any) => [n.title, n.url]))
+    expect(urls.safe).toBe(`http://${process.env.DEV_HOST}:${process.env.NGINX_PORT}/data-fair/dataset/communes`)
+    expect(urls['direct-safe']).toBe('https://example.com/a')
+    expect(urls.unsafe).toBeUndefined()
+    expect(urls.direct).toBeUndefined()
+  })
+
   test('should send a notification with subscribedOnly option', async () => {
     const notif = {
       topic: { key: 'topic1' },

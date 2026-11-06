@@ -54,6 +54,13 @@ export const getSubscriptionsFilter = (event: Event): Filter<Subscription> => {
   return subscriptionsFilter
 }
 
+// cleanEvent reads the sender and the whole originator: a select of a part of them would skip it
+export const projectionForClean = (project: Record<string, 0 | 1>) => {
+  if (!Object.keys(project).some(key => key === 'originator' || key.startsWith('originator.'))) return project
+  const entries = Object.entries(project).filter(([key]) => !key.startsWith('originator.') && !key.startsWith('sender.'))
+  return { ...Object.fromEntries(entries), originator: 1, sender: 1 } as Record<string, 0 | 1>
+}
+
 export const cleanEvent = (event: LocalizedEvent, sessionState: SessionStateAuthenticated) => {
   // hide the user if the event is sent from another organization
   if (event.originator) {

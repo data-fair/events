@@ -8,7 +8,7 @@ import config from '#config'
 import mongo from '#mongo'
 import * as notificationsMetrics from '../notifications/metrics.js'
 import * as metrics from './metrics.js'
-import { internalError } from '@data-fair/lib-node/observer.js'
+import log from '@data-fair/lib-node/log.js'
 import { publicLookup, resolvePublicAddress } from '@data-fair/lib-node/ssrf.js'
 import { backoffMinutes } from '../shared/operations.ts'
 
@@ -22,15 +22,13 @@ const pushAgent = new https.Agent({ keepAlive: true, lookup: publicLookup })
 let pushState: undefined | { vapidKeys: webpush.VapidKeys, webPushOptions: webpush.RequestOptions }
 export const init = async () => {
   let vapidKeys = (await mongo.secrets.findOne({ _id: 'vapid-keys' }))?.data as webpush.VapidKeys | undefined
+  const newVapidKeys = !vapidKeys
   if (!vapidKeys) {
-    console.log('create new vapid keys for webpush notifications')
     vapidKeys = webpush.generateVAPIDKeys()
     await mongo.secrets.insertOne({ _id: 'vapid-keys', data: vapidKeys })
-  } else {
-    console.log('use existing vapid keys for webpush notifications')
   }
+  log.info('webpush initialized', { newVapidKeys, gcmApiKey: !!config.gcmAPIKey })
 
-  console.log(`with gcmAPIKey ? ${!!config.gcmAPIKey}`)
   const webPushOptions: webpush.RequestOptions = {
     vapidDetails: {
       subject: 'mailto:Koumoul <contact@koumoul.com>',
@@ -39,6 +37,8 @@ export const init = async () => {
     },
     gcmAPIKey: config.gcmAPIKey,
     agent: pushAgent,
+    // an endpoint is chosen by the user, it must not keep a request pending forever
+    timeout: 10000,
     TTL: 60 * 60 * 24 * 4 // push service should store the message for 4 days
   }
   pushState = { vapidKeys, webPushOptions }
@@ -70,7 +70,8 @@ export const pushToDevice = async (notification: Notification, registration: Dev
     error = err
     error.errorMsg = err.message
   }
-  debug('Send push notif', notification.recipient.id, registration, pushNotif, error)
+  // no registration in the output: its keys let anyone push to the device
+  debug('Send push notif', notification.recipient.id, registration.deviceName, pushNotif, error?.statusCode ?? error?.errorMsg)
   return error
 }
 
@@ -79,6 +80,7 @@ export const push = async (notification: Notification, forceRegistrationIndex: n
   const pushSub = await mongo.pushSubscriptions.findOne(ownerFilter)
   if (!pushSub) return []
   const errors = []
+  const logFields = { recipientId: notification.recipient.id }
   for (let i = 0; i < pushSub.registrations.length; i++) {
     const registration = pushSub.registrations[i]
     if (forceRegistrationIndex !== -1) {
@@ -98,7 +100,7 @@ export const push = async (notification: Notification, forceRegistrationIndex: n
         metrics.pushDeviceErrors.inc({ output: 'device-' + registration.type, statusCode: error.statusCode })
         errors.push(error)
         if (error.statusCode === 410) {
-          console.warn('registration has unsubscribed or expired, disable it', error.body || error.response || error.statusCode, JSON.stringify(registration))
+          log.info('a device registration has unsubscribed or expired, disable it', { code: 'push-registration-gone', ...logFields, deviceName: registration.deviceName })
           registration.disabled = 'gone' // cf https://developer.mozilla.org/fr/docs/Web/HTTP/Status/410
           delete registration.lastErrors
         } else {
@@ -106,11 +108,11 @@ export const push = async (notification: Notification, forceRegistrationIndex: n
           registration.lastErrors.push(error?.statusCode ? error : error?.errorMsg)
           if (registration.lastErrors.length >= 10) {
             registration.disabled = 'errors'
-            console.warn('registration returned too many errors, disable it', error, JSON.stringify(registration))
+            log.warn('a device registration returned too many errors, disable it', { code: 'push-registration-disabled', err: error, ...logFields, deviceName: registration.deviceName })
           } else {
             delete registration.disabled
             registration.disabledUntil = dayjs().add(backoffMinutes(registration.lastErrors.length), 'minute').toISOString()
-            console.warn('registration returned an error, progressively backoff', error, JSON.stringify(registration))
+            log.warn('a device registration returned an error, progressively backoff', { code: 'push-registration-error', err: error, ...logFields, deviceName: registration.deviceName, attempts: registration.lastErrors.length })
           }
         }
       } else {
@@ -118,7 +120,7 @@ export const push = async (notification: Notification, forceRegistrationIndex: n
         registration.lastSuccess = dayjs().toISOString()
       }
     } catch (err) {
-      internalError('notif-push', err)
+      log.error('failed to push a notification to a device', { code: 'notif-push', err, ...logFields, notificationId: notification._id })
     }
   }
   await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: pushSub.registrations } })

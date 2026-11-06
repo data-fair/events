@@ -7,6 +7,7 @@ import config from '#config'
 import * as postReq from '#doc/events/post-req/index.ts'
 import { session, mongoPagination, mongoProjection, httpError, assertReqInternalSecret, reqOrigin } from '@data-fair/lib-express/index.js'
 import { postEvents, localizeEvent, cleanEvent } from './service.ts'
+import { projectionForClean } from './operations.ts'
 import { requireOperationScope } from '../shared/scopes.ts'
 
 const router = Router()
@@ -34,7 +35,7 @@ router.get('', requireOperationScope('listEvents'), async (req, res, next) => {
   query['sender.type'] = owner.type
   query['sender.id'] = owner.id
 
-  const project = mongoProjection(req.query.select, ['_search', '_needsSearch', 'htmlBody'])
+  const project = projectionForClean(mongoProjection(req.query.select, ['_search', '_needsSearch', 'htmlBody']) as Record<string, 0 | 1>)
 
   // implement a special pagination based on the fact that we always sort by date
   const sort: Sort = { date: -1, _id: -1 }

@@ -10,6 +10,7 @@ import Debug from 'debug'
 import * as putRegistrationsReq from '#doc/push/put-registrations-req/index.ts'
 import * as postRegistrationReq from '#doc/push/post-registration-req/index.ts'
 import { nanoid } from 'nanoid'
+import log from '@data-fair/lib-node/log.js'
 import { session, reqSiteUrl, httpError } from '@data-fair/lib-express/index.js'
 import { getPushState, push, pushToDevice } from './service.ts'
 import { equalDeviceRegistrations } from './operations.ts'
@@ -23,6 +24,9 @@ export default router
 router.get('/vapidkey', async (req, res) => {
   res.send({ publicKey: getPushState().vapidKeys.publicKey })
 })
+
+// the other routes read the session, cf the mounts in app.ts
+router.use(session.middleware())
 
 router.get('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
@@ -38,6 +42,7 @@ router.put('/registrations', async (req, res) => {
   const { body } = putRegistrationsReq.returnValid(req, { name: 'req' })
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
   await mongo.pushSubscriptions.updateOne(ownerFilter, { $set: { registrations: body } })
+  log.info('the device registrations were updated', { code: 'events.push.update', registrations: body.length })
   res.send(req.body)
 })
 
@@ -85,9 +90,13 @@ router.post('/registrations', async (req, res) => {
       date,
       icon: config.theme.notificationIcon || (origin + '/events/logo-192x192.png')
     }, newRegistration)
-    if (error) return res.status(500).send(error)
+    if (error) {
+      log.warn('a new device refused its confirmation', { code: 'push-new-device', err: error, deviceName: newRegistration.deviceName })
+      return res.status(500).send(error)
+    }
     sub.registrations.push(newRegistration)
     await mongo.pushSubscriptions.replaceOne(ownerFilter, sub, { upsert: true })
+    log.info('a device was registered', { code: 'events.push.register', deviceName: newRegistration.deviceName })
     res.send(newRegistration)
   }
 })

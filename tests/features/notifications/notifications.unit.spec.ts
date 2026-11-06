@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { buildNotificationMail, prepareSubscriptionNotification } from '../../../api/src/notifications/operations.ts'
+import { buildNotificationMail, isSafeLink, prepareSubscriptionNotification } from '../../../api/src/notifications/operations.ts'
 
 const makeEvent = (overrides: any = {}) => ({
   _id: 'evt1',
@@ -22,6 +22,16 @@ const makeSubscription = (overrides: any = {}) => ({
   ...overrides
 })
 
+test.describe('isSafeLink', () => {
+  test('accepts http(s) urls and the paths of the site', () => {
+    for (const url of ['https://example.com/a', 'http://example.com', '/data-fair/dataset/communes']) expect(isSafeLink(url), url).toBe(true)
+  })
+
+  test('refuses the other schemes, whatever their case or leading spaces', () => {
+    for (const url of ['javascript:alert(1)', 'JaVaScRiPt:alert(1)', ' javascript:alert(1)', 'data:text/html,x', 'not an url']) expect(isSafeLink(url), url).toBe(false)
+  })
+})
+
 test.describe('prepareSubscriptionNotification', () => {
   test('basic notification structure', () => {
     const event = makeEvent()
@@ -31,6 +41,15 @@ test.describe('prepareSubscriptionNotification', () => {
     expect(notif.eventId).toBe('evt1')
     expect(notif.recipient).toEqual({ id: 'test-user1', name: 'User 1' })
     expect(notif.origin).toBe('https://example.com')
+  })
+
+  test('does not carry the originator, nor the search texts that hold it', () => {
+    const notif = prepareSubscriptionNotification(
+      makeEvent({ originator: { user: { id: 'u1', name: 'Jane Doe' } }, _search: [{ text: 'Jane Doe u1', language: 'fr' }] }),
+      makeSubscription(), {}, 'fr', 'n1'
+    )
+    expect(notif).not.toHaveProperty('originator')
+    expect(notif).not.toHaveProperty('_search')
   })
 
   test('uses subscription icon', () => {

@@ -106,8 +106,7 @@
           }
         },
         "defaultLocale": {
-          "type": "string",
-          "default": "fr"
+          "type": "string"
         }
       }
     },

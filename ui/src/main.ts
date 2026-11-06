@@ -17,7 +17,7 @@ import dFrameContent from '@data-fair/frame/lib/vue-router/d-frame-content.js'
   const router = createRouter({ history: createWebHistory($sitePath + '/events/'), routes })
   dFrameContent(router)
   const reactiveSearchParams = createReactiveSearchParams(router)
-  const session = await createSession({ directoryUrl: $sitePath + '/simple-directory', siteInfo: true })
+  const session = await createSession({ directoryUrl: $sitePath + '/simple-directory' })
   const localeDayjs = createLocaleDayjs(session.state.lang)
   const uiNotif = createUiNotif()
   const vuetify = createVuetify({

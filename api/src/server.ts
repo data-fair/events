@@ -4,6 +4,7 @@ import i18n from 'i18n'
 import { session } from '@data-fair/lib-express/index.js'
 import { startObserver, stopObserver } from '@data-fair/lib-node/observer.js'
 import locks from '@data-fair/lib-node/locks.js'
+import log from '@data-fair/lib-node/log.js'
 import * as wsServer from '@data-fair/lib-express/ws-server.js'
 import * as wsEmitter from '@data-fair/lib-node/ws-emitter.js'
 // import upgradeScripts from '@data-fair/lib-node/upgrade-scripts.js'
@@ -52,7 +53,7 @@ export const start = async () => {
   server.listen(config.port)
   await new Promise(resolve => server.once('listening', resolve))
 
-  console.log(`API server listening on port ${config.port}`)
+  log.info('API server listening', { port: config.port })
 }
 
 export const stop = async () => {

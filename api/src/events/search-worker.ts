@@ -5,7 +5,7 @@
 import config from '#config'
 import Debug from 'debug'
 import mongo from '#mongo'
-import { internalError } from '@data-fair/lib-node/observer.js'
+import log from '@data-fair/lib-node/log.js'
 import locks from '@data-fair/lib-node/locks.js'
 import { buildSearchTexts } from './operations.ts'
 
@@ -39,12 +39,12 @@ const loop = async () => {
         } catch (err) {
           // like drainSearchIndex in data-fair: the event keeps its previous texts, but the flag is cleared
           // or this event would come back first in every batch and block the others forever
-          internalError('search-loop-event', `failed to rebuild the search texts of event ${event._id} - ${(err as Error)?.stack || err}`)
+          log.error('failed to rebuild the search texts of an event', { code: 'search-loop-event', err, eventId: event._id })
           return { updateOne: { filter, update: { $unset: { _needsSearch: 1 } } } }
         }
       }), { ordered: false })
     } catch (err) {
-      internalError('search-loop', err)
+      log.error('the search texts loop failed', { code: 'search-loop', err })
       await wait()
     }
   }

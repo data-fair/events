@@ -3,7 +3,7 @@ import type { Event, SearchableEvent, WebhookSubscription, Notification } from '
 import config from '#config'
 import mongo from '#mongo'
 import { prepareSubscriptionNotification } from '../notifications/operations.ts'
-import { sendNotification } from '../notifications/service.ts'
+import { dropUnsafeUrl, sendNotification } from '../notifications/service.ts'
 import { createWebhook } from '../webhooks/service.ts'
 import { nanoid } from 'nanoid'
 import debugModule from 'debug'
@@ -39,7 +39,7 @@ export const postEvents = async (events: Event[]) => {
     if (channels.includes('notifications')) {
       debug('find matching subscriptions', subscriptionsFilter)
       for await (const subscription of mongo.subscriptions.find(subscriptionsFilter)) {
-        const notification = prepareSubscriptionNotification(event, subscription, { notificationIcon: config.theme.notificationIcon }, config.i18n.defaultLocale, nanoid())
+        const notification = dropUnsafeUrl(prepareSubscriptionNotification(event, subscription, { notificationIcon: config.theme.notificationIcon }, config.i18n.defaultLocale, nanoid()))
         debug('send notification to', notification.recipient.id)
         notifsBulkOp.insert(notification)
         notifications.push(notification)

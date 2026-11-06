@@ -27,8 +27,16 @@ export const webhookNotification = (event: LocalizedEvent): Webhook['notificatio
 export const postWebhook = (subscription: Pick<WebhookSubscription, 'url' | 'header'>, notification: Webhook['notification']) => {
   const headers: Record<string, string> = {}
   if (subscription.header?.key && subscription.header.value) headers[subscription.header.key] = subscription.header.value
-  // the secret header is for the target only: dropped if it redirects to another origin
-  return axios.post(subscription.url, notification, { headers, timeout: 2000, sensitiveHeaders: Object.keys(headers) })
+  return axios.post(subscription.url, notification, {
+    headers,
+    // the secret header is for the target only: dropped if it redirects to another origin
+    sensitiveHeaders: Object.keys(headers),
+    // deliveries are sequential for all the accounts, one target must not hold them: axios' timeout
+    // only watches the time between 2 chunks, a target can drip its answer forever
+    timeout: 2000,
+    signal: AbortSignal.timeout(3000),
+    maxContentLength: 64 * 1024
+  })
 }
 
 export const createWebhook = async (event: LocalizedEvent, webhookSubscription: WebhookSubscription, opts: { coalesce?: boolean } = {}) => {

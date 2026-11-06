@@ -6,11 +6,11 @@ import debugModule from 'debug'
 import mongo from '#mongo'
 import config from '#config'
 import { session, mongoPagination, assertReqInternalSecret } from '@data-fair/lib-express/index.js'
-import { internalError } from '@data-fair/lib-node/observer.js'
+import log from '@data-fair/lib-node/log.js'
 import * as eventsPostSingleReq from '#doc/events/post-single-req/index.ts'
 import * as notificationsPostReq from '#doc/notifications/post-req/index.ts'
 import { postEvents } from '../events/service.ts'
-import { sendNotification } from './service.ts'
+import { dropUnsafeUrl, sendNotification } from './service.ts'
 import { nanoid } from 'nanoid'
 import { requireOperationScope } from '../shared/scopes.ts'
 
@@ -56,7 +56,7 @@ router.get('', requireOperationScope('listNotifications'), async (req, res, next
 router.post('', async (req, res, next) => {
   assertReqInternalSecret(req, config.secretKeys.events)
   if (!req.body.recipient || req.query.subscribedOnly === 'true') {
-    internalError('deprecated', 'pushing an event through the POST notifications endpoint is deprecated')
+    log.warn('pushing an event through the POST notifications endpoint is deprecated', { code: 'deprecated' })
     debug('pushing an event through the POST notifications', req.body)
     req.body.date = req.body.date ?? new Date().toISOString()
     if (req.body.recipient && req.query.subscribedOnly === 'true') {
@@ -87,7 +87,7 @@ router.post('', async (req, res, next) => {
       ...body,
     }
 
-    await sendNotification(notification)
+    await sendNotification(dropUnsafeUrl(notification))
     res.status(200).json(notification)
   }
 })

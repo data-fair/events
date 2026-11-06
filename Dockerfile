@@ -9,8 +9,8 @@ ENV NODE_ENV=production
 
 ##########################
 FROM base AS node-clean
-# npm and corepack are not used to run the service and carry their own CVEs
-RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+# npm, corepack and yarn are not used to run the service and carry their own CVEs
+RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /opt/yarn-* /usr/local/bin/yarn /usr/local/bin/yarnpkg
 
 ##########################
 FROM base AS package-strip

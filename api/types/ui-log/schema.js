@@ -8,7 +8,7 @@ export default {
   properties: {
     message: {
       type: 'string',
-      maxlength: 1000
+      maxLength: 1000
     }
   }
 }

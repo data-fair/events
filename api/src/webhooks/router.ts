@@ -3,9 +3,11 @@ import type { Filter, Sort } from 'mongodb'
 
 import { Router } from 'express'
 import { session, mongoPagination, httpError } from '@data-fair/lib-express/index.js'
+import log from '@data-fair/lib-node/log.js'
 import mongo from '#mongo'
 import { emitWebhook } from './service.ts'
 import { requireOperationScope } from '../shared/scopes.ts'
+import { ownerLogFields } from '../shared/log-fields.ts'
 
 const router = Router()
 export default router
@@ -36,6 +38,7 @@ router.post('/:id/_retry', requireOperationScope('retryWebhook'), async (req, re
     { returnDocument: 'after' })
 
   if (!webhook) throw httpError(404)
+  log.info('a webhook was retried', { code: 'events.webhooks.retry', webhookId: webhook._id, webhookSubscriptionId: webhook.subscription._id, ...ownerLogFields(account) })
   await emitWebhook(webhook)
   res.send(webhook)
 })
@@ -50,6 +53,7 @@ router.post('/:id/_cancel', requireOperationScope('cancelWebhook'), async (req, 
     { returnDocument: 'after' })
 
   if (!webhook) throw httpError(404)
+  log.info('a webhook was cancelled', { code: 'events.webhooks.cancel', webhookId: webhook._id, webhookSubscriptionId: webhook.subscription._id, ...ownerLogFields(account) })
   await emitWebhook(webhook)
   res.send(webhook)
 })
