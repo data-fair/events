@@ -84,6 +84,17 @@ events is scope-aware (`session.init(..., { scopeAware: true })`): a session who
 - `GET /api/api-docs.json` (@api/contract/api-docs.ts, built from the same table) is the document data-fair merges into the platform document: keep it independent of the request origin (data-fair fetches it over the private url) and keep each accepted scope as its own `security` alternative. Edit the table, not the document.
 - Tests: @tests/features/scopes/scopes.unit.spec.ts and @tests/features/scopes/scopes.api.spec.ts, with `nhiSession` (see Testing).
 
+## Logging
+
+Server code logs through `import log from '@data-fair/lib-node/log.js'` (pino: JSON on stdout in production, pretty in dev); the full API is in the "Logging" section of the `@data-fair/lib-node` README. eslint `no-console` applies to `api/src/**` and `api/index.ts`.
+
+- `log.info|warn|alert|error(msg, { code?, err?, ...fields })`: `code` is a **static string**, ids go in their own fields (`notificationId`, `webhookId`), the error in `err`, never in the message.
+- `error` is for internal failures only (counted in `df_logs`, alerting). Client errors, what a remote refuses (a device, a webhook target) and deprecated calls are `warn`; `alert` is not a failure but deserves the same scrutiny.
+- The actor (`ip`, `host`, `userId`, `accountKey`…) is never passed by hand. `app.ts` opens `ip` / `host` for every request and `session.middleware()` adds the actor on the routers that read the session. It is not mounted globally: it answers 401 to a broken cookie, which public routes must keep ignoring.
+- The account an action is about goes in `owner*` fields (@api/src/shared/log-fields.ts); `accountKey` stays the actor's. The workers have no request context: they name what they work on.
+- Never log a device registration (its keys let anyone push to the device), the `header` of a webhook subscription (a secret of the target) nor a full webhook url (log its host).
+- `debug` call sites work as before and go through the logger (`DEBUG=ns`), the same rule applies to them.
+
 ## Code patterns
 
 When working on this project, read the following files on a need-to-know basis to understand conventions:

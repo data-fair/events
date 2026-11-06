@@ -5,7 +5,7 @@ import config from '#config'
 import Debug from 'debug'
 import type { Webhook } from '#types'
 import mongo from '#mongo'
-import { internalError } from '@data-fair/lib-node/observer.js'
+import log from '@data-fair/lib-node/log.js'
 import locks from '@data-fair/lib-node/locks.js'
 import { failedAttemptPatch } from './operations.ts'
 import { emitWebhook, postWebhook } from './service.ts'
@@ -54,9 +54,10 @@ const loop = async () => {
       }, { returnDocument: 'after' }))
       continue
     }
-    debug('found matching subscription', subscription)
+    // not the subscription itself: its header holds the secret of the target
+    debug('found matching subscription', subscription._id)
     try {
-      debug('send webhook', subscription.url, webhook.notification)
+      debug('send webhook', webhook.notification)
       const res = await postWebhook(subscription, webhook.notification)
       debug('webhook success')
       await emitWebhook(await mongo.webhooks.findOneAndUpdate({ _id: webhook._id }, {
@@ -68,7 +69,7 @@ const loop = async () => {
         $inc: { nbAttempts: 1 }
       }, { returnDocument: 'after' }))
     } catch (err: any) {
-      debug('webhook failed', err)
+      debug('webhook failed', err.message)
       const attempt: Webhook['lastAttempt'] = { date }
       if (err.status) attempt.status = err.status
       else attempt.error = err.message
@@ -89,6 +90,6 @@ export const stop = async () => {
   try {
     await loopPromise
   } catch (err) {
-    internalError('webhooks-loop', err)
+    log.error('the webhooks loop failed', { code: 'webhooks-loop', err })
   }
 }

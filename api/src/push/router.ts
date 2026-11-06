@@ -24,6 +24,9 @@ router.get('/vapidkey', async (req, res) => {
   res.send({ publicKey: getPushState().vapidKeys.publicKey })
 })
 
+// the other routes read the session, cf the mounts in app.ts
+router.use(session.middleware())
+
 router.get('/registrations', async (req, res) => {
   const { user } = await session.reqAuthenticated(req)
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
