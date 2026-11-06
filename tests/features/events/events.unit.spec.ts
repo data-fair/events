@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { localizeProp, localizeEvent, getSubscriptionsFilter, cleanEvent, buildSearchTexts } from '../../../api/src/events/operations.ts'
+import { localizeProp, localizeEvent, getSubscriptionsFilter, cleanEvent, buildSearchTexts, projectionForClean } from '../../../api/src/events/operations.ts'
 
 test.describe('localizeProp', () => {
   test('returns string prop as-is', () => {
@@ -121,6 +121,17 @@ test.describe('getSubscriptionsFilter', () => {
     }
     const filter = getSubscriptionsFilter(event)
     expect(filter['recipient.id']).toBe('test-user1')
+  })
+})
+
+test.describe('projectionForClean', () => {
+  test('leaves a projection that does not reach the originator', () => {
+    expect(projectionForClean({ title: 1, 'sender.id': 1 })).toEqual({ title: 1, 'sender.id': 1 })
+    expect(projectionForClean({ _search: 0 })).toEqual({ _search: 0 })
+  })
+
+  test('selects what cleanEvent reads, without a path collision', () => {
+    expect(projectionForClean({ title: 1, 'originator.user.name': 1, 'sender.id': 1 })).toEqual({ title: 1, originator: 1, sender: 1 })
   })
 })
 

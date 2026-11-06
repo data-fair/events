@@ -12,6 +12,19 @@ const superadmin = await axiosAuth('superadmin', { adminMode: true })
 test.describe('events', () => {
   test.beforeEach(clean)
 
+  test('a select does not unmask the super admin behind an event', async () => {
+    await axPush.post('/api/events', [{
+      date: new Date().toISOString(),
+      topic: { key: 'topic1' },
+      title: 'an action of a super admin',
+      sender: { type: 'user', id: 'test1-admin1', name: 'Admin' },
+      originator: { user: { id: 'superadmin', name: 'Super Admin', admin: true } }
+    }])
+    const { data } = await admin1.get('/api/events', { params: { select: 'title,originator.user.name' } })
+    expect(data.results[0].title).toBe('an action of a super admin')
+    expect(data.results[0].originator.user).toEqual({ admin: true })
+  })
+
   test('should reject posting from exterior', async () => {
     await expect(axAno.post('/api/events', {})).rejects.toMatchObject({ status: 421 })
   })
