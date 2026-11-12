@@ -43,10 +43,10 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  noDevices: Aucun appareil ne reçoit vos notifications.
 en:
   noDevices: No device receives your notifications.
+fr:
+  noDevices: Aucun appareil ne reçoit vos notifications.
 </i18n>
 
 <script lang="ts" setup>

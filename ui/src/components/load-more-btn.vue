@@ -10,10 +10,10 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  seeMore: Voir plus
 en:
   seeMore: See more
+fr:
+  seeMore: Voir plus
 </i18n>
 
 <script lang="ts" setup>

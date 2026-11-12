@@ -31,12 +31,12 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  devices: sur mes appareils
-  email: par e-mail
 en:
   devices: on my devices
   email: by email
+fr:
+  devices: sur mes appareils
+  email: par e-mail
 </i18n>
 
 <script lang="ts" setup>
