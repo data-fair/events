@@ -22,3 +22,13 @@ export const canSubscribePrivate = (sender: Subscription['sender'], user: User) 
     return true
   }
 }
+
+// the language the notifications of a subscription are written in: the one given by the caller
+// (the subscribe embed sends the language of its interface), else the one already stored on an update,
+// else the session language of the request (a service subscribing server side forwards the user's cookie)
+export const subscriptionLocale = (bodyLocale: Subscription['locale'], existingLocale: Subscription['locale'], sessionLang: string | undefined, locales: string[]): Subscription['locale'] => {
+  if (bodyLocale) return bodyLocale
+  if (existingLocale) return existingLocale
+  if (sessionLang && locales.includes(sessionLang)) return sessionLang as Subscription['locale']
+  return undefined
+}

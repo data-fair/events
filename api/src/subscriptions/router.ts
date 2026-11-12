@@ -7,7 +7,8 @@ import { session, mongoSort, mongoPagination, httpError, reqSiteUrl } from '@dat
 import log from '@data-fair/lib-node/log.js'
 import mongo from '#mongo'
 import * as postReq from '#doc/subscriptions/post-req/index.ts'
-import { canSubscribePrivate } from './operations.ts'
+import { canSubscribePrivate, subscriptionLocale } from './operations.ts'
+import config from '#config'
 import { requireOperationScope } from '../shared/scopes.ts'
 
 const router = Router()
@@ -60,7 +61,7 @@ router.get('', requireOperationScope('listSubscriptions'), async (req, res, next
 
 // Create or update a subscription
 router.post('', requireOperationScope('postSubscription'), async (req, res, next) => {
-  const { user } = await session.reqAuthenticated(req)
+  const { user, lang } = await session.reqAuthenticated(req)
 
   const { body } = postReq.returnValid(req, { name: 'req' })
   const date = new Date().toISOString()
@@ -81,6 +82,7 @@ router.post('', requireOperationScope('postSubscription'), async (req, res, next
     throw httpError(403, 'Impossible de créer un abonnement pour un autre utilisateur')
   }
 
+  let existingLocale: Subscription['locale']
   if (body._id) {
     const existingSubscription = await mongo.subscriptions.findOne({ _id: body._id })
     if (!existingSubscription) throw httpError(404)
@@ -88,11 +90,15 @@ router.post('', requireOperationScope('postSubscription'), async (req, res, next
     if (!user.adminMode && existingSubscription.recipient.id !== user.id) {
       throw httpError(403, 'Impossible de modifier un abonnement pour un autre utilisateur')
     }
+    existingLocale = existingSubscription.locale
     subscription.created = existingSubscription.created
     // the links of the notifications are built on this site, editing the outputs from another site
     // (the subscriptions page of the back-office for a portal subscription) must not move them
     subscription.origin = existingSubscription.origin ?? subscription.origin
   }
+
+  const locale = subscriptionLocale(body.locale, existingLocale, lang, config.i18n.locales)
+  if (locale) subscription.locale = locale
 
   if (!canSubscribePrivate(body.sender, user)) {
     subscription.visibility = 'public'
