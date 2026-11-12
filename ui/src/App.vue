@@ -14,4 +14,8 @@ import uiNotif from '@data-fair/lib-vuetify/ui-notif.vue'
 // the other pages keep the theme background
 const route = useRoute()
 const embed = computed(() => route.path.startsWith('/embed/'))
+
+// index.html carries a default lang, the document follows the session language
+const session = useSession()
+watchEffect(() => { document.documentElement.lang = session.lang.value ?? 'fr' })
 </script>
