@@ -26,7 +26,10 @@ export const canSubscribePrivate = (sender: Subscription['sender'], user: User) 
 // the language the notifications of a subscription are written in: the one given by the caller
 // (the subscribe embed sends the language of its interface), else the one already stored on an update,
 // else the session language of the request (a service subscribing server side forwards the user's cookie).
-// Any language is accepted: event texts are open records, a missing language falls back on the default one
+// Any language is accepted: event texts are open records, a missing language falls back on the default one.
+// The session language comes from a cookie, unchecked by the body schema: kept only in the schema's shape
+// (a 'fr-FR' stored would make every later save of the subscription fail its validation).
+const localePattern = /^[a-z]{2}$/
 export const subscriptionLocale = (bodyLocale: Subscription['locale'], existingLocale: Subscription['locale'], sessionLang: string | undefined): Subscription['locale'] => {
-  return bodyLocale || existingLocale || sessionLang || undefined
+  return bodyLocale || existingLocale || (sessionLang && localePattern.test(sessionLang) ? sessionLang : undefined)
 }

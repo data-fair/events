@@ -95,6 +95,11 @@ test.describe('subscriptionLocale', () => {
     expect(subscriptionLocale(undefined, undefined, 'de')).toBe('de')
   })
 
+  test('ignores a session language that is not a 2 letters code', () => {
+    expect(subscriptionLocale(undefined, undefined, 'fr-FR')).toBeUndefined()
+    expect(subscriptionLocale(undefined, undefined, 'constructor')).toBeUndefined()
+  })
+
   test('stays undefined without any language', () => {
     expect(subscriptionLocale(undefined, undefined, undefined)).toBeUndefined()
   })
