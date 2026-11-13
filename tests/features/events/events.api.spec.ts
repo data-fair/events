@@ -97,15 +97,16 @@ test.describe('events', () => {
     }])
     res = await admin1.get('/api/events')
     expect(res.data.results.length).toBe(0)
+    // without a language cookie, the default language of the service
+    res = await user1.get('/api/events')
+    expect(res.data.results.length).toBe(1)
+    expect(res.data.results[0].title).toBe('an english notification')
+    user1.cookieJar.setCookie('i18n_lang=fr', baseURL)
     res = await user1.get('/api/events')
     expect(res.data.results.length).toBe(1)
     expect(res.data.results[0].title).toBe('une notification française')
     res = await user1.get('/api/events?q=française')
     expect(res.data.results.length).toBe(1)
-    user1.cookieJar.setCookie('i18n_lang=en', baseURL)
-    res = await user1.get('/api/events')
-    expect(res.data.results.length).toBe(1)
-    expect(res.data.results[0].title).toBe('an english notification')
   })
 
   test('should send an event with same id twice', async () => {

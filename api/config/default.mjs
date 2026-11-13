@@ -25,6 +25,6 @@ export default {
   },
   i18n: {
     locales: ['fr', 'en'],
-    defaultLocale: 'fr'
+    defaultLocale: 'en'
   }
 }

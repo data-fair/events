@@ -51,7 +51,9 @@ export class EventsMongo {
       events: {
         'main-keys': [
           { 'sender.type': 1, 'sender.id': 1, '_search.text': 'text', date: -1 },
-          { default_language: config.i18n.defaultLocale }
+          // fixed, not the default locale of the service: every _search entry carries its own language,
+          // and changing it would drop and rebuild the whole text index at the next start
+          { default_language: 'fr' }
         ],
         // a text index is only used by a $text query: the list without a search, and each of its next
         // pages, scanned the whole collection and sorted it in memory
