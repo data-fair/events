@@ -8,23 +8,23 @@ export default {
   properties: {
     _id: {
       type: 'string',
-      title: 'Identifiant',
+      title: 'Identifier',
       readOnly: true
     },
     origin: {
       type: 'string',
-      title: 'Site d\'origine de la souscription',
+      title: 'Origin site of the subscription',
       readOnly: true
     },
     title: {
       type: 'string',
-      title: 'Libellé de la souscription'
+      title: 'Subscription label'
     },
     locale: {
       type: 'string',
-      title: 'Langue de la souscription',
-      default: 'fr',
-      enum: ['fr', 'en']
+      title: 'Subscription language',
+      description: 'Language code of the notifications (fr, en…). Without it the stored language is kept on an update, else the session language of the request is used. Texts missing in this language fall back on the default language of the service.',
+      pattern: '^[a-z]{2}$'
     },
     // sender is the owner of the topic
     sender: { $ref: 'https://github.com/data-fair/events/partial#/$defs/senderSubscribe' },
@@ -33,32 +33,32 @@ export default {
     recipient: { $ref: 'https://github.com/data-fair/events/partial#/$defs/recipient' },
     outputs: {
       type: 'array',
-      title: 'Sorties',
+      title: 'Outputs',
       default: ['devices'],
       items: {
         type: 'string',
         oneOf: [{
           const: 'devices',
-          title: 'recevoir la notification sur vos appareils configurés'
+          title: 'Receive the notification on your configured devices'
         }, {
           const: 'email',
-          title: 'recevoir la notification par email'
+          title: 'Receive the notification by email'
         }]
       }
     },
     urlTemplate: {
       type: 'string',
-      title: 'Template de lien'
+      title: 'Link template'
     },
     visibility: {
       type: 'string',
-      title: 'Visibilité des notifications à recevoir',
+      title: 'Visibility of the notifications to receive',
       enum: ['public', 'private'],
       default: 'private'
     },
     icon: {
       type: 'string',
-      title: 'Icone'
+      title: 'Icon'
     },
     created: { $ref: 'https://github.com/data-fair/events/partial#/$defs/modifier' },
     updated: { $ref: 'https://github.com/data-fair/events/partial#/$defs/modifier' }

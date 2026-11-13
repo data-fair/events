@@ -8,10 +8,10 @@ export default {
   properties: {
     _id: {
       type: 'string',
-      title: 'Identifiant'
+      title: 'Identifier'
     },
     // the sender is the owner of the topic
-    sender: { $ref: 'https://github.com/data-fair/lib/event#/$defs/sender', title: 'Émetteur' },
+    sender: { $ref: 'https://github.com/data-fair/lib/event#/$defs/sender', title: 'Sender' },
     owner: { $ref: 'https://github.com/data-fair/lib/session-state#/$defs/account' },
     subscription: {
       type: 'object',
@@ -20,11 +20,11 @@ export default {
       properties: {
         _id: {
           type: 'string',
-          title: 'Identifiant'
+          title: 'Identifier'
         },
         title: {
           type: 'string',
-          title: 'Libellé de la souscription'
+          title: 'Subscription label'
         }
       }
     },

@@ -83,18 +83,6 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  thisDevice: cet appareil
-  added: ajouté {date}
-  lastSuccess: dernière notification reçue {date}
-  errors: désactivé après 10 échecs d'envoi, réactivé à la prochaine ouverture de cette page sur l'appareil
-  gone: expiré, à enregistrer de nouveau depuis l'appareil
-  temporarilyDisabled: désactivé temporairement après une erreur
-  test: Tester
-  removeDevice: Retirer cet appareil
-  removeText: Il ne recevra plus vos notifications. Vous pourrez l'enregistrer de nouveau depuis l'appareil lui-même.
-  remove: Retirer
-  cancel: Annuler
 en:
   thisDevice: this device
   added: added {date}
@@ -107,6 +95,18 @@ en:
   removeText: It will no longer receive your notifications. You can register it again from the device itself.
   remove: Remove
   cancel: Cancel
+fr:
+  thisDevice: cet appareil
+  added: ajouté {date}
+  lastSuccess: dernière notification reçue {date}
+  errors: désactivé après 10 échecs d'envoi, réactivé à la prochaine ouverture de cette page sur l'appareil
+  gone: expiré, à enregistrer de nouveau depuis l'appareil
+  temporarilyDisabled: désactivé temporairement après une erreur
+  test: Tester
+  removeDevice: Retirer cet appareil
+  removeText: Il ne recevra plus vos notifications. Vous pourrez l'enregistrer de nouveau depuis l'appareil lui-même.
+  remove: Retirer
+  cancel: Annuler
 </i18n>
 
 <script lang="ts" setup>

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { canSubscribePrivate } from '../../../api/src/subscriptions/operations.ts'
+import { canSubscribePrivate, subscriptionLocale } from '../../../api/src/subscriptions/operations.ts'
 
 const makeUser = (overrides: any = {}) => ({
   id: 'test-user1',
@@ -75,5 +75,32 @@ test.describe('canSubscribePrivate', () => {
       organizations: [{ id: 'org1', name: 'Org', role: 'admin' }]
     })
     expect(canSubscribePrivate({ type: 'organization', id: 'org1', role: 'contrib' }, user)).toBe(true)
+  })
+})
+
+test.describe('subscriptionLocale', () => {
+  test('keeps the locale given by the caller', () => {
+    expect(subscriptionLocale('en', 'fr', 'fr')).toBe('en')
+  })
+
+  test('keeps the stored locale on an update without locale', () => {
+    expect(subscriptionLocale(undefined, 'en', 'fr')).toBe('en')
+  })
+
+  test('falls back to the session language', () => {
+    expect(subscriptionLocale(undefined, undefined, 'en')).toBe('en')
+  })
+
+  test('keeps a session language without translated texts, they fall back on the default language', () => {
+    expect(subscriptionLocale(undefined, undefined, 'de')).toBe('de')
+  })
+
+  test('ignores a session language that is not a 2 letters code', () => {
+    expect(subscriptionLocale(undefined, undefined, 'fr-FR')).toBeUndefined()
+    expect(subscriptionLocale(undefined, undefined, 'constructor')).toBeUndefined()
+  })
+
+  test('stays undefined without any language', () => {
+    expect(subscriptionLocale(undefined, undefined, undefined)).toBeUndefined()
   })
 })

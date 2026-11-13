@@ -67,16 +67,16 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  noEvents: Aucune activité pour le moment.
-  admin: Administrateur
-  internalProcess: Processus interne
-  apiKey: Clé d'API
 en:
   noEvents: No activity yet.
   admin: Administrator
   internalProcess: Internal process
   apiKey: API key
+fr:
+  noEvents: Aucune activité pour le moment.
+  admin: Administrateur
+  internalProcess: Processus interne
+  apiKey: Clé d'API
 </i18n>
 
 <script lang="ts" setup>

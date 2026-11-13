@@ -41,12 +41,12 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  notifyMe: "Paramètre manquant | Me notifier de cet évènement : | Me notifier de ces évènements :"
-  loginRequired: Vous devez être connecté pour recevoir des notifications.
 en:
   notifyMe: "Missing parameter | Send me notifications for this event: | Send me notifications for these events:"
   loginRequired: You must be logged in to receive notifications.
+fr:
+  notifyMe: "Paramètre manquant | Me notifier de cet évènement : | Me notifier de ces évènements :"
+  loginRequired: Vous devez être connecté pour recevoir des notifications.
 </i18n>
 
 <script setup lang="ts">
