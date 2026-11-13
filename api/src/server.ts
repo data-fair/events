@@ -30,7 +30,7 @@ i18n.configure({ ...config.i18n, directory: resolve(import.meta.dirname, '../i18
 
 export const start = async () => {
   if (config.observer.active) await startObserver(config.observer.port)
-  // without an i18n_lang cookie the session language is the service's default one, not lib-node's 'fr'
+  // without an i18n_lang cookie the session language is the service's default one (I18N_DEFAULT_LOCALE)
   session.init(config.privateDirectoryUrl, config.i18n.defaultLocale, undefined, { scopeAware: true })
   await mongo.init()
   await locks.start(mongo.db)

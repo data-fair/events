@@ -96,7 +96,8 @@ router.post('', requireOperationScope('postSubscription'), async (req, res, next
     subscription.origin = existingSubscription.origin ?? subscription.origin
   }
 
-  const locale = subscriptionLocale(body.locale, existingLocale, lang)
+  // the session language is the recipient's only when they are the caller, not an admin acting for them
+  const locale = subscriptionLocale(body.locale, existingLocale, subscription.recipient.id === user.id ? lang : undefined)
   if (locale) subscription.locale = locale
 
   if (!canSubscribePrivate(body.sender, user)) {
