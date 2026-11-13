@@ -79,22 +79,23 @@ test.describe('canSubscribePrivate', () => {
 })
 
 test.describe('subscriptionLocale', () => {
-  const locales = ['fr', 'en']
-
   test('keeps the locale given by the caller', () => {
-    expect(subscriptionLocale('en', 'fr', 'fr', locales)).toBe('en')
+    expect(subscriptionLocale('en', 'fr', 'fr')).toBe('en')
   })
 
   test('keeps the stored locale on an update without locale', () => {
-    expect(subscriptionLocale(undefined, 'en', 'fr', locales)).toBe('en')
+    expect(subscriptionLocale(undefined, 'en', 'fr')).toBe('en')
   })
 
   test('falls back to the session language', () => {
-    expect(subscriptionLocale(undefined, undefined, 'en', locales)).toBe('en')
+    expect(subscriptionLocale(undefined, undefined, 'en')).toBe('en')
   })
 
-  test('ignores a session language the service does not support', () => {
-    expect(subscriptionLocale(undefined, undefined, 'de', locales)).toBeUndefined()
-    expect(subscriptionLocale(undefined, undefined, undefined, locales)).toBeUndefined()
+  test('keeps a session language without translated texts, they fall back on the default language', () => {
+    expect(subscriptionLocale(undefined, undefined, 'de')).toBe('de')
+  })
+
+  test('stays undefined without any language', () => {
+    expect(subscriptionLocale(undefined, undefined, undefined)).toBeUndefined()
   })
 })

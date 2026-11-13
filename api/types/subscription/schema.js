@@ -23,8 +23,8 @@ export default {
     locale: {
       type: 'string',
       title: 'Langue de la souscription',
-      default: 'fr',
-      enum: ['fr', 'en']
+      description: 'Language code of the notifications (fr, en…). Without it the stored language is kept on an update, else the session language of the request is used. Texts missing in this language fall back on the default language of the service.',
+      pattern: '^[a-z]{2}$'
     },
     // sender is the owner of the topic
     sender: { $ref: 'https://github.com/data-fair/events/partial#/$defs/senderSubscribe' },

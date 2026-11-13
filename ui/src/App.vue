@@ -15,7 +15,9 @@ import uiNotif from '@data-fair/lib-vuetify/ui-notif.vue'
 const route = useRoute()
 const embed = computed(() => route.path.startsWith('/embed/'))
 
-// index.html declares a static lang, replaced by the session language once known
+// index.html declares a static lang, replaced by the language the interface is really displayed in:
+// the session language when the UI is translated in it, else english (fallbackLocale of vue-i18n)
+const uiLocales = ['en', 'fr']
 const session = useSession()
-watchEffect(() => { document.documentElement.lang = session.lang.value ?? 'fr' })
+watchEffect(() => { document.documentElement.lang = uiLocales.includes(session.lang.value) ? session.lang.value : 'en' })
 </script>

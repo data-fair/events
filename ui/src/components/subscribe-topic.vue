@@ -96,7 +96,7 @@ const switchSubscription = async () => {
       recipient: { id: session.state.user.id, name: session.state.user.name },
       topic,
       outputs: [],
-      locale: locale.value as Subscription['locale']
+      locale: locale.value
     }
     if (!noSender) subscription.sender = withName(sender || session.state.account)
     if (icon) subscription.icon = icon
