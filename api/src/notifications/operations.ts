@@ -67,10 +67,13 @@ export const prepareSubscriptionNotification = (event: FullEvent, subscription: 
   delete localizedEvent.urlParams
   // the search texts hold the originator removed above
   delete (localizedEvent as Partial<SearchableEvent>)._search
+  // the notification type of the lib only knows fr and en: another subscription language
+  // gets the texts of the default language (localizeProp), so the notification is declared in it
+  const locale = (subscription.locale === 'fr' || subscription.locale === 'en') ? subscription.locale : defaultLocale as Notification['locale']
   const notification: Notification = {
     eventId: event._id,
     icon: subscription.icon || defaults.notificationIcon || (subscription.origin + '/events/logo-192x192.png'),
-    locale: subscription.locale,
+    locale,
     ...localizedEvent,
     _id: id,
     recipient: subscription.recipient,

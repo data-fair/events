@@ -53,17 +53,6 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  waiting: en attente
-  working: en cours
-  error: erreur
-  ok: ok
-  cancelled: annulé
-  nbAttempts: "Aucune tentative | 1 tentative | {nbAttempts} tentatives"
-  lastAttempt: "dernière {date}"
-  nextAttempt: "prochaine {date}"
-  retry: Renvoyer
-  cancel: annuler
 en:
   waiting: waiting
   working: working
@@ -75,6 +64,17 @@ en:
   nextAttempt: "next {date}"
   retry: Send again
   cancel: cancel
+fr:
+  waiting: en attente
+  working: en cours
+  error: erreur
+  ok: ok
+  cancelled: annulé
+  nbAttempts: "Aucune tentative | 1 tentative | {nbAttempts} tentatives"
+  lastAttempt: "dernière {date}"
+  nextAttempt: "prochaine {date}"
+  retry: Renvoyer
+  cancel: annuler
 </i18n>
 
 <script lang="ts" setup>

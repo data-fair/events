@@ -30,12 +30,12 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  history: Historique des appels
-  noWebhooks: Ce webhook n'a pas encore été appelé.
 en:
   history: Call history
   noWebhooks: This webhook has not been called yet.
+fr:
+  history: Historique des appels
+  noWebhooks: Ce webhook n'a pas encore été appelé.
 </i18n>
 
 <script lang="ts" setup>

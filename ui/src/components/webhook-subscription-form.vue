@@ -153,23 +153,6 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  topic: Évènement
-  title: Libellé
-  headerKey: Clé de header HTTP
-  headerValue: Valeur de header HTTP
-  required: Ce paramètre est requis
-  invalidUrl: Cette URL n'est pas valide
-  test: Tester
-  save: Enregistrer
-  add: Ajouter
-  testReceived: "Le message de test a été reçu (réponse HTTP {status})."
-  testHttpError: "L'URL a répondu par une erreur HTTP {status}."
-  testFailed: "L'envoi a échoué : {error}"
-  delete: Supprimer
-  deleteTitle: Supprimer ce webhook
-  deleteText: "Le webhook « {title} » ne sera plus appelé. Pour le retrouver, il faudra le déclarer de nouveau."
-  cancel: Annuler
 en:
   topic: Event
   title: Label
@@ -187,6 +170,23 @@ en:
   deleteTitle: Delete this webhook
   deleteText: "The webhook \"{title}\" will no longer be called. To get it back, it will have to be declared again."
   cancel: Cancel
+fr:
+  topic: Évènement
+  title: Libellé
+  headerKey: Clé de header HTTP
+  headerValue: Valeur de header HTTP
+  required: Ce paramètre est requis
+  invalidUrl: Cette URL n'est pas valide
+  test: Tester
+  save: Enregistrer
+  add: Ajouter
+  testReceived: "Le message de test a été reçu (réponse HTTP {status})."
+  testHttpError: "L'URL a répondu par une erreur HTTP {status}."
+  testFailed: "L'envoi a échoué : {error}"
+  delete: Supprimer
+  deleteTitle: Supprimer ce webhook
+  deleteText: "Le webhook « {title} » ne sera plus appelé. Pour le retrouver, il faudra le déclarer de nouveau."
+  cancel: Annuler
 </i18n>
 
 <script lang="ts" setup>

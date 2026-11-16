@@ -7,7 +7,7 @@ import { session, mongoSort, mongoPagination, httpError, reqSiteUrl } from '@dat
 import log from '@data-fair/lib-node/log.js'
 import mongo from '#mongo'
 import * as postReq from '#doc/subscriptions/post-req/index.ts'
-import { canSubscribePrivate } from './operations.ts'
+import { canSubscribePrivate, subscriptionLocale } from './operations.ts'
 import { requireOperationScope } from '../shared/scopes.ts'
 
 const router = Router()
@@ -60,7 +60,7 @@ router.get('', requireOperationScope('listSubscriptions'), async (req, res, next
 
 // Create or update a subscription
 router.post('', requireOperationScope('postSubscription'), async (req, res, next) => {
-  const { user } = await session.reqAuthenticated(req)
+  const { user, lang } = await session.reqAuthenticated(req)
 
   const { body } = postReq.returnValid(req, { name: 'req' })
   const date = new Date().toISOString()
@@ -78,21 +78,27 @@ router.post('', requireOperationScope('postSubscription'), async (req, res, next
   }
 
   if (subscription.recipient.id !== user.id && !user.adminMode) {
-    throw httpError(403, 'Impossible de créer un abonnement pour un autre utilisateur')
+    throw httpError(403, 'Cannot create a subscription for another user')
   }
 
+  let existingLocale: Subscription['locale']
   if (body._id) {
     const existingSubscription = await mongo.subscriptions.findOne({ _id: body._id })
     if (!existingSubscription) throw httpError(404)
     // updating a subscription of another user would take it over
     if (!user.adminMode && existingSubscription.recipient.id !== user.id) {
-      throw httpError(403, 'Impossible de modifier un abonnement pour un autre utilisateur')
+      throw httpError(403, 'Cannot update a subscription of another user')
     }
+    existingLocale = existingSubscription.locale
     subscription.created = existingSubscription.created
     // the links of the notifications are built on this site, editing the outputs from another site
     // (the subscriptions page of the back-office for a portal subscription) must not move them
     subscription.origin = existingSubscription.origin ?? subscription.origin
   }
+
+  // the session language is the recipient's only when they are the caller, not an admin acting for them
+  const locale = subscriptionLocale(body.locale, existingLocale, subscription.recipient.id === user.id ? lang : undefined)
+  if (locale) subscription.locale = locale
 
   if (!canSubscribePrivate(body.sender, user)) {
     subscription.visibility = 'public'
@@ -119,7 +125,7 @@ router.get('/:id', requireOperationScope('getSubscription'), async (req, res, ne
 
   // both the sender and the recipient can create/modify a subscription
   if (!user.adminMode && subscription.recipient.id !== user.id) {
-    throw httpError(403, 'Impossible de lire un abonnement pour un autre utilisateur')
+    throw httpError(403, 'Cannot read a subscription of another user')
   }
 
   res.send(subscription)
@@ -133,7 +139,7 @@ router.delete('/:id', requireOperationScope('deleteSubscription'), async (req, r
 
   // both the sender and the recipient can create/modify a subscription
   if (!user.adminMode && subscription.recipient.id !== user.id) {
-    throw httpError(403, 'Impossible de supprimer un abonnement pour un autre utilisateur')
+    throw httpError(403, 'Cannot delete a subscription of another user')
   }
 
   await mongo.subscriptions.deleteOne({ _id: subscription._id })

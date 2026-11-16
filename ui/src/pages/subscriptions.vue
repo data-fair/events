@@ -138,19 +138,6 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  intro: Tous vos abonnements, où que vous les ayez faits. Leurs notifications arrivent dans la cloche ; choisissez ici si vous les recevez aussi par e-mail ou sur vos appareils.
-  subscriptions: "Aucun abonnement | {count} abonnement | {count} abonnements"
-  noSubscriptions: Vous n'êtes abonné à aucune notification.
-  outputs: Recevoir aussi
-  email: Par e-mail
-  devices: Sur mes appareils
-  allDepartments: tous les départements
-  subscribedOn: "abonné sur {host}"
-  unsubscribe: Se désabonner
-  unsubscribeText: Vous ne recevrez plus ces notifications. Pour vous réabonner, il faudra retourner sur la page où vous vous étiez abonné, cette liste ne le permet pas.
-  cancel: Annuler
-  seeNotifications: Voir mes notifications
 en:
   intro: All your subscriptions, wherever you made them. Their notifications arrive in the bell; choose here whether you also receive them by email or on your devices.
   subscriptions: "No subscription | {count} subscription | {count} subscriptions"
@@ -164,6 +151,19 @@ en:
   unsubscribeText: You will no longer receive these notifications. To subscribe again, you will have to go back to the page where you subscribed, this list does not allow it.
   cancel: Cancel
   seeNotifications: See my notifications
+fr:
+  intro: Tous vos abonnements, où que vous les ayez faits. Leurs notifications arrivent dans la cloche ; choisissez ici si vous les recevez aussi par e-mail ou sur vos appareils.
+  subscriptions: "Aucun abonnement | {count} abonnement | {count} abonnements"
+  noSubscriptions: Vous n'êtes abonné à aucune notification.
+  outputs: Recevoir aussi
+  email: Par e-mail
+  devices: Sur mes appareils
+  allDepartments: tous les départements
+  subscribedOn: "abonné sur {host}"
+  unsubscribe: Se désabonner
+  unsubscribeText: Vous ne recevrez plus ces notifications. Pour vous réabonner, il faudra retourner sur la page où vous vous étiez abonné, cette liste ne le permet pas.
+  cancel: Annuler
+  seeNotifications: Voir mes notifications
 </i18n>
 
 <script lang="ts" setup>

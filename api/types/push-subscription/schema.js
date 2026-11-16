@@ -8,7 +8,7 @@ export default {
   properties: {
     _id: {
       type: 'string',
-      title: 'Identifiant',
+      title: 'Identifier',
       readOnly: true
     },
     owner: { $ref: 'https://github.com/data-fair/lib/session-state#/$defs/account' },

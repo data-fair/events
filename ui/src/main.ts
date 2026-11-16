@@ -24,7 +24,7 @@ import dFrameContent from '@data-fair/frame/lib/vue-router/d-frame-content.js'
     ...vuetifySessionOptions(session, $cspNonce),
     icons: { defaultSet: 'mdi', aliases, sets: { mdi, } }
   })
-  const i18n = createI18n({ locale: session.state.lang })
+  const i18n = createI18n({ locale: session.state.lang, fallbackLocale: 'en', legacy: false })
 
   createApp(App)
     .use(router)

@@ -89,16 +89,16 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  webhooks: "Aucun webhook | 1 webhook | {count} webhooks"
-  new: Ajouter un webhook
-  cancel: Annuler
-  noWebhooks: Aucun webhook n'est déclaré pour ces évènements.
 en:
   webhooks: "No webhook | 1 webhook | {count} webhooks"
   new: Add a webhook
   cancel: Cancel
   noWebhooks: No webhook is declared for these events.
+fr:
+  webhooks: "Aucun webhook | 1 webhook | {count} webhooks"
+  new: Ajouter un webhook
+  cancel: Annuler
+  noWebhooks: Aucun webhook n'est déclaré pour ces évènements.
 </i18n>
 
 <script lang="ts" setup>

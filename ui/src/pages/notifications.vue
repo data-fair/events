@@ -98,18 +98,18 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  notifications: "Aucune notification | {count} notification | {count} notifications"
-  new: "{count} nouvelle | {count} nouvelle | {count} nouvelles"
-  newNotification: Nouvelle notification
-  noNotifications: Vous n'avez pas encore reçu de notification.
-  manageSubscriptions: Gérer mes abonnements
 en:
   notifications: "No notification | {count} notification | {count} notifications"
   new: "{count} new | {count} new | {count} new"
   newNotification: New notification
   noNotifications: You have not received any notifications yet.
   manageSubscriptions: Manage my subscriptions
+fr:
+  notifications: "Aucune notification | {count} notification | {count} notifications"
+  new: "{count} nouvelle | {count} nouvelle | {count} nouvelles"
+  newNotification: Nouvelle notification
+  noNotifications: Vous n'avez pas encore reçu de notification.
+  manageSubscriptions: Gérer mes abonnements
 </i18n>
 
 <script lang="ts" setup>

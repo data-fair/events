@@ -29,12 +29,12 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  logged: Vous devez être connecté pour pouvoir configurer des Webhooks.
-  admin: Vous devez être administrateur pour pouvoir configurer des Webhooks.
 en:
   logged: You must be logged in to configure webhooks.
   admin: You must be an administrator to configure webhooks.
+fr:
+  logged: Vous devez être connecté pour pouvoir configurer des Webhooks.
+  admin: Vous devez être administrateur pour pouvoir configurer des Webhooks.
 </i18n>
 
 <script lang="ts" setup>

@@ -7,7 +7,7 @@ export default {
   required: ['id', 'type', 'deviceName', 'date'],
   properties: {
     id: {
-      title: 'Identifiant',
+      title: 'Identifier',
       oneOf: [
         { type: 'string' },
         {

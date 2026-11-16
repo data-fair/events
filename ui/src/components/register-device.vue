@@ -31,16 +31,16 @@
 </template>
 
 <i18n lang="yaml">
-fr:
-  register: Recevoir ici
-  registerDevice: Ce navigateur ne reçoit pas encore vos notifications.
-  blocked: Les notifications sont bloquées pour ce site dans votre navigateur. Autorisez-les dans les paramètres du site (icône à gauche de l'adresse), puis rechargez la page.
-  unsupported: L'envoi d'une notification à ce navigateur a échoué, il ne prend peut-être pas en charge les notifications push.
 en:
   register: Receive here
   registerDevice: This browser does not receive your notifications yet.
   blocked: Notifications are blocked for this site in your browser. Allow them in the site settings (icon left of the address), then reload the page.
   unsupported: Sending a notification to this browser failed, it may not support push notifications.
+fr:
+  register: Recevoir ici
+  registerDevice: Ce navigateur ne reçoit pas encore vos notifications.
+  blocked: Les notifications sont bloquées pour ce site dans votre navigateur. Autorisez-les dans les paramètres du site (icône à gauche de l'adresse), puis rechargez la page.
+  unsupported: L'envoi d'une notification à ce navigateur a échoué, il ne prend peut-être pas en charge les notifications push.
 </i18n>
 
 <script lang="ts" setup>

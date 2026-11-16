@@ -98,9 +98,16 @@ type Scenario = {
   params?: Record<string, string>
 }
 
+const session = useSession()
+const { dayjs } = useLocaleDayjs()
+
 const sender = 'organization:test1'
 // hosts pass topic titles in the language of the session, as data-fair does with its settings schema
-const topics = { key: 'dataset-finalized,dataset-error', title: 'Jeu de données finalisé,Erreur sur le jeu de données' }
+const topicTitles: Record<string, string> = {
+  en: 'Dataset finalized,Dataset error',
+  fr: 'Jeu de données finalisé,Erreur sur le jeu de données'
+}
+const topics = { key: 'dataset-finalized,dataset-error', title: topicTitles[session.lang.value] ?? topicTitles.en }
 
 const scenarios: Scenario[] = [
   { id: 'notification-queue', title: 'DfNotificationQueue', source: 'lib-vuetify/DfNotificationQueue.vue', component: '<df-notification-queue :events-url="$sitePath + \'/events\'" />' },
@@ -125,7 +132,7 @@ const frameTag = (scenario: Scenario) => `<d-frame src="${decodeURIComponent(fra
 
 const logs = reactive<Record<string, string[]>>({})
 const log = (id: string, type: string, detail?: unknown) => {
-  const line = `${new Date().toLocaleTimeString()} ${type}${detail === undefined ? '' : ' ' + JSON.stringify(detail)}`
+  const line = `${dayjs().format('LTS')} ${type}${detail === undefined ? '' : ' ' + JSON.stringify(detail)}`
   logs[id] = [line, ...(logs[id] ?? [])].slice(0, 8)
 }
 

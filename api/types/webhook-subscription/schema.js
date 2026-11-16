@@ -8,29 +8,29 @@ export default {
   properties: {
     _id: {
       type: 'string',
-      title: 'Identifiant',
+      title: 'Identifier',
       readOnly: true
     },
     title: {
       type: 'string',
-      title: 'Libellé de la souscription'
+      title: 'Subscription label'
     },
     // the sender is the owner of the topic
     sender: { $ref: 'https://github.com/data-fair/events/partial#/$defs/senderSubscribe' },
     owner: { $ref: 'https://github.com/data-fair/lib/session-state#/$defs/account' },
     topic: { $ref: 'https://github.com/data-fair/lib/event#/$defs/topicRef' },
-    url: { title: 'URL du webhook', type: 'string' },
+    url: { title: 'Webhook URL', type: 'string' },
     header: {
-      title: 'Header HTTP de sécurisation du webhook',
+      title: 'Webhook security HTTP header',
       type: 'object',
       properties: {
-        key: { type: 'string', title: 'Clé', 'x-cols': 6 },
-        value: { type: 'string', title: 'Valeur', 'x-cols': 6 } // TODO: encrypt this value
+        key: { type: 'string', title: 'Key', 'x-cols': 6 },
+        value: { type: 'string', title: 'Value', 'x-cols': 6 } // TODO: encrypt this value
       }
     },
     visibility: {
       type: 'string',
-      title: 'Visibilité des notifications à recevoir',
+      title: 'Visibility of the notifications to receive',
       enum: ['public', 'private'],
       default: 'private',
       readOnly: true

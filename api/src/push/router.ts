@@ -48,7 +48,7 @@ router.put('/registrations', async (req, res) => {
 
 // a shortcut to register current device
 router.post('/registrations', async (req, res) => {
-  const { user } = await session.reqAuthenticated(req)
+  const { user, lang } = await session.reqAuthenticated(req)
   const { body } = postRegistrationReq.returnValid(req, { name: 'req' })
   const date = new Date().toISOString()
   const newRegistration: DeviceRegistration = {
@@ -85,8 +85,10 @@ router.post('/registrations', async (req, res) => {
       topic: { key: 'new-device' },
       sender: { type: 'user', id: user.id, name: user.name },
       recipient: { id: user.id, name: user.name },
-      title: 'Un nouvel appareil recevra vos notifications',
-      body: `L'appareil ${newRegistration.deviceName} est confirmé comme destinataire de vos notifications.`,
+      title: lang === 'fr' ? 'Un nouvel appareil recevra vos notifications' : 'A new device will receive your notifications',
+      body: lang === 'fr'
+        ? `L'appareil ${newRegistration.deviceName} est confirmé comme destinataire de vos notifications.`
+        : `The device ${newRegistration.deviceName} is confirmed as a recipient of your notifications.`,
       date,
       icon: config.theme.notificationIcon || (origin + '/events/logo-192x192.png')
     }, newRegistration)
@@ -102,7 +104,7 @@ router.post('/registrations', async (req, res) => {
 })
 
 router.post('/registrations/:i/_test', async (req, res) => {
-  const { user } = await session.reqAuthenticated(req)
+  const { user, lang } = await session.reqAuthenticated(req)
   const ownerFilter = { 'owner.type': 'user', 'owner.id': user.id }
   const sub = await mongo.pushSubscriptions.findOne(ownerFilter)
   if (!sub) throw httpError(404)
@@ -118,7 +120,7 @@ router.post('/registrations/:i/_test', async (req, res) => {
     topic: { key: 'test-device' },
     sender: { type: 'user', id: user.id, name: user.name },
     recipient: { id: user.id, name: user.name },
-    title: 'Cet appareil est correctement configuré pour recevoir vos notifications',
+    title: lang === 'fr' ? 'Cet appareil est correctement configuré pour recevoir vos notifications' : 'This device is correctly set up to receive your notifications',
     date: new Date().toISOString(),
     icon: config.theme.notificationIcon || (origin + '/events/logo-192x192.png')
   }, i)
