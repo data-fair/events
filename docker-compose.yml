@@ -39,7 +39,7 @@ services:
       - SECRET_SITES=secret-sites
       - SECRET_EVENTS=secret-events
       - SECRET_SENDMAILS=secret-sendmails
-      # notification mails of this service go to maildev (optional, df-dev up maildev)
+      # notification mails of this service go to maildev (optional: npm run dev -- --profile maildev)
       - MAILDEV_ACTIVE=true
       - MAILDEV_URL=http://localhost:${MAILDEV_UI_PORT}
       # host network: sd's default SMTP localhost:1025 would reach another env's maildev
