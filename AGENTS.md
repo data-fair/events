@@ -31,6 +31,8 @@ never overwritten. Production names (`MONGO_URL`, `PRIVATE_DIRECTORY_URL`...) ov
 - Do not start, stop or restart the dev processes or containers of the user: ask.
 - Never `npm ci` / `npm install` while the env runs.
 
+Design specs and implementation plans are not kept in this repository; durable architecture docs live in `docs/architecture/`.
+
 ## Testing
 
 Run tests: `npm run test` (`npm run test-api-fast` stops at the first api failure while iterating)
