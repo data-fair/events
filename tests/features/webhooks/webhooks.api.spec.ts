@@ -5,8 +5,8 @@ import { startHookServer, closedPortUrl } from '../../support/hook-server.ts'
 
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })
-const admin1 = await axiosAuth('test1-admin1')
-const user1 = await axiosAuth('test-user1')
+const admin1 = await axiosAuth('test_events_org1_admin')
+const user1 = await axiosAuth('test_events_user1')
 
 // open a WS as this user and subscribe to a channel, resolves with the subscription outcome
 const wsSubscribe = async (ax: typeof admin1, channel: string) => {
@@ -25,12 +25,12 @@ const wsSubscribe = async (ax: typeof admin1, channel: string) => {
   return { ws, messages, outcome }
 }
 
-// helper to post event matching a webhook subscription owned by test1-admin1/test1
+// helper to post event matching a webhook subscription owned by test_events_org1_admin/test_events_org1
 const postMatchingEvent = (title: string) => axPush.post('/api/events', [{
   date: new Date().toISOString(),
   topic: { key: 'topic1' },
   title,
-  sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' },
+  sender: { type: 'organization', id: 'test_events_org1', name: 'Test Organization 1' },
   visibility: 'public'
 }])
 
@@ -41,7 +41,7 @@ test.describe('webhooks', () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Test webhook sub',
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1' },
+      sender: { type: 'organization', id: 'test_events_org1' },
       url: `${closedPortUrl}/hook`
     })
 
@@ -58,14 +58,14 @@ test.describe('webhooks', () => {
     const { data: subscription } = await admin1.post('/api/webhook-subscriptions', {
       title: 'Test webhook sub',
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1' },
+      sender: { type: 'organization', id: 'test_events_org1' },
       url: `${closedPortUrl}/hook`
     })
     await expect(user1.post('/api/webhook-subscriptions', {
       _id: subscription._id,
       title: 'Hijacked',
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1' },
+      sender: { type: 'organization', id: 'test_events_org1' },
       url: `${closedPortUrl}/other`
     })).rejects.toMatchObject({ status: 404 })
     const { data } = await admin1.get('/api/webhook-subscriptions')
@@ -84,7 +84,7 @@ test.describe('webhooks', () => {
         res.end()
       })
     })
-    const subscription = { title: 'Unsaved', topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test1' } }
+    const subscription = { title: 'Unsaved', topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test_events_org1' } }
 
     try {
       const { data } = await admin1.post('/api/webhook-subscriptions/_test', { ...subscription, url: hookServer.url, header: { key: 'X-Secret', value: 'mysecret' } })
@@ -116,7 +116,7 @@ test.describe('webhooks', () => {
       const { data } = await admin1.post('/api/webhook-subscriptions/_test', {
         title: 'Unsaved',
         topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'test1' },
+        sender: { type: 'organization', id: 'test_events_org1' },
         url: target.url
       })
       expect(data.error).toBeDefined()
@@ -150,7 +150,7 @@ test.describe('webhooks', () => {
       const { data } = await admin1.post('/api/webhook-subscriptions/_test', {
         title: 'Redirected',
         topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'test1' },
+        sender: { type: 'organization', id: 'test_events_org1' },
         url: target.url,
         header: { key: 'X-Secret', value: 'mysecret' }
       })
@@ -181,7 +181,7 @@ test.describe('webhooks', () => {
       await admin1.post('/api/webhook-subscriptions', {
         title: 'Test delivery',
         topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'test1' },
+        sender: { type: 'organization', id: 'test_events_org1' },
         url: hookServer.url,
         header: { key: 'X-Secret', value: 'mysecret' }
       })
@@ -218,7 +218,7 @@ test.describe('webhooks', () => {
       await admin1.post('/api/webhook-subscriptions', {
         title: 'Retry test',
         topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'test1' },
+        sender: { type: 'organization', id: 'test_events_org1' },
         url: hookServer.url
       })
 
@@ -244,7 +244,7 @@ test.describe('webhooks', () => {
       await admin1.post('/api/webhook-subscriptions', {
         title: 'Sub ' + key,
         topic: { key },
-        sender: { type: 'organization', id: 'test1' },
+        sender: { type: 'organization', id: 'test_events_org1' },
         url: `${closedPortUrl}/hook`
       })
     }
@@ -260,7 +260,7 @@ test.describe('webhooks', () => {
       const sub = (await admin1.post('/api/webhook-subscriptions', {
         title: 'WS progress',
         topic: { key: 'topic1' },
-        sender: { type: 'organization', id: 'test1' },
+        sender: { type: 'organization', id: 'test_events_org1' },
         url: hookServer.url
       })).data
       const channel = `${sub.owner.type}:${sub.owner.id}:webhook-subscriptions/${sub._id}/webhooks`
@@ -290,7 +290,7 @@ test.describe('webhooks', () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Cancel test',
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1' },
+      sender: { type: 'organization', id: 'test_events_org1' },
       url: `${closedPortUrl}/hook`
     })
 
@@ -308,7 +308,7 @@ test.describe('webhooks', () => {
     await admin1.post('/api/webhook-subscriptions', {
       title: 'Manual retry test',
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1' },
+      sender: { type: 'organization', id: 'test_events_org1' },
       url: `${closedPortUrl}/hook`
     })
 
@@ -329,8 +329,8 @@ test.describe('webhooks', () => {
     date: new Date().toISOString(),
     topic: { key: topicKey },
     title,
-    sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' },
-    // public like postMatchingEvent: admin1's subscriptions to test1 are forced to public visibility
+    sender: { type: 'organization', id: 'test_events_org1', name: 'Test Organization 1' },
+    // public like postMatchingEvent: admin1's subscriptions to test_events_org1 are forced to public visibility
     visibility: 'public',
     channels: ['webhooks'],
     coalesce: true
@@ -338,7 +338,7 @@ test.describe('webhooks', () => {
 
   const seedWebhook = (sub: any, _id: string, fields: Record<string, any>) => axDev.post('/api/test-env/webhooks', {
     _id,
-    sender: { type: 'organization', id: 'test1' },
+    sender: { type: 'organization', id: 'test_events_org1' },
     owner: sub.owner,
     subscription: { _id: sub._id, title: sub.title },
     notification: { title: 'old', topic: { key: 'topic1' }, date: new Date().toISOString() },
@@ -347,7 +347,7 @@ test.describe('webhooks', () => {
   })
 
   const createSub = async (topicKey = 'topic1') => (await admin1.post('/api/webhook-subscriptions', {
-    title: 'coalesce test', topic: { key: topicKey }, sender: { type: 'organization', id: 'test1' }, url: `${closedPortUrl}/hook`
+    title: 'coalesce test', topic: { key: topicKey }, sender: { type: 'organization', id: 'test_events_org1' }, url: `${closedPortUrl}/hook`
   })).data
 
   test('coalesce resets a delivered webhook instead of queuing another', async () => {

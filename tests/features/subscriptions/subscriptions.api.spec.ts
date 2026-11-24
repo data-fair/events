@@ -3,9 +3,9 @@ import WebSocket from 'ws'
 import { axios, axiosAuth, clean, devBaseURL } from '../../support/axios.ts'
 
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
-const user1 = await axiosAuth('test-user1')
-const user2 = await axiosAuth('test-user2')
-const admin1 = await axiosAuth('test1-admin1')
+const user1 = await axiosAuth('test_events_user1')
+const user2 = await axiosAuth('test_events_user2')
+const admin1 = await axiosAuth('test_events_org1_admin')
 
 test.describe('subscriptions', () => {
   test.beforeEach(clean)
@@ -14,22 +14,22 @@ test.describe('subscriptions', () => {
     await expect(user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
       recipient: { id: 'anotheruser' },
-      sender: { type: 'user', id: 'test-user1' }
+      sender: { type: 'user', id: 'test_events_user1' }
     })).rejects.toMatchObject({ status: 403 })
   })
 
   test('should not update the subscription of another user', async () => {
     const { data: subscription } = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'test-user1' }
+      sender: { type: 'user', id: 'test_events_user1' }
     })
     await expect(user2.post('/api/subscriptions', {
       _id: subscription._id,
       topic: { key: 'topic2' },
-      sender: { type: 'user', id: 'test-user1' }
+      sender: { type: 'user', id: 'test_events_user1' }
     })).rejects.toMatchObject({ status: 403 })
     const { data } = await user1.get('/api/subscriptions/' + subscription._id)
-    expect(data.recipient.id).toBe('test-user1')
+    expect(data.recipient.id).toBe('test_events_user1')
     expect(data.topic.key).toBe('topic1')
   })
 
@@ -38,7 +38,7 @@ test.describe('subscriptions', () => {
     const portalHost = `portal.localhost:${process.env.NGINX_PORT}`
     const { data: subscription } = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'test-user1' }
+      sender: { type: 'user', id: 'test_events_user1' }
     }, { headers: { host: portalHost } })
     expect(subscription.origin).toBe(`http://${portalHost}`)
 
@@ -50,21 +50,21 @@ test.describe('subscriptions', () => {
 
   test('should filter subscriptions on the department of the sender', async () => {
     for (const department of [undefined, '*', 'dep1']) {
-      await user1.post('/api/subscriptions', { topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test2', ...(department && { department }) } })
+      await user1.post('/api/subscriptions', { topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test_events_org2', ...(department && { department }) } })
     }
     const departments = async (sender: string) => (await user1.get('/api/subscriptions', { params: { sender } })).data.results
       .map((s: any) => s.sender.department ?? '').sort()
-    expect(await departments('organization:test2')).toEqual(['', '*', 'dep1'])
-    expect(await departments('organization:test2:')).toEqual([''])
-    expect(await departments('organization:test2:-')).toEqual([''])
-    expect(await departments('organization:test2:*')).toEqual(['*'])
-    expect(await departments('organization:test2:dep1')).toEqual(['dep1'])
+    expect(await departments('organization:test_events_org2')).toEqual(['', '*', 'dep1'])
+    expect(await departments('organization:test_events_org2:')).toEqual([''])
+    expect(await departments('organization:test_events_org2:-')).toEqual([''])
+    expect(await departments('organization:test_events_org2:*')).toEqual(['*'])
+    expect(await departments('organization:test_events_org2:dep1')).toEqual(['dep1'])
   })
 
   test('should send a public notification to any subscribed user', { tag: '@smoke' }, async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'test-user1' },
+      sender: { type: 'user', id: 'test_events_user1' },
       visibility: 'public'
     }
     await admin1.post('/api/subscriptions', subscription)
@@ -80,7 +80,7 @@ test.describe('subscriptions', () => {
       topic: { key: 'topic1' },
       title: 'a notification',
       body: 'a notification from host {hostname}',
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' },
       visibility: 'public'
     }])
     res = await admin1.get('/api/notifications')
@@ -95,7 +95,7 @@ test.describe('subscriptions', () => {
   test('should send a private notification only to member of sender organization', async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1' }
+      sender: { type: 'organization', id: 'test_events_org1' }
     }
     let res = await admin1.post('/api/subscriptions', subscription)
     expect(res.data.visibility).toBe('private')
@@ -108,7 +108,7 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' }
+      sender: { type: 'organization', id: 'test_events_org1', name: 'Test Organization 1' }
     }])
     res = await admin1.get('/api/notifications')
     expect(res.data.count).toBe(1)
@@ -121,7 +121,7 @@ test.describe('subscriptions', () => {
   test('should send a private notification only to member of sender organization with certain role', async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1', role: 'admin' }
+      sender: { type: 'organization', id: 'test_events_org1', role: 'admin' }
     }
     let res = await admin1.post('/api/subscriptions', subscription)
     expect(res.data.visibility).toBe('private')
@@ -132,7 +132,7 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'test1', role: 'admin', name: 'Test Organization 1' }
+      sender: { type: 'organization', id: 'test_events_org1', role: 'admin', name: 'Test Organization 1' }
     }])
     res = await admin1.get('/api/notifications')
     expect(res.data.count).toBe(1)
@@ -143,7 +143,7 @@ test.describe('subscriptions', () => {
   test('should not send a global private notification to member of a department in sender organization', async () => {
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test2' }
+      sender: { type: 'organization', id: 'test_events_org2' }
     }
     let res = await user2.post('/api/subscriptions', subscription)
     expect(res.data.visibility).toBe('public')
@@ -152,7 +152,7 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'test2', name: 'Test Organization 2' }
+      sender: { type: 'organization', id: 'test_events_org2', name: 'Test Organization 2' }
     }])
     res = await user2.get('/api/notifications')
     expect(res.data.count).toBe(0)
@@ -161,12 +161,12 @@ test.describe('subscriptions', () => {
   test('should send a notification to any department', async () => {
     let res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test2', department: 'dep1', name: 'Test Organization 2' }
+      sender: { type: 'organization', id: 'test_events_org2', department: 'dep1', name: 'Test Organization 2' }
     })
     expect(res.data.visibility).toBe('private')
     res = await user2.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test2', department: 'dep2', name: 'Test Organization 2' }
+      sender: { type: 'organization', id: 'test_events_org2', department: 'dep2', name: 'Test Organization 2' }
     })
     expect(res.data.visibility).toBe('private')
 
@@ -174,7 +174,7 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'test2', department: '*', name: 'Test Organization 2' }
+      sender: { type: 'organization', id: 'test_events_org2', department: '*', name: 'Test Organization 2' }
     }])
 
     res = await user2.get('/api/notifications')
@@ -187,7 +187,7 @@ test.describe('subscriptions', () => {
     // a root member subscribes to every department of the org using the '*' wildcard
     const res = await admin1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1', department: '*', name: 'Test Organization 1' }
+      sender: { type: 'organization', id: 'test_events_org1', department: '*', name: 'Test Organization 1' }
     })
     expect(res.data.visibility).toBe('private')
 
@@ -196,14 +196,14 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a root notification',
-      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' }
+      sender: { type: 'organization', id: 'test_events_org1', name: 'Test Organization 1' }
     }])
     // a departmental event must also reach the wildcard subscription
     await axPush.post('/api/events', [{
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a departmental notification',
-      sender: { type: 'organization', id: 'test1', department: 'dep1', name: 'Test Organization 1' }
+      sender: { type: 'organization', id: 'test_events_org1', department: 'dep1', name: 'Test Organization 1' }
     }])
 
     const notifs = await admin1.get('/api/notifications')
@@ -213,12 +213,12 @@ test.describe('subscriptions', () => {
   test('should send a private department notification to member of right department in sender organization', async () => {
     let res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test2', department: 'dep2' }
+      sender: { type: 'organization', id: 'test_events_org2', department: 'dep2' }
     })
     expect(res.data.visibility).toBe('public')
     res = await user2.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test2', department: 'dep2' }
+      sender: { type: 'organization', id: 'test_events_org2', department: 'dep2' }
     })
     expect(res.data.visibility).toBe('private')
 
@@ -226,7 +226,7 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'organization', id: 'test2', department: 'dep2', name: 'Test Organization 2' }
+      sender: { type: 'organization', id: 'test_events_org2', department: 'dep2', name: 'Test Organization 2' }
     }])
     res = await user2.get('/api/notifications')
     expect(res.data.count).toBe(1)
@@ -235,14 +235,14 @@ test.describe('subscriptions', () => {
   })
 
   test('should keep the regular links of notifications and remove the unsafe ones', async () => {
-    const sender = { type: 'user', id: 'test-user1', name: 'User 1' }
+    const sender = { type: 'user', id: 'test_events_user1', name: 'User 1' }
     await user1.post('/api/subscriptions', { topic: { key: 'safe' }, sender, urlTemplate: '/data-fair/dataset/communes' })
     await user1.post('/api/subscriptions', { topic: { key: 'unsafe' }, sender, urlTemplate: 'javascript:alert(1)' })
     for (const key of ['safe', 'unsafe']) {
       await axPush.post('/api/events', [{ date: new Date().toISOString(), topic: { key }, title: key, sender }])
     }
-    await axPush.post('/api/notifications', { topic: { key: 'direct' }, sender, title: 'direct', recipient: { id: 'test-user1' }, url: 'javascript:alert(1)' })
-    await axPush.post('/api/notifications', { topic: { key: 'direct-safe' }, sender, title: 'direct-safe', recipient: { id: 'test-user1' }, url: 'https://example.com/a' })
+    await axPush.post('/api/notifications', { topic: { key: 'direct' }, sender, title: 'direct', recipient: { id: 'test_events_user1' }, url: 'javascript:alert(1)' })
+    await axPush.post('/api/notifications', { topic: { key: 'direct-safe' }, sender, title: 'direct-safe', recipient: { id: 'test_events_user1' }, url: 'https://example.com/a' })
 
     const { data } = await user1.get('/api/notifications')
     const urls = Object.fromEntries(data.results.map((n: any) => [n.title, n.url]))
@@ -257,9 +257,9 @@ test.describe('subscriptions', () => {
       topic: { key: 'topic1' },
       title: 'a notification',
       body: 'a notification from host {hostname}',
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' },
       visibility: 'public',
-      recipient: { id: 'test1-admin1' }
+      recipient: { id: 'test_events_org1_admin' }
     }
     let res = await axPush.post('/api/notifications', notif, { params: { subscribedOnly: 'true' } })
     res = await admin1.get('/api/notifications')
@@ -267,7 +267,7 @@ test.describe('subscriptions', () => {
 
     const subscription = {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'test-user1' },
+      sender: { type: 'user', id: 'test_events_user1' },
       visibility: 'public'
     }
     await admin1.post('/api/subscriptions', subscription)
@@ -311,17 +311,17 @@ test.describe('subscriptions', () => {
     // user1 is subscribed in 2 different manners
     let res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic1' },
-      sender: { type: 'organization', id: 'test1' }
+      sender: { type: 'organization', id: 'test_events_org1' }
     })
     res = await user1.post('/api/subscriptions', {
       topic: { key: 'topic2' },
-      sender: { type: 'organization', id: 'test1' }
+      sender: { type: 'organization', id: 'test_events_org1' }
     })
 
     // admin is subscribed in the second manner only
     res = await admin1.post('/api/subscriptions', {
       topic: { key: 'topic2' },
-      sender: { type: 'organization', id: 'test1' }
+      sender: { type: 'organization', id: 'test_events_org1' }
     })
 
     res = await axPush.post('/api/events', [{
@@ -329,14 +329,14 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'notif 1',
-      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' }
+      sender: { type: 'organization', id: 'test_events_org1', name: 'Test Organization 1' }
     }])
     res = await axPush.post('/api/events', [{
       _id: 'test',
       date: new Date().toISOString(),
       topic: { key: 'topic2' },
       title: 'notif 2',
-      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' }
+      sender: { type: 'organization', id: 'test_events_org1', name: 'Test Organization 1' }
     }])
     res = await admin1.get('/api/notifications')
     expect(res.data.count).toBe(1)
@@ -350,7 +350,7 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic2' },
       title: 'notif 2',
-      recipient: { id: 'test-user1' }
+      recipient: { id: 'test_events_user1' }
     })
     res = await user1.get('/api/notifications')
     expect(res.data.count).toBe(2)
@@ -361,7 +361,7 @@ test.describe('subscriptions', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic2' },
       title: 'notif 2',
-      recipient: { id: 'test-user1' }
+      recipient: { id: 'test_events_user1' }
     })
     res = await user1.get('/api/notifications')
     expect(res.data.count).toBe(2)
@@ -378,24 +378,24 @@ test.describe('subscriptions', () => {
         if (msg.type === 'subscribe-confirm') resolve()
         if (msg.type === 'message') messages.push(msg)
       })
-      ws.on('open', () => ws.send(JSON.stringify({ type: 'subscribe', channel: 'user:test-user1:notifications' })))
+      ws.on('open', () => ws.send(JSON.stringify({ type: 'subscribe', channel: 'user:test_events_user1:notifications' })))
       ws.on('error', reject)
     })
 
     await axPush.post('/api/notifications', {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' },
       title: 'notif direct 1',
-      recipient: { id: 'test-user1' }
+      recipient: { id: 'test_events_user1' }
     })
     await expect.poll(() => messages.length).toBe(1)
     expect(messages[0].data.title).toBe('notif direct 1')
 
     await axPush.post('/api/notifications', {
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' },
       title: 'notif direct 2',
-      recipient: { id: 'test-user1' }
+      recipient: { id: 'test_events_user1' }
     })
     await expect.poll(() => messages.length).toBe(2)
     expect(messages[1].data.title).toBe('notif direct 2')
@@ -404,18 +404,18 @@ test.describe('subscriptions', () => {
     await axPush.post('/api/notifications', {
       eventId: 'ws-dedup',
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' },
       title: 'notif dedup',
-      recipient: { id: 'test-user1' }
+      recipient: { id: 'test_events_user1' }
     })
     await expect.poll(() => messages.length).toBe(3)
 
     await axPush.post('/api/notifications', {
       eventId: 'ws-dedup',
       topic: { key: 'topic1' },
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' },
       title: 'notif dedup',
-      recipient: { id: 'test-user1' }
+      recipient: { id: 'test_events_user1' }
     })
     // nothing must come: give it the time a message took above
     await new Promise(resolve => setTimeout(resolve, 200))

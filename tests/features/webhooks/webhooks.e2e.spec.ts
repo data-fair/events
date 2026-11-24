@@ -4,7 +4,7 @@ import { axiosAuth, clean } from '../../support/axios.ts'
 import { closedPortUrl, startHookServer } from '../../support/hook-server.ts'
 
 const pageUrl = (keys: string[], titles: string[]) =>
-  `/events/embed/subscribe-webhooks?key=${keys.join(',')}&title=${titles.join(',')}&sender=user:test-user1`
+  `/events/embed/subscribe-webhooks?key=${keys.join(',')}&title=${titles.join(',')}&sender=user:test_events_user1`
 
 const saveButton = (page: Page) => page.getByRole('button', { name: 'Save' }).first()
 const addButton = (page: Page) => page.getByRole('button', { name: 'Add', exact: true })
@@ -13,7 +13,7 @@ test.describe('Webhooks UI', () => {
   test.beforeEach(clean)
 
   test('creates a webhook on a chosen topic', async ({ page, goToWithAuth }) => {
-    await goToWithAuth(pageUrl(['topic1', 'topic2'], ['TopicOne', 'TopicTwo']), 'test-user1')
+    await goToWithAuth(pageUrl(['topic1', 'topic2'], ['TopicOne', 'TopicTwo']), 'test_events_user1')
     await page.getByRole('button', { name: 'Add a webhook' }).click()
     await expect(addButton(page)).toBeDisabled()
 
@@ -33,32 +33,32 @@ test.describe('Webhooks UI', () => {
   })
 
   test('tests a webhook before adding it', async ({ page, goToWithAuth }) => {
-    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
+    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test_events_user1')
     await page.getByRole('button', { name: 'Add a webhook' }).click()
     await page.getByLabel('Label', { exact: true }).fill('Not yet added')
     await page.getByLabel('URL').fill(`${closedPortUrl}/hook`)
     await page.getByRole('button', { name: 'Test', exact: true }).click()
     await expect(page.getByText(/Sending failed: connect ECONNREFUSED/)).toBeVisible()
-    expect((await (await axiosAuth('test-user1')).get('/api/webhook-subscriptions')).data.count).toBe(0)
+    expect((await (await axiosAuth('test_events_user1')).get('/api/webhook-subscriptions')).data.count).toBe(0)
   })
 
   test('does not propose a topic selector for a single topic', async ({ page, goToWithAuth }) => {
-    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
+    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test_events_user1')
     await page.getByRole('button', { name: 'Add a webhook' }).click()
     await expect(page.getByLabel('Label', { exact: true })).toBeVisible()
     await expect(page.locator('.v-select')).toHaveCount(0)
   })
 
   test('edits an existing webhook', async ({ page, goToWithAuth }) => {
-    const user1 = await axiosAuth('test-user1')
+    const user1 = await axiosAuth('test_events_user1')
     await user1.post('/api/webhook-subscriptions', {
       title: 'Existing webhook',
       topic: { key: 'topic1', title: 'TopicOne' },
-      sender: { type: 'user', id: 'test-user1' },
+      sender: { type: 'user', id: 'test_events_user1' },
       url: 'https://example.com/hook'
     })
 
-    await goToWithAuth(pageUrl(['topic1', 'topic2'], ['TopicOne', 'TopicTwo']), 'test-user1')
+    await goToWithAuth(pageUrl(['topic1', 'topic2'], ['TopicOne', 'TopicTwo']), 'test_events_user1')
     await page.getByRole('button', { name: /Existing webhook/ }).click()
     await expect(saveButton(page)).toBeDisabled()
 
@@ -80,15 +80,15 @@ test.describe('Webhooks UI', () => {
   })
 
   test('deletes a webhook', async ({ page, goToWithAuth }) => {
-    const user1 = await axiosAuth('test-user1')
+    const user1 = await axiosAuth('test_events_user1')
     await user1.post('/api/webhook-subscriptions', {
       title: 'Doomed webhook',
       topic: { key: 'topic1', title: 'TopicOne' },
-      sender: { type: 'user', id: 'test-user1' },
+      sender: { type: 'user', id: 'test_events_user1' },
       url: 'https://example.com/hook'
     })
 
-    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
+    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test_events_user1')
     await page.getByRole('button', { name: /Doomed webhook/ }).click()
     await page.getByRole('button', { name: 'Delete' }).click()
     await expect(page.getByText('The webhook "Doomed webhook" will no longer be called.', { exact: false })).toBeVisible()
@@ -100,17 +100,17 @@ test.describe('Webhooks UI', () => {
 
   test('shows the progress of a test call without refreshing', async ({ page, goToWithAuth }) => {
     const target = await startHookServer(req => { req.resume() })
-    const user1 = await axiosAuth('test-user1')
+    const user1 = await axiosAuth('test_events_user1')
     await user1.post('/api/webhook-subscriptions', {
       title: 'Tested webhook',
       topic: { key: 'topic1', title: 'TopicOne' },
-      sender: { type: 'user', id: 'test-user1' },
+      sender: { type: 'user', id: 'test_events_user1' },
       // never answers: the delivery stays visible as working until its timeout, then ends in error.
       // A closed port fails at once, the worker could go through both statuses before an assertion
       url: target.url
     })
 
-    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test-user1')
+    await goToWithAuth(pageUrl(['topic1'], ['TopicOne']), 'test_events_user1')
     await page.getByRole('button', { name: /Tested webhook/ }).click()
     await expect(page.getByText('This webhook has not been called yet.')).toBeVisible()
 

@@ -22,7 +22,7 @@ const sessions = new Map<string, { at: number, cookies: Cookies }>()
 const apiLogin = async (user: string): Promise<Cookies> => {
   const ctx = await request.newContext()
   try {
-    const password = user === 'superadmin' ? 'superpasswd' : 'passwd'
+    const password = 'passwd'
     const res = await ctx.post(`${directoryUrl}/api/auth/password`, {
       params: { redirect: `${baseUrl}/events/` },
       data: { email: `${user}@test.com`, password }

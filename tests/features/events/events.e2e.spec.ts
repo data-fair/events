@@ -8,7 +8,7 @@ test.describe('Events UI', () => {
   test.beforeEach(clean)
 
   test('shows empty state when no events', async ({ page, goToWithAuth }) => {
-    await goToWithAuth('/events/embed/events', 'test-user1')
+    await goToWithAuth('/events/embed/events', 'test_events_user1')
     await expect(page.getByText('No activity yet.')).toBeVisible()
   })
 
@@ -17,10 +17,10 @@ test.describe('Events UI', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'My test event',
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     }])
 
-    await goToWithAuth('/events/embed/events', 'test-user1')
+    await goToWithAuth('/events/embed/events', 'test_events_user1')
     await expect(page.getByText('My test event')).toBeVisible()
   })
 
@@ -30,17 +30,17 @@ test.describe('Events UI', () => {
       date: new Date(now - i * 1000).toISOString(),
       topic: { key: 'topic1' },
       title: `event ${i}`,
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     })))
     const events = page.getByText(/^event \d+$/)
 
     // a tab of a resource page, the iframe grows with the list
-    await goToWithAuth('/events/embed/events', 'test-user1')
+    await goToWithAuth('/events/embed/events', 'test_events_user1')
     await expect(events).toHaveCount(5)
     await page.getByRole('button', { name: 'See more' }).click()
     await expect(events).toHaveCount(25)
 
-    await goToWithAuth('/events/events', 'test-user1')
+    await goToWithAuth('/events/events', 'test_events_user1')
     await expect(events).toHaveCount(20)
   })
 
@@ -50,20 +50,20 @@ test.describe('Events UI', () => {
       date: new Date(now - i * 1000).toISOString(),
       topic: { key: 'topic1' },
       title: `activity ${i}`,
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' },
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' },
       originator
     })
     await axPush.post('/api/events', [
       event(0, { internalProcess: { id: 'worker', title: 'Worker' } }),
       event(1, { apiKey: { id: 'key1', title: 'Import key' } }),
       // the API hides the identity of a platform admin
-      event(2, { user: { id: 'superadmin', name: 'Super Admin', admin: true } }),
-      event(3, { user: { id: 'test-user1', name: 'User 1' } }),
+      event(2, { user: { id: 'test_events_superadmin', name: 'Super Admin', admin: true } }),
+      event(3, { user: { id: 'test_events_user1', name: 'User 1' } }),
       event(4, {}),
       event(5, {})
     ])
 
-    await goToWithAuth('/events/embed/events-compact', 'test-user1')
+    await goToWithAuth('/events/embed/events-compact', 'test_events_user1')
     const timeline = page.locator('.v-timeline')
     await expect(timeline.getByText(/^activity \d$/)).toHaveCount(5)
     await expect(timeline.getByText('activity 5')).toHaveCount(0)

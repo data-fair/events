@@ -42,7 +42,7 @@ If a test fails with a connection error, read the api logs (`dev/logs/api.log` b
 
 Test users are defined in @dev/resources/users.json and organizations in @dev/resources/organizations.json. Modify these as little as possible, but if you do you need to ask the user to reload the simple-directory container.
 
-Scope tests use the non-human identity `test1-scope-nhi` (admin of `test1`, declared in @dev/resources/users.json) through `nhiSession(scope?)` in @tests/support/nhi.ts: it returns cookie and bearer clients for a session limited to the requested scope. It needs the simple-directory `master` image (scoped NHI token exchange, `MANAGE_NHIS`).
+Scope tests use the non-human identity `test_events_org1_scope_nhi` (admin of `test_events_org1`, declared in @dev/resources/users.json) through `nhiSession(scope?)` in @tests/support/nhi.ts: it returns cookie and bearer clients for a session limited to the requested scope. It needs the simple-directory `master` image (scoped NHI token exchange, `MANAGE_NHIS`).
 
 Specs live in `tests/features/<feature>/` (`<name>.unit|api|e2e.spec.ts`); setups, fixtures and support helpers stay at the root of `tests/`. Tests are separated in playwright projects: unit (pure functions), api (stateful API endpoints through HTTP) and e2e (UI with playwright browser instrumentation). When working on the e2e part you can use subagents `playwright-test-generator` and `playwright-test-healer`.
 

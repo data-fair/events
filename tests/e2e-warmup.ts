@@ -6,11 +6,11 @@ import { test as setup } from './fixtures/login.ts'
 // individual e2e specs fast and reliable.
 setup('warmup heavy dev routes', async ({ page, goToWithAuth }) => {
   // /events/dev hosts the notification-queue component, the heaviest first compile
-  await goToWithAuth('/events/dev', 'test-user1')
+  await goToWithAuth('/events/dev', 'test_events_user1')
   await expect(page.getByRole('button', { name: 'Open notification list' })).toBeVisible({ timeout: 60_000 })
 
   // embed routes exercised by the other e2e specs
   for (const route of ['/events/embed/events', '/events/embed/notifications', '/events/embed/subscriptions', '/events/embed/subscribe-webhooks']) {
-    await goToWithAuth(route, 'test-user1')
+    await goToWithAuth(route, 'test_events_user1')
   }
 })

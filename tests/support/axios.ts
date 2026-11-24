@@ -17,7 +17,7 @@ export const axios = (opts = {}) => axiosBuilder({ ...axiosOpts, ...opts })
 const anonymousAx = axios()
 
 export const axiosAuth = (user: string, opts?: { adminMode?: boolean }) => {
-  const password = user === 'superadmin' ? 'superpasswd' : 'passwd'
+  const password = 'passwd'
   return _axiosAuth({ email: user + '@test.com', password, adminMode: opts?.adminMode, axiosOpts, directoryUrl })
 }
 

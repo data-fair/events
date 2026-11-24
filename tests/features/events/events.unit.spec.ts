@@ -117,10 +117,10 @@ test.describe('getSubscriptionsFilter', () => {
   test('subscribedRecipient sets recipient filter', () => {
     const event: any = {
       topic: { key: 't' },
-      subscribedRecipient: { id: 'test-user1' }
+      subscribedRecipient: { id: 'test_events_user1' }
     }
     const filter = getSubscriptionsFilter(event)
-    expect(filter['recipient.id']).toBe('test-user1')
+    expect(filter['recipient.id']).toBe('test_events_user1')
   })
 })
 
@@ -207,14 +207,14 @@ test.describe('buildSearchTexts', () => {
       date: '2024-01-01',
       visibility: 'private',
       _search: [],
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     }
     const result = buildSearchTexts(event, ['fr', 'en'], 'fr')
     expect(result).toHaveLength(2)
     expect(result[0].language).toBe('fr')
     expect(result[0].text).toContain('Titre')
     expect(result[0].text).toContain('Topic')
-    expect(result[0].text).toContain('test-user1')
+    expect(result[0].text).toContain('test_events_user1')
     expect(result[1].language).toBe('en')
     expect(result[1].text).toContain('Title')
   })
