@@ -11,6 +11,7 @@
     "dev-setup": "bash dev/setup.sh",
     "dev:api": "cd api && FORCE_COLOR=1 NODE_ENV=development DEBUG=upgrade,webpush exec ../node_modules/.bin/nodemon -e js,mjs,ts,json index.ts",
     "dev:ui": "cd ui && FORCE_COLOR=1 NODE_CONFIG_DIR=../api/config/ exec ../node_modules/.bin/vite --port ${DEV_UI_PORT}",
+    "dev-world": "node dev/world.ts",
     "stop-dev-deps": "docker compose --profile '*' stop",
     "dev-send-notifications": "NODE_ENV=development node dev/scripts/send-notifications.ts",
     "lint": "eslint . && npm -w ui run lint",

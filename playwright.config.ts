@@ -3,6 +3,8 @@ import 'dotenv/config'
 
 export default defineConfig({
   testDir: './tests',
+  // the test accounts in simple-directory, before the spec files (which log in at import time) are loaded
+  globalSetup: './tests/global-setup.ts',
   // the api and e2e tests share the state of one dev env
   workers: 1,
   fullyParallel: false,
@@ -27,7 +29,8 @@ export default defineConfig({
   projects: [
     // no server, no shared state
     { name: 'unit', testMatch: /.*\.unit\.spec\.ts/, fullyParallel: true },
-    { name: 'state-setup', testMatch: /state-setup\.ts/ },
+    { name: 'state-setup', testMatch: /state-setup\.ts/, teardown: 'state-teardown' },
+    { name: 'state-teardown', testMatch: /state-teardown\.ts/ },
     { name: 'api', testMatch: /.*\.api\.spec\.ts/, dependencies: ['state-setup'] },
     {
       // the first hit on each Vite dev route triggers an on-demand compile that

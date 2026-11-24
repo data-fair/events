@@ -44,7 +44,7 @@ const links = [
   ['/events/events', 'Events'],
   ['/events/notifications', 'Notifications'],
   ['/events/subscriptions', 'Subscriptions'],
-  ['/events/embed/subscribe?key=topic1,topic2&title=Topic 1,Topic 2&sender=organization:test1', 'Subscribe'],
+  ['/events/embed/subscribe?key=topic1,topic2&title=Topic 1,Topic 2&sender=organization:test_demo_org', 'Subscribe'],
   ['/events/embed/subscribe-webhooks?key=topic1&title=Topic 1', 'Webhooks'],
   ['/events/embed/devices', 'Devices']
 ]

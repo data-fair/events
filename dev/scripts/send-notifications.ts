@@ -10,13 +10,13 @@ const postEvent = async (events: PostEventReq['body']) => {
 
 await postEvent([{
   title: 'A notification ' + new Date().toISOString(),
-  sender: { type: 'organization', id: 'dev1' },
+  sender: { type: 'organization', id: 'test_demo_org' },
   topic: { key: 'topic1', title: 'Topic 1' },
   date: new Date().toISOString(),
   resource: { type: 'dataset', id: 'dataset1', title: 'Dataset 1' },
   originator: {
-    user: { id: 'dev-user1', name: 'Dev User 1' },
-    organization: { id: 'dev1', name: 'Dev Organization' }
+    user: { id: 'test_demo_dev', name: 'Dev User' },
+    organization: { id: 'test_demo_org', name: 'Fixtures Demo' }
   }
 }])
 

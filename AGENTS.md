@@ -40,9 +40,11 @@ On a failure the last lines of the api logs are attached to the trace (`npx play
 
 If a test fails with a connection error, read the api logs (`dev/logs/api.log` by default) to diagnose, then stop and ask the user for help.
 
-Test users are defined in @dev/resources/users.json and organizations in @dev/resources/organizations.json. Modify these as little as possible, but if you do you need to ask the user to reload the simple-directory container.
+Test accounts live in simple-directory's mongo storage, in the prefixed sub-space `test_events_` (@tests/support/sd-fixtures.ts): @tests/global-setup.ts upserts them before the spec files are loaded (they log in at import time), and @tests/state-setup.ts cleans and seeds them again under the stateful lock (@tests/support/stateful-lock.ts: one api/e2e run at a time). `clean()` and the state setup call `DELETE /api/test-env?prefix=test_events_`, which removes only what the accounts of that prefix own (400 without a valid `test_<suite>_` prefix): other sub-spaces sharing the database are left alone. Every test account uses the password `passwd`; `test_events_superadmin@test.com` is the simple-directory admin.
 
-Scope tests use the non-human identity `test_events_org1_scope_nhi` (admin of `test_events_org1`, declared in @dev/resources/users.json) through `nhiSession(scope?)` in @tests/support/nhi.ts: it returns cookie and bearer clients for a session limited to the requested scope. It needs the simple-directory `master` image (scoped NHI token exchange, `MANAGE_NHIS`).
+The dev world `test_demo_` (@dev/resources/demo-world.json, seeded by `npm run dev-world`, part of `npm run dev-deps`) is never cleaned by the tests: log in as `test_demo_dev@example.org` / `passwd`.
+
+Scope tests use the non-human identity `test_events_org1_scope_nhi` (admin of `test_events_org1`, declared in @tests/support/sd-fixtures.ts) through `nhiSession(scope?)` in @tests/support/nhi.ts: it returns cookie and bearer clients for a session limited to the requested scope. It needs the simple-directory `master` image (scoped NHI token exchange, `MANAGE_NHIS`).
 
 Specs live in `tests/features/<feature>/` (`<name>.unit|api|e2e.spec.ts`); setups, fixtures and support helpers stay at the root of `tests/`. Tests are separated in playwright projects: unit (pure functions), api (stateful API endpoints through HTTP) and e2e (UI with playwright browser instrumentation). When working on the e2e part you can use subagents `playwright-test-generator` and `playwright-test-healer`.
 

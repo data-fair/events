@@ -101,7 +101,7 @@ type Scenario = {
 const session = useSession()
 const { dayjs } = useLocaleDayjs()
 
-const sender = 'organization:test1'
+const sender = 'organization:test_demo_org'
 // hosts pass topic titles in the language of the session, as data-fair does with its settings schema
 const topicTitles: Record<string, string> = {
   en: 'Dataset finalized,Dataset error',
