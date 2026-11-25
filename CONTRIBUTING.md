@@ -47,10 +47,11 @@ and `DEV_LOG_PREFIX` set where `npm run dev` writes the logs of the processes.
 The fixed ports mean one environment per machine: stop the containers of one checkout
 (`npm run stop-dev-deps`) before starting another.
 
-To send notifications in the dev environment you can edit and run [send-notifications.ts](dev/scripts/send-notifications.ts):
+To send notifications in the dev environment you can edit and run [send-notifications.ts](dev/scripts/send-notifications.ts),
+with the organization that sends them and optionally the user shown as their originator:
 
 ```
-npm run dev-send-notifications
+npm run dev-send-notifications -- <organization id> [<user id>]
 ```
 
 ## Working on types
