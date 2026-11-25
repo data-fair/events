@@ -48,7 +48,7 @@ The repository ships no dev data. To play around manually, seed an account of yo
 
 Scope tests use the non-human identity `test_events_org1_scope_nhi` (admin of `test_events_org1`, declared in @tests/support/sd-fixtures.ts) through `nhiSession(scope?)` in @tests/support/nhi.ts: it returns cookie and bearer clients for a session limited to the requested scope. It needs the simple-directory `master` image (scoped NHI token exchange, `MANAGE_NHIS`).
 
-Specs live in `tests/features/<feature>/` (`<name>.unit|api|e2e.spec.ts`); setups, fixtures and support helpers stay at the root of `tests/`. Tests are separated in playwright projects: unit (pure functions), api (stateful API endpoints through HTTP) and e2e (UI with playwright browser instrumentation). When working on the e2e part you can use subagents `playwright-test-generator` and `playwright-test-healer`.
+Specs live in `tests/features/<feature>/` (`<name>.unit|api|e2e.spec.ts`); setups, fixtures and support helpers stay at the root of `tests/`. Tests are separated in playwright projects: unit (pure functions), api (stateful API endpoints through HTTP) and e2e (UI with playwright browser instrumentation). When working on the e2e part the Playwright test agents provided by the development environment can help.
 
 In case of failures you might find error contexts in @test-results.
 
