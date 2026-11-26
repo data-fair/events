@@ -5,9 +5,9 @@ import { closedPortUrl } from '../../support/hook-server.ts'
 const axAno = axios()
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 const axDev = axios({ baseURL: devBaseURL })
-const user1 = await axiosAuth('test-user1')
-const admin1 = await axiosAuth('test1-admin1')
-const superadmin = await axiosAuth('superadmin', { adminMode: true })
+const user1 = await axiosAuth('test_events_user1')
+const admin1 = await axiosAuth('test_events_org1_admin')
+const superadmin = await axiosAuth('test_events_superadmin', { adminMode: true })
 
 test.describe('events', () => {
   test.beforeEach(clean)
@@ -17,8 +17,8 @@ test.describe('events', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'an action of a super admin',
-      sender: { type: 'user', id: 'test1-admin1', name: 'Admin' },
-      originator: { user: { id: 'superadmin', name: 'Super Admin', admin: true } }
+      sender: { type: 'user', id: 'test_events_org1_admin', name: 'Admin' },
+      originator: { user: { id: 'test_events_superadmin', name: 'Super Admin', admin: true } }
     }])
     const { data } = await admin1.get('/api/events', { params: { select: 'title,originator.user.name' } })
     expect(data.results[0].title).toBe('an action of a super admin')
@@ -42,17 +42,17 @@ test.describe('events', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'a notification',
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     }, {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'another notification',
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     }, {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'anotherone',
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     }])
     res = await admin1.get('/api/events')
     expect(res.data.results.length).toBe(0)
@@ -77,7 +77,7 @@ test.describe('events', () => {
   })
 
   test('should paginate over an older event with a greater id', async () => {
-    const sender = { type: 'user', id: 'test-user1', name: 'User 1' }
+    const sender = { type: 'user', id: 'test_events_user1', name: 'User 1' }
     await axPush.post('/api/events', [
       { _id: 'b-newer', date: '2026-01-02T00:00:00.000Z', topic: { key: 'topic1' }, title: 'newer', sender },
       { _id: 'z-older', date: '2026-01-01T00:00:00.000Z', topic: { key: 'topic1' }, title: 'older', sender }
@@ -93,7 +93,7 @@ test.describe('events', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: { en: 'an english notification', fr: 'une notification française' },
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     }])
     res = await admin1.get('/api/events')
     expect(res.data.results.length).toBe(0)
@@ -114,14 +114,14 @@ test.describe('events', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'notif 1',
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     }])
     res = await axPush.post('/api/events', [{
       _id: 'test',
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'notif 2',
-      sender: { type: 'user', id: 'test-user1', name: 'User 1' }
+      sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }
     }])
     res = await user1.get('/api/events')
     expect(res.data.results.length).toBe(1)
@@ -130,7 +130,7 @@ test.describe('events', () => {
 
   test('does not store nor notify an event restricted to webhooks', async () => {
     // user1 is admin of its own account: its subscriptions stay private and it reads its own events
-    const sender = { type: 'user', id: 'test-user1', name: 'User 1' }
+    const sender = { type: 'user', id: 'test_events_user1', name: 'User 1' }
     await user1.post('/api/subscriptions', { topic: { key: 'topic1' }, sender })
     await user1.post('/api/webhook-subscriptions', {
       title: 'channels test', topic: { key: 'topic1' }, sender, url: `${closedPortUrl}/hook`
@@ -153,7 +153,7 @@ test.describe('events', () => {
       date: new Date().toISOString(),
       topic: { key: 'topic1' },
       title: 'stored',
-      sender: { type: 'organization', id: 'test1', name: 'Test Organization 1' },
+      sender: { type: 'organization', id: 'test_events_org1', name: 'Test Organization 1' },
       channels: ['events', 'webhooks'],
       coalesce: true
     }])
@@ -165,8 +165,8 @@ test.describe('events', () => {
 
   test('a super admin reads the events of a resource of another account', async () => {
     await axPush.post('/api/events', [
-      { date: '2026-01-01T00:00:00.000Z', topic: { key: 'topic1' }, title: 'dataset event', sender: { type: 'organization', id: 'test1', name: 'Test 1' }, resource: { type: 'dataset', id: 'ds1' } },
-      { date: '2026-01-02T00:00:00.000Z', topic: { key: 'topic1' }, title: 'other dataset', sender: { type: 'organization', id: 'test1', name: 'Test 1' }, resource: { type: 'dataset', id: 'ds2' } }
+      { date: '2026-01-01T00:00:00.000Z', topic: { key: 'topic1' }, title: 'dataset event', sender: { type: 'organization', id: 'test_events_org1', name: 'Test 1' }, resource: { type: 'dataset', id: 'ds1' } },
+      { date: '2026-01-02T00:00:00.000Z', topic: { key: 'topic1' }, title: 'other dataset', sender: { type: 'organization', id: 'test_events_org1', name: 'Test 1' }, resource: { type: 'dataset', id: 'ds2' } }
     ])
     // the active account of the super admin is not the owner of the dataset
     let res = await superadmin.get('/api/events', { params: { resource: 'dataset/ds1' } })
@@ -184,10 +184,10 @@ test.describe('events', () => {
   test('a super admin reads the events of the current owner of a resource', async () => {
     const resource = { type: 'dataset', id: 'moved-ds' }
     await axPush.post('/api/events', [
-      { date: '2026-01-01T00:00:00.000Z', topic: { key: 'topic1' }, title: 'created by user1', sender: { type: 'user', id: 'test-user1', name: 'User 1' }, resource },
-      { date: '2026-01-02T00:00:00.000Z', topic: { key: 'topic1' }, title: 'updated by test1', sender: { type: 'organization', id: 'test1', name: 'Test 1' }, resource }
+      { date: '2026-01-01T00:00:00.000Z', topic: { key: 'topic1' }, title: 'created by user1', sender: { type: 'user', id: 'test_events_user1', name: 'User 1' }, resource },
+      { date: '2026-01-02T00:00:00.000Z', topic: { key: 'topic1' }, title: 'updated by test_events_org1', sender: { type: 'organization', id: 'test_events_org1', name: 'Test 1' }, resource }
     ])
     const res = await superadmin.get('/api/events', { params: { resource: 'dataset/moved-ds' } })
-    expect(res.data.results.map((e: any) => e.title)).toEqual(['updated by test1'])
+    expect(res.data.results.map((e: any) => e.title)).toEqual(['updated by test_events_org1'])
   })
 })

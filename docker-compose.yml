@@ -13,7 +13,9 @@ services:
       - ./dev/resources/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
 
   simple-directory:
-    # master: the scoped NHI token exchange is not in a released major yet
+    # master (>= 8.24): the scoped NHI token exchange and the prefixed test API (POST /api/test-env/seed,
+    # DELETE /api/test-env?prefix=) the tests seed their accounts with —
+    # `docker compose pull simple-directory` if older
     image: ghcr.io/data-fair/simple-directory:master
     network_mode: host
     depends_on:
@@ -25,8 +27,15 @@ services:
       - MONGO_URL=mongodb://localhost:${MONGO_PORT}/simple-directory
       - OBSERVER_ACTIVE=false
       - CIPHER_PASSWORD=dev-cipher-password-0123456789abcdef
-      - STORAGE_TYPE=file
-      - ADMINS=["test_superadmin@test.com","superadmin@test.com","alban.mouton@koumoul.com"]
+      # accounts in mongo: the test suite seeds and cleans its own sub-space (test_events_,
+      # tests/support/sd-fixtures.ts) through the test API; dev accounts can be seeded the same way
+      # under another prefix
+      - STORAGE_TYPE=mongo
+      - ENABLE_TEST_API=1
+      # the test API needs NODE_ENV=development, the configuration stays the image's production one
+      - NODE_ENV=development
+      - NODE_CONFIG_ENV=production
+      - ADMINS=["test_events_superadmin@test.com"]
       - CONTACT=contact@test.com
       # in dev simple-directory only notifies this service, directly (the shared identities router refuses calls through the proxy)
       - IDENTITIES_WEBHOOKS=[{"base":"http://localhost:${DEV_API_PORT}/api/identities","key":"secret-identities"}]
@@ -39,7 +48,7 @@ services:
       - SECRET_SITES=secret-sites
       - SECRET_EVENTS=secret-events
       - SECRET_SENDMAILS=secret-sendmails
-      # notification mails of this service go to maildev (optional, df-dev up maildev)
+      # notification mails of this service go to maildev (optional: npm run dev -- --profile maildev)
       - MAILDEV_ACTIVE=true
       - MAILDEV_URL=http://localhost:${MAILDEV_UI_PORT}
       # host network: sd's default SMTP localhost:1025 would reach another env's maildev
@@ -47,7 +56,7 @@ services:
       # per recipient, stored in mongo: repeated test runs would stop the mails silently
       - MAILSRATELIMIT_POINTS=100000
       - ROLES_DEFAULTS=["admin","contrib","user"]
-      # non-human identities, declared in dev/resources/users.json (scope tests)
+      # non-human identities (the scope tests, tests/support/sd-fixtures.ts)
       - MANAGE_NHIS=true
       # dev only: the test NHI issuer is not a real https issuer
       - NHIS_ALLOW_INSECURE_ISSUERS=true
@@ -55,9 +64,6 @@ services:
       - THEME_DARK=true
       - THEME_HC=true
       - THEME_HC_DARK=true
-    volumes:
-      - ./dev/resources/users.json:/app/data/users.json
-      - ./dev/resources/organizations.json:/app/data/organizations.json
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "${SD_PORT}"]
       interval: 2s

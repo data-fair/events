@@ -8,11 +8,11 @@ import { scopedOperations, acceptedScopes } from '../../../api/src/shared/scopes
 
 const axPush = axios({ headers: { 'x-secret-key': 'secret-events' }, baseURL: devBaseURL })
 
-const subscription = { topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test1' } }
+const subscription = { topic: { key: 'topic1' }, sender: { type: 'organization', id: 'test_events_org1' } }
 const webhookSubscription = {
   title: 'Test webhook sub',
   topic: { key: 'topic1' },
-  sender: { type: 'organization', id: 'test1' },
+  sender: { type: 'organization', id: 'test_events_org1' },
   url: `${closedPortUrl}/hook`
 }
 
@@ -123,18 +123,18 @@ test.describe('scope enforcement', () => {
     expect(own.messages[0].title).toBe('live notification')
     own.ws.close()
 
-    const other = await wsSubscribe(reader.cookie, 'user:test-user1:notifications')
+    const other = await wsSubscribe(reader.cookie, 'user:test_events_user1:notifications')
     expect(other.outcome.type).toBe('error')
     expect(other.outcome.data).not.toMatch(/scope/)
     other.ws.close()
 
-    const webhooksRefused = await wsSubscribe(reader.cookie, 'organization:test1:webhook-subscriptions/x')
+    const webhooksRefused = await wsSubscribe(reader.cookie, 'organization:test_events_org1:webhook-subscriptions/x')
     expect(webhooksRefused.outcome.type).toBe('error')
     expect(webhooksRefused.outcome.data).toMatch(/scope/)
     webhooksRefused.ws.close()
 
     const webhooksReader = await nhiSession('webhooks:read')
-    const webhooks = await wsSubscribe(webhooksReader.cookie, 'organization:test1:webhook-subscriptions/x')
+    const webhooks = await wsSubscribe(webhooksReader.cookie, 'organization:test_events_org1:webhook-subscriptions/x')
     expect(webhooks.outcome.type).toBe('subscribe-confirm')
     webhooks.ws.close()
   })
@@ -168,7 +168,7 @@ test.describe('scope enforcement', () => {
 
     // an internal secret push only depends on the secret, a stray bearer header is ignored
     const secretWithBearer = axios({ baseURL: devBaseURL, headers: { 'x-secret-key': 'secret-events', authorization: 'Bearer not-a-token' } })
-    const res = await secretWithBearer.post('/api/events', [{ topic: { key: 'topic1' }, title: 'pushed with a stray bearer', sender: { type: 'user', id: 'test-user1', name: 'User 1' } }])
+    const res = await secretWithBearer.post('/api/events', [{ topic: { key: 'topic1' }, title: 'pushed with a stray bearer', sender: { type: 'user', id: 'test_events_user1', name: 'User 1' } }])
     expect(res.status).toBe(201)
   })
 })

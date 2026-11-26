@@ -101,7 +101,8 @@ type Scenario = {
 const session = useSession()
 const { dayjs } = useLocaleDayjs()
 
-const sender = 'organization:test1'
+// no sender: the subscription embeds subscribe on the session's active account (switch to an organization to
+// subscribe to its topics)
 // hosts pass topic titles in the language of the session, as data-fair does with its settings schema
 const topicTitles: Record<string, string> = {
   en: 'Dataset finalized,Dataset error',
@@ -113,8 +114,8 @@ const scenarios: Scenario[] = [
   { id: 'notification-queue', title: 'DfNotificationQueue', source: 'lib-vuetify/DfNotificationQueue.vue', component: '<df-notification-queue :events-url="$sitePath + \'/events\'" />' },
   { id: 'events-compact', title: 'Recent activity', source: 'ui/src/pages/embed/events-compact.vue', page: 'embed/events-compact' },
   { id: 'events', title: 'Traceability of a resource', source: 'ui/src/pages/embed/events.vue', page: 'embed/events', params: { resource: 'dataset/communes' } },
-  { id: 'subscribe', title: 'Subscribe to topics', source: 'ui/src/pages/embed/subscribe.vue', page: 'embed/subscribe', params: { ...topics, sender, 'url-template': '/data-fair/dataset/communes' } },
-  { id: 'subscribe-webhooks', title: 'Webhooks of topics', source: 'ui/src/pages/embed/subscribe-webhooks.vue', page: 'embed/subscribe-webhooks', params: { ...topics, sender } },
+  { id: 'subscribe', title: 'Subscribe to topics', source: 'ui/src/pages/embed/subscribe.vue', page: 'embed/subscribe', params: { ...topics, 'url-template': '/data-fair/dataset/communes' } },
+  { id: 'subscribe-webhooks', title: 'Webhooks of topics', source: 'ui/src/pages/embed/subscribe-webhooks.vue', page: 'embed/subscribe-webhooks', params: { ...topics } },
   { id: 'devices', title: 'Devices', source: 'ui/src/pages/embed/devices.vue', page: 'embed/devices' }
 ]
 
